@@ -10,7 +10,8 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import EduTooltip from './EduTooltip';
+import EduTooltip, { DivergenceBadge } from './EduTooltip';
+import { DIVERGENCE_THRESHOLD } from '../constants';
 import './VisualizationArea.css';
 
 Chart.register(
@@ -666,7 +667,11 @@ export default function VisualizationArea({
                 <div className="viz-summary-metrics">
                   <div className="viz-summary-metric">
                     <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg RMSE</span>
-                    <span className="typo-data" style={{ color }}>{r.avgRmse.toFixed(3)}</span>
+                    {Number.isNaN(r.avgRmse) || r.avgRmse > DIVERGENCE_THRESHOLD ? (
+                      <DivergenceBadge align="center" position="bottom" />
+                    ) : (
+                      <span className="typo-data" style={{ color }}>{r.avgRmse.toFixed(3)}</span>
+                    )}
                   </div>
                   <div className="viz-summary-metric">
                     <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg Spread</span>

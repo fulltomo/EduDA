@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { EduTooltipDrawer } from './EduTooltip';
+import { DIVERGENCE_THRESHOLD } from '../constants';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
@@ -133,7 +134,32 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             <div className="method-card-stats">
               <div className="stat-item">
                 <span className="stat-label typo-label-caps">RMSE:</span>
-                <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
+                {Number.isNaN(method.avgRmse) || method.avgRmse > DIVERGENCE_THRESHOLD ? (
+                  <button
+                    type="button"
+                    className={`divergence-badge ${openDrawers['filterDivergence'] ? 'active' : ''}`}
+                    onClick={(e) => toggleDrawer('filterDivergence', e)}
+                    style={{
+                      backgroundColor: 'rgba(255, 180, 171, 0.15)',
+                      color: '#ffb4ab',
+                      border: '1px solid #ffb4ab',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      whiteSpace: 'nowrap',
+                      lineHeight: '1.2',
+                    }}
+                  >
+                    <span>⚠️ 発散 (Diverged)</span>
+                  </button>
+                ) : (
+                  <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
+                )}
               </div>
               <div className="stat-item">
                 <div className="stat-label-wrapper">
@@ -159,6 +185,13 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <EduTooltipDrawer
                 paramId="spread"
                 onClose={() => closeDrawer('spread')}
+              />
+            )}
+
+            {openDrawers['filterDivergence'] && (
+              <EduTooltipDrawer
+                paramId="filterDivergence"
+                onClose={() => closeDrawer('filterDivergence')}
               />
             )}
           </div>
