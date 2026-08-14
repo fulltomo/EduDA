@@ -97,6 +97,7 @@ export default function ObsTabs({
           <div className="obs-grid-points custom-scroll">
             {gridPoints.map(pt => {
               const isCustom = activeMode === 'custom';
+              const displayIndex = pt.index + 1;
               return (
                 <button
                   type="button"
@@ -107,14 +108,14 @@ export default function ObsTabs({
                   aria-pressed={isCustom ? pt.isObserved : undefined}
                   title={
                     isCustom
-                      ? `格子点 ${pt.index}: ${pt.isObserved ? '観測ON (クリックでOFF)' : '観測OFF (クリックでON)'}`
-                      : (pt.isObserved ? `格子点 ${pt.index}: 観測点` : `格子点 ${pt.index}: 未観測点`)
+                      ? `格子点 ${displayIndex}: ${pt.isObserved ? '観測ON (クリックでOFF)' : '観測OFF (クリックでON)'}`
+                      : (pt.isObserved ? `格子点 ${displayIndex}: 観測点` : `格子点 ${displayIndex}: 未観測点`)
                   }
                 >
                   <span
                     className={`obs-grid-point-dot ${pt.isObserved ? 'obs-grid-point-dot--observed' : 'obs-grid-point-dot--unobserved'}`}
                   />
-                  <span className="obs-grid-point-label typo-data">{pt.index}</span>
+                  <span className="obs-grid-point-label typo-data">{displayIndex}</span>
                 </button>
               );
             })}

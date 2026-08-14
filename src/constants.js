@@ -88,7 +88,7 @@ export const DA_METHODS = [
 /** Observation mode tabs */
 export const OBS_MODES = [
   { id: 'full',    label: '全観測',     desc: '全40格子点を毎ステップ観測' },
-  { id: 'sparse',  label: '疎密観測',   desc: '前半領域（例: 格子点0〜19）のみを集中観測' },
+  { id: 'sparse',  label: '疎密観測',   desc: '前半領域（例: 格子点1〜20）のみを集中観測' },
   { id: 'thinned', label: '間引き観測', desc: '全格子点を空間的に等間隔でサンプリング観測' },
   { id: 'custom',  label: 'カスタム観測', desc: '格子点を個別にクリックして観測地点を自由にON/OFF' },
 ];
