@@ -12,6 +12,7 @@ export default function ControlPanel({
   isRunning,
   progress,
   hasResults,
+  needsRecalc = false,
 }) {
   return (
     <aside className="control-panel" id="control-panel">
@@ -54,14 +55,18 @@ export default function ControlPanel({
       {/* Footer Actions */}
       <div className="cp-footer">
         <button
-          className="btn btn-primary cp-run-btn"
+          className={`btn btn-primary cp-run-btn ${needsRecalc && !isRunning && methods.length > 0 ? 'cp-run-btn--pulse' : ''}`}
           onClick={onRun}
           disabled={isRunning || methods.length === 0}
           id="btn-run"
+          style={{ position: 'relative' }}
         >
           <span className="material-symbols-outlined">play_arrow</span>
           <span>{isRunning ? '計算中...' : '同化を実行'}</span>
           {isRunning && <div className="spinner" />}
+          {needsRecalc && !isRunning && methods.length > 0 && (
+            <span className="cp-run-badge" />
+          )}
         </button>
 
         {isRunning && (

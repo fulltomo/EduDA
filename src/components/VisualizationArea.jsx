@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Chart,
   LineController,
@@ -23,6 +23,42 @@ Chart.register(
   Filler,
 );
 
+function getCssVar(varName, fallback) {
+  if (typeof window !== 'undefined') {
+    const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    if (val) return val;
+  }
+  return fallback;
+}
+
+function getErrorColorRGB(error, maxErr) {
+  const t = Math.min(1.0, Math.max(0.0, error / maxErr));
+  const stops = [
+    { pos: 0.0, r: 11, g: 19, b: 38 },       // Deep Indigo (#0b1326)
+    { pos: 0.25, r: 0, g: 102, b: 138 },     // Deep Cyan (#00668a)
+    { pos: 0.5, r: 69, g: 223, b: 164 },     // Mint Green (#45dfa4)
+    { pos: 0.75, r: 255, g: 180, b: 171 },   // Coral Orange (#ffb4ab)
+    { pos: 1.0, r: 255, g: 255, b: 255 }     // White
+  ];
+
+  let lower = stops[0];
+  let upper = stops[stops.length - 1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t >= stops[i].pos && t <= stops[i + 1].pos) {
+      lower = stops[i];
+      upper = stops[i + 1];
+      break;
+    }
+  }
+  const range = upper.pos - lower.pos;
+  const factor = range > 0 ? (t - lower.pos) / range : 0;
+  return {
+    r: Math.round(lower.r + factor * (upper.r - lower.r)),
+    g: Math.round(lower.g + factor * (upper.g - lower.g)),
+    b: Math.round(lower.b + factor * (upper.b - lower.b)),
+  };
+}
+
 export default function VisualizationArea({
   methods,
   colors,
@@ -31,14 +67,25 @@ export default function VisualizationArea({
   showSpread,
   onToggleRmse,
   onToggleSpread,
+  onUpdateMethod,
+  activePreset,
 }) {
   const [viewMode, setViewMode] = useState('timeseries');
   const [selectedStepIdx, setSelectedStepIdx] = useState(0);
   const [selectedMethodId, setSelectedMethodId] = useState('');
+  const [isPresetExpanded, setIsPresetExpanded] = useState(true);
+  const [displayMaxError, setDisplayMaxError] = useState(4.0);
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const hovmollerCanvasRef = useRef(null);
+
+  // Auto-expand accordion when a new preset is selected
+  useEffect(() => {
+    if (activePreset) {
+      setIsPresetExpanded(true);
+    }
+  }, [activePreset]);
 
   // Reset selected step and selected method when new simulation results are loaded
   useEffect(() => {
@@ -46,11 +93,14 @@ export default function VisualizationArea({
       const results = simulationResults.results;
       const stepsCount = results[0].timeSteps?.length || 0;
       setSelectedStepIdx(stepsCount > 0 ? stepsCount - 1 : 0);
-      if (!selectedMethodId || !results.some(r => r.methodId === selectedMethodId)) {
-        setSelectedMethodId(results[0].methodId);
-      }
+      setSelectedMethodId(prev => {
+        if (!prev || !results.some(r => r.methodId === prev)) {
+          return results[0].methodId;
+        }
+        return prev;
+      });
     }
-  }, [simulationResults, selectedMethodId]);
+  }, [simulationResults]);
 
   // Build or update chart when results change
   useEffect(() => {
@@ -82,6 +132,9 @@ export default function VisualizationArea({
     let showLegend = false;
     let animDuration = 600;
 
+    const surfaceColor = getCssVar('--surface', '#0b1326');
+    const errorColor = getCssVar('--error', '#ffb4ab');
+
     if (viewMode === 'timeseries') {
       labels = timeSteps;
       xType = 'linear';
@@ -91,8 +144,12 @@ export default function VisualizationArea({
       animDuration = 600;
 
       results.forEach((r, idx) => {
-        const color = colors[idx % colors.length];
         const method = methods.find(m => m.instanceId === r.methodId);
+        if (method && method.visible === false) {
+          return;
+        }
+
+        const color = colors[idx % colors.length];
         const label = method?.label || r.methodId;
 
         if (showRmse && r.rmseTimeSeries) {
@@ -105,7 +162,7 @@ export default function VisualizationArea({
             pointRadius: 0,
             pointHoverRadius: 5,
             pointHoverBackgroundColor: color,
-            pointHoverBorderColor: 'var(--surface)',
+            pointHoverBorderColor: surfaceColor,
             pointHoverBorderWidth: 2,
             tension: 0.3,
             borderDash: [],
@@ -166,10 +223,10 @@ export default function VisualizationArea({
           label: '観測値 (Obs)',
           data: obsData,
           borderColor: 'transparent',
-          backgroundColor: 'var(--error)',
+          backgroundColor: errorColor,
           pointRadius: 6,
           pointHoverRadius: 8,
-          pointBackgroundColor: 'var(--error)',
+          pointBackgroundColor: errorColor,
           pointStyle: 'rectRot',
           showLine: false,
         });
@@ -177,8 +234,12 @@ export default function VisualizationArea({
 
       // 3. Methods' analysis states
       results.forEach((r, idx) => {
-        const color = colors[idx % colors.length];
         const method = methods.find(m => m.instanceId === r.methodId);
+        if (method && method.visible === false) {
+          return;
+        }
+
+        const color = colors[idx % colors.length];
         const label = method?.label || r.methodId;
 
         const analysisData = r.analysisHistory[selectedStepIdx];
@@ -283,7 +344,7 @@ export default function VisualizationArea({
             border: {
               color: 'rgba(62, 72, 79, 0.3)',
             },
-            beginAtZero: viewMode === 'timeseries',
+            beginAtZero: true,
           },
         },
       },
@@ -336,35 +397,8 @@ export default function VisualizationArea({
       }
     }
     // Round maxError up to a nice value for display
-    const displayMaxError = Math.ceil(maxError * 2) / 2 || 4.0;
-
-    // Helper for Inferno/Thermal color scale
-    function getErrorColor(error) {
-      const t = Math.min(1.0, Math.max(0.0, error / displayMaxError));
-      const stops = [
-        { pos: 0.0, r: 11, g: 19, b: 38 },       // Deep Indigo (#0b1326)
-        { pos: 0.25, r: 0, g: 102, b: 138 },     // Deep Cyan (#00668a)
-        { pos: 0.5, r: 69, g: 223, b: 164 },     // Mint Green (#45dfa4)
-        { pos: 0.75, r: 255, g: 180, b: 171 },   // Coral Orange (#ffb4ab)
-        { pos: 1.0, r: 255, g: 255, b: 255 }     // White
-      ];
-
-      let lower = stops[0];
-      let upper = stops[stops.length - 1];
-      for (let i = 0; i < stops.length - 1; i++) {
-        if (t >= stops[i].pos && t <= stops[i+1].pos) {
-          lower = stops[i];
-          upper = stops[i+1];
-          break;
-        }
-      }
-      const range = upper.pos - lower.pos;
-      const factor = range > 0 ? (t - lower.pos) / range : 0;
-      const r_val = Math.round(lower.r + factor * (upper.r - lower.r));
-      const g_val = Math.round(lower.g + factor * (upper.g - lower.g));
-      const b_val = Math.round(lower.b + factor * (upper.b - lower.b));
-      return `rgb(${r_val}, ${g_val}, ${b_val})`;
-    }
+    const computedMaxError = Math.ceil(maxError * 2) / 2 || 4.0;
+    setDisplayMaxError(computedMaxError);
 
     let animationFrameId;
 
@@ -404,26 +438,37 @@ export default function VisualizationArea({
         return;
       }
 
+      // Render heatmap via offscreen ImageData buffer
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = N;
+      offCanvas.height = HovSteps;
+      const offCtx = offCanvas.getContext('2d');
+      if (offCtx) {
+        const imgData = offCtx.createImageData(N, HovSteps);
+        for (let t = 0; t < HovSteps; t++) {
+          const step = timeSteps[t];
+          const truth = truthHistory[step];
+          const analysis = analysisHistory[t];
+          if (!truth || !analysis) continue;
+
+          for (let j = 0; j < N; j++) {
+            const err = Math.abs(analysis[j] - truth[j]);
+            const rgb = getErrorColorRGB(err, computedMaxError);
+            const pixelIdx = (t * N + j) * 4;
+            imgData.data[pixelIdx] = rgb.r;
+            imgData.data[pixelIdx + 1] = rgb.g;
+            imgData.data[pixelIdx + 2] = rgb.b;
+            imgData.data[pixelIdx + 3] = 255;
+          }
+        }
+        offCtx.putImageData(imgData, 0, 0);
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(offCanvas, paddingLeft, paddingTop, graphWidth, graphHeight);
+      }
+
       const cellWidth = graphWidth / N;
       const cellHeight = graphHeight / HovSteps;
-
-      // Draw Grid Cells
-      for (let t = 0; t < HovSteps; t++) {
-        const step = timeSteps[t];
-        const truth = truthHistory[step];
-        const analysis = analysisHistory[t];
-        if (!truth || !analysis) continue;
-
-        const yPos = paddingTop + t * cellHeight;
-
-        for (let j = 0; j < N; j++) {
-          const err = Math.abs(analysis[j] - truth[j]);
-          ctx.fillStyle = getErrorColor(err);
-          const xPos = paddingLeft + j * cellWidth;
-          // Slight overlap to prevent seams
-          ctx.fillRect(xPos, yPos, cellWidth + 0.5, cellHeight + 0.5);
-        }
-      }
 
       // Draw axes lines
       ctx.strokeStyle = '#3e484f';
@@ -495,12 +540,6 @@ export default function VisualizationArea({
       ctx.restore();
 
       ctx.restore();
-
-      // Update dynamic max error element in DOM
-      const maxErrEl = document.getElementById('hov-max-error');
-      if (maxErrEl) {
-        maxErrEl.textContent = displayMaxError.toFixed(1);
-      }
     };
 
     const handleResize = () => {
@@ -522,6 +561,65 @@ export default function VisualizationArea({
 
   return (
     <section className="viz-area" id="viz-area">
+      {/* Active Preset Banner (Accordion) */}
+      {activePreset && (
+        <div className="preset-banner card" style={{ margin: '16px 16px 0 16px', borderLeft: '4px solid var(--primary)', backgroundColor: 'var(--surface-container-high)', flexShrink: 0 }}>
+          <div
+            className="card-header"
+            onClick={() => setIsPresetExpanded(prev => !prev)}
+            style={{
+              display: 'flex',
+              justify: 'space-between',
+              alignItems: 'center',
+              background: 'var(--surface-container-highest)',
+              borderBottom: isPresetExpanded ? '1px solid var(--outline-variant)' : 'none',
+              padding: '10px 16px',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '20px' }}>school</span>
+              <span className="typo-headline-md" style={{ color: 'var(--primary)', fontSize: '15px', fontWeight: '600' }}>
+                {activePreset.title}
+              </span>
+            </div>
+            <button
+              className="btn-ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPresetExpanded(prev => !prev);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                fontSize: '12px',
+                borderRadius: 'var(--rounded)',
+                cursor: 'pointer'
+              }}
+              id="btn-toggle-preset-details"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                {isPresetExpanded ? 'expand_less' : 'expand_more'}
+              </span>
+              {isPresetExpanded ? '説明を隠す' : '説明を表示'}
+            </button>
+          </div>
+          {isPresetExpanded && (
+            <div className="card-body" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p className="typo-body-sm" style={{ fontWeight: '600', color: 'var(--secondary)' }}>
+                テーマ: {activePreset.theme}
+              </p>
+              <p className="typo-body-sm" style={{ color: 'var(--on-surface-variant)', lineHeight: '1.5', fontSize: '13px' }}>
+                {activePreset.description}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Summary Bar */}
       {results && results.length > 0 && (
         <div className="viz-summary-bar no-scrollbar">
@@ -529,9 +627,38 @@ export default function VisualizationArea({
             const color = colors[idx % colors.length];
             const method = methods.find(m => m.instanceId === r.methodId);
             const label = method?.label || r.methodId;
+            const isVisible = method ? method.visible !== false : true;
+
             return (
-              <div className="viz-summary-card card" key={r.methodId}>
+              <div
+                className={`viz-summary-card card ${!isVisible ? 'is-hidden' : ''}`}
+                key={r.methodId}
+                style={{
+                  opacity: isVisible ? 1 : 0.5,
+                  transition: 'opacity 0.2s ease',
+                }}
+              >
                 <div className="viz-summary-left">
+                  <button
+                    className="viz-summary-visibility-btn"
+                    onClick={() => onUpdateMethod && onUpdateMethod(r.methodId, { visible: !isVisible })}
+                    aria-label={isVisible ? "非表示にする" : "表示する"}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: isVisible ? 'var(--on-surface-variant)' : 'var(--outline)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: 'var(--rounded)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '4px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+                      {isVisible ? 'visibility' : 'visibility_off'}
+                    </span>
+                  </button>
                   <div className="color-dot-sm" style={{ backgroundColor: color }} />
                   <span className="viz-summary-name">{label}</span>
                 </div>
@@ -583,6 +710,7 @@ export default function VisualizationArea({
                 className="hov-method-select"
                 value={selectedMethodId}
                 onChange={(e) => setSelectedMethodId(e.target.value)}
+                aria-label="表示手法選択"
               >
                 {results.map(r => {
                   const method = methods.find(m => m.instanceId === r.methodId);
@@ -623,7 +751,7 @@ export default function VisualizationArea({
               <div className="hovmoller-legend-container">
                 <span className="hovmoller-legend-text">低誤差 (0.0)</span>
                 <div className="hovmoller-gradient-bar" />
-                <span className="hovmoller-legend-text">高誤差 (<span id="hov-max-error">4.0</span>)</span>
+                <span className="hovmoller-legend-text">高誤差 ({displayMaxError.toFixed(1)})</span>
               </div>
             </div>
           )}
@@ -641,8 +769,9 @@ export default function VisualizationArea({
               min={0}
               max={results[0].timeSteps.length - 1}
               value={selectedStepIdx}
-              onChange={(e) => setSelectedStepIdx(parseInt(e.target.value))}
+              onChange={(e) => setSelectedStepIdx(parseInt(e.target.value, 10))}
               className="viz-slider"
+              aria-label="タイムステップ選択"
             />
           </div>
         )}
