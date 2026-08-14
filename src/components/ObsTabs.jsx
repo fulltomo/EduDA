@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import './ObsTabs.css';
 
-export default function ObsTabs({ modes, activeMode, onChangeMode, description, advancedOptions }) {
+export default function ObsTabs({
+  modes,
+  activeMode,
+  onChangeMode,
+  description,
+  advancedOptions,
+  customObsIndices = [],
+  onToggleCustomObsIndex,
+  onSelectAllCustomObs,
+  onClearAllCustomObs,
+  onRandomCustomObs,
+}) {
   const [showGrid, setShowGrid] = useState(true);
   const N = advancedOptions?.N ?? 40;
 
@@ -23,6 +34,12 @@ export default function ObsTabs({ modes, activeMode, onChangeMode, description, 
       const idx = Math.round(k * N / numObs) % N;
       observedIndices.add(idx);
     }
+  } else if (activeMode === 'custom') {
+    customObsIndices.forEach(idx => {
+      if (idx >= 0 && idx < N) {
+        observedIndices.add(idx);
+      }
+    });
   }
 
   const gridPoints = Array.from({ length: N }, (_, i) => ({
@@ -46,6 +63,13 @@ export default function ObsTabs({ modes, activeMode, onChangeMode, description, 
               </button>
             ))}
           </div>
+          {activeMode === 'custom' && (
+            <div className="obs-custom-actions">
+              <button className="obs-custom-btn" onClick={onSelectAllCustomObs}>全選択</button>
+              <button className="obs-custom-btn" onClick={onClearAllCustomObs}>全解除</button>
+              <button className="obs-custom-btn" onClick={() => onRandomCustomObs(10)}>ランダム (10点)</button>
+            </div>
+          )}
           {description && (
             <div className="obs-tabs-desc">{description}</div>
           )}
@@ -71,15 +95,29 @@ export default function ObsTabs({ modes, activeMode, onChangeMode, description, 
       {showGrid && (
         <div className="obs-grid-strip">
           <div className="obs-grid-points custom-scroll">
-            {gridPoints.map(pt => (
-              <div key={pt.index} className="obs-grid-point-col">
-                <span
-                  className={`obs-grid-point-dot ${pt.isObserved ? 'obs-grid-point-dot--observed' : 'obs-grid-point-dot--unobserved'}`}
-                  title={pt.isObserved ? `格子点 ${pt.index}: 観測点` : `格子点 ${pt.index}: 未観測点`}
-                />
-                <span className="obs-grid-point-label typo-data">{pt.index}</span>
-              </div>
-            ))}
+            {gridPoints.map(pt => {
+              const isCustom = activeMode === 'custom';
+              return (
+                <button
+                  type="button"
+                  key={pt.index}
+                  className={`obs-grid-point-col ${isCustom ? 'obs-grid-point-col--clickable' : ''}`}
+                  onClick={isCustom ? () => onToggleCustomObsIndex(pt.index) : undefined}
+                  disabled={!isCustom}
+                  aria-pressed={isCustom ? pt.isObserved : undefined}
+                  title={
+                    isCustom
+                      ? `格子点 ${pt.index}: ${pt.isObserved ? '観測ON (クリックでOFF)' : '観測OFF (クリックでON)'}`
+                      : (pt.isObserved ? `格子点 ${pt.index}: 観測点` : `格子点 ${pt.index}: 未観測点`)
+                  }
+                >
+                  <span
+                    className={`obs-grid-point-dot ${pt.isObserved ? 'obs-grid-point-dot--observed' : 'obs-grid-point-dot--unobserved'}`}
+                  />
+                  <span className="obs-grid-point-label typo-data">{pt.index}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
