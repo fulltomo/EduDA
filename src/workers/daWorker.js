@@ -435,7 +435,15 @@ function runSimulation(payload) {
             state.x = vecAdd(state.x, matVecMul(K, innov));
             
             let I_KH = matSub(identity(N), matMul(K, H));
-            state.P = matMul(I_KH, state.P);
+            let P_upd = matMul(I_KH, state.P);
+            for (let r = 0; r < N; r++) {
+              for (let c = r; c < N; c++) {
+                let sym = 0.5 * (P_upd[r][c] + P_upd[c][r]);
+                P_upd[r][c] = sym;
+                P_upd[c][r] = sym;
+              }
+            }
+            state.P = P_upd;
 
           // B. 3DVar
           } else if (state.type === '3DVar') {
@@ -518,8 +526,9 @@ function runSimulation(payload) {
                   if (k > 0) x_curr = rk4_step(x_curr, dt, F);
                 }
                 state.x = x_curr;
-                // Re-initialize windowBuffer with the latest state for the next window
-                state.windowBuffer = [{ step, x_bg: state.x.slice(), y }];
+                // Re-initialize windowBuffer with the latest state for the next window.
+                // The observation at this step belongs to the window just optimized, so set y: null to prevent double assimilation.
+                state.windowBuffer = [{ step, x_bg: state.x.slice(), y: null }];
               }
             }
 
