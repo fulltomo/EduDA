@@ -10,6 +10,7 @@ export const DA_METHODS = [
     fullName: '拡張カルマンフィルタ',
     params: [
       { key: 'processNoise', label: 'Process Noise (Q)', min: 0.001, max: 0.20, step: 0.005, default: 0.01 },
+      { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 }
     ]
   },
   {
@@ -94,9 +95,11 @@ export const DEFAULT_ADVANCED = {
   N: 40,
   F: 8.0,
   obsErrorVar: 1.0,
-  obsInterval: 1,
+  obsInterval: 4,
   numSteps: 500,
   dt: 0.05,
+  pfResampleThreshold: 0.5,
+  varWindow: 5,
   sparseInterval: 4,
   sparseRegionStart: 0,
   sparseRegionEnd: 39,

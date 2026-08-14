@@ -19,6 +19,8 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     { key: 'obsInterval', label: '観測間隔 (Δt_obs)', type: 'number', min: 1, max: 20, step: 1 },
     { key: 'numSteps', label: 'シミュレーションステップ数', type: 'number', min: 50, max: 2000, step: 50 },
     { key: 'dt', label: '積分タイムステップ (dt)', type: 'number', min: 0.005, max: 0.2, step: 0.005 },
+    { key: 'pfResampleThreshold', label: 'PFリサンプリング閾値', type: 'number', min: 0.1, max: 1.0, step: 0.05 },
+    { key: 'varWindow', label: '4DVar同化ウィンドウ幅', type: 'number', min: 1, max: 20, step: 1 },
   ];
 
   const sparseFields = [
