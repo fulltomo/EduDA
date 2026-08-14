@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import TopNav from './components/TopNav';
 import ObsTabs from './components/ObsTabs';
 import ControlPanel from './components/ControlPanel';
@@ -9,6 +9,7 @@ import {
   OBS_MODES,
   CHART_COLORS,
   DEFAULT_ADVANCED,
+  PRESETS,
   createMethodInstance,
   createPresetMethodInstance,
 } from './constants';
@@ -29,6 +30,7 @@ export default function App() {
   const [showSpread, setShowSpread] = useState(true);
   const [activePreset, setActivePreset] = useState(null);
   const [needsRecalc, setNeedsRecalc] = useState(false);
+  const initialMountRef = useRef(false);
 
   const handleSimulationSuccess = useCallback((payload) => {
     setMethods(prev =>
@@ -143,6 +145,42 @@ export default function App() {
 
     runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, customObsIndices);
   }, [runSimulation, customObsIndices]);
+
+  // --- URL Search Params Deep-Linking Sync ---
+  useEffect(() => {
+    if (initialMountRef.current) return;
+    initialMountRef.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const presetParam = params.get('preset');
+    if (presetParam) {
+      const lower = presetParam.toLowerCase();
+      const found = PRESETS.find(
+        p =>
+          p.id.toLowerCase() === lower ||
+          (lower === 'inflation' && p.id === 'preset1') ||
+          (lower === 'localization' && p.id === 'preset2') ||
+          ((lower === 'flow-dependent' || lower === '3dvar-letkf') && p.id === 'preset3') ||
+          ((lower === 'pf' || lower === 'weight-collapse') && p.id === 'preset4')
+      );
+      if (found) {
+        handleSelectPreset(found);
+      }
+    }
+  }, [handleSelectPreset]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (activePreset) {
+      url.searchParams.set('preset', activePreset.id);
+    } else {
+      url.searchParams.delete('preset');
+    }
+    const newSearch = url.searchParams.toString();
+    const newUrl = url.pathname + (newSearch ? `?${newSearch}` : '');
+    window.history.replaceState(null, '', newUrl);
+  }, [activePreset]);
 
   const handleCsvExport = useCallback(() => {
     exportSimulationCsv(simulationResults, advancedOptions.N);

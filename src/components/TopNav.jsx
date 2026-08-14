@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { PRESETS } from '../constants';
 import './TopNav.css';
 
 export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
   const [showPresets, setShowPresets] = useState(false);
+  const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -16,6 +17,15 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+  }, []);
+
+  const handleShare = useCallback(() => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
   }, []);
 
   return (
@@ -59,6 +69,21 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
             </div>
           )}
         </div>
+
+        {/* 🔗 共有ボタン */}
+        <button
+          className={`btn-ghost topnav-share-btn ${copied ? 'copied' : ''}`}
+          onClick={handleShare}
+          id="btn-share-url"
+          title="現在の実験・設定URLをクリップボードにコピー"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+            {copied ? 'check' : 'share'}
+          </span>
+          <span className="topnav-share-label">
+            {copied ? 'コピー完了!' : '共有'}
+          </span>
+        </button>
 
         <button
           className="btn-ghost topnav-settings-btn"
