@@ -28,7 +28,7 @@
 
 ### 1. 豊富な7種類のデータ同化アルゴリズム
 - **EKF (拡張カルマンフィルタ)**: 接線線形モデルを用いた線形化カルマンフィルタ（プロセスノイズ $Q$）。
-- **EnKF (確率的アンサンブルカルマンフィルタ)**: 観測摂動を加えたモンテカルロ・アンサンブル手法。
+- **POEnKF (確率的アンサンブルカルマンフィルタ / 観測摂動型)**: 観測摂動を加えたモンテカルロ・アンサンブル手法。
 - **EnSRF (アンサンブル平方根フィルタ)**: 決定論的観測更新により観測ノイズサンプリング誤差を排除する平方根フィルタ。
 - **LETKF (局所アンサンブル変換カルマンフィルタ)**: 各格子点の局所空間で低次元アンサンブル変換行列を並列計算する現代の現業気象予報標準手法。
 - **3DVar (3次元変分法)**: Gaspari-Cohn 空間相関関数に基づく静的背景誤差共分散行列（$B$ 行列）を用いた変分法。
@@ -79,8 +79,8 @@ $$\frac{dx_j}{dt} = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F \quad (j = 1, \dots, N
 | 手法 | 主要パラメータ | デフォルト値 | 調整可能範囲 | 物理的意味・調整のポイント |
 | :--- | :--- | :--- | :--- | :--- |
 | **EKF** | `processNoise` ($Q$) | `0.01` | 0.001 〜 0.20 | 予測誤差共分散の加算項。モデル不完全性を補償。 |
-| **EnKF** | `ensembleSize` ($M$)<br>`inflation` ($\lambda$)<br>`localization` ($L$) | `30`<br>`1.05`<br>`5` | 5 〜 200<br>1.00 〜 1.50<br>1 〜 20 | メンバー数、共分散膨張率、Gaspari-Cohn局所化半径。少メンバー時の疑似相関・過信を防ぐ。 |
-| **EnSRF** | `ensembleSize` ($M$)<br>`inflation` ($\lambda$)<br>`localization` ($L$) | `30`<br>`1.05`<br>`5` | 5 〜 200<br>1.00 〜 1.50<br>1 〜 20 | 決定論的平方根更新。EnKF よりサンプリングノイズに強い。 |
+| **POEnKF** | `ensembleSize` ($M$)<br>`inflation` ($\lambda$)<br>`localization` ($L$) | `30`<br>`1.05`<br>`5` | 5 〜 200<br>1.00 〜 1.50<br>1 〜 20 | メンバー数、共分散膨張率、Gaspari-Cohn局所化半径。少メンバー時の疑似相関・過信を防ぐ。 |
+| **EnSRF** | `ensembleSize` ($M$)<br>`inflation` ($\lambda$)<br>`localization` ($L$) | `30`<br>`1.05`<br>`5` | 5 〜 200<br>1.00 〜 1.50<br>1 〜 20 | 決定論的平方根更新。POEnKF よりサンプリングノイズに強い。 |
 | **LETKF** | `ensembleSize` ($M$)<br>`inflation` ($\lambda$)<br>`localization` ($L$) | `30`<br>`1.05`<br>`5` | 5 〜 200<br>1.00 〜 1.50<br>1 〜 20 | 局所空間での並列アンサンブル変換。高次元系に極めて頑健。 |
 | **3DVar** | `bgErrorVar` ($\sigma_b^2$)<br>`corrLength` ($L$) | `1.0`<br>`5` | 0.1 〜 5.0<br>1 〜 20 | 静的背景誤差分散と相関長。未観測域への修正は等方的に伝播。 |
 | **4DVar** | `bgErrorVar` ($\sigma_b^2$)<br>`windowSize` ($W$) | `1.0`<br>`5` | 0.1 〜 5.0<br>1 〜 15 | 静的背景誤差分散と同化タイムウィンドウ幅。随伴モデル最適化。 |
@@ -94,12 +94,12 @@ $$\frac{dx_j}{dt} = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F \quad (j = 1, \dots, N
 
 ### 実験1: インフレーションの効果 (Filter Divergence)
 - **テーマ**: 有限アンサンブルによる共分散過小評価とフィルタ発散の克服
-- **比較**: `EnKF (Inflation 1.00)` vs `EnKF (Inflation 1.15)`
+- **比較**: `POEnKF (Inflation 1.00)` vs `POEnKF (Inflation 1.15)`
 - **学習内容**: インフレーションがないとアンサンブルが真値から離れて互いに収縮（過信）し、観測を無視して発散（RMSE 2.5以上）。適正なインフレーション（1.15）で Spread が維持され、安定同化（RMSE 約0.35）が実現される過程を観察。
 
 ### 実験2: 局所化 (Localization) の効果 (Spurious Correlation)
 - **テーマ**: 少アンサンブルサイズにおける遠隔疑似相関の排除
-- **比較**: `EnKF (Localization 5)` vs `EnKF (Localization 20)`
+- **比較**: `POEnKF (Localization 5)` vs `POEnKF (Localization 20)`
 - **学習内容**: メンバー数 $M=15$ の少アンサンブル時、物理的に無関係な遠隔格子点間で偶然に相関が生じるノイズを、局所化半径を絞ることでカットし精度が劇的に向上することを検証。
 
 ### 実験3: 固定共分散（3DVar）vs 流れ依存共分散（LETKF）
@@ -127,7 +127,7 @@ EduDA/
 │
 └── Compute Layer (Web Worker: daWorker.js)
     ├── Lorenz '96 Core       # RK4 積分・スピンアップ・観測生成
-    └── Assimilation Engines  # EKF, EnKF, EnSRF, LETKF, 3DVar, 4DVar, PF
+    └── Assimilation Engines  # EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, PF
 ```
 
 - **ノンブロッキング並列計算**: 高負荷なアンサンブルシミュレーションや随伴モデル勾配降下法はすべて Web Worker (`daWorker.js`) にオフロードされ、UI の描画や操作性を一切阻害しません。

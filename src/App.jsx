@@ -18,7 +18,7 @@ import { useSimulationWorker } from './hooks/useSimulationWorker';
 export default function App() {
   // --- State ---
   const [obsMode, setObsMode] = useState('full');
-  const [methods, setMethods] = useState(() => [createMethodInstance('EnKF')]);
+  const [methods, setMethods] = useState(() => [createMethodInstance('POEnKF')]);
   const [advancedOptions, setAdvancedOptions] = useState({ ...DEFAULT_ADVANCED });
   const [customObsIndices, setCustomObsIndices] = useState(() =>
     Array.from({ length: DEFAULT_ADVANCED.N }, (_, i) => i)

@@ -7,13 +7,13 @@ export const PRESETS = [
     obsMode: 'full',
     methods: [
       {
-        type: 'EnKF',
-        label: 'EnKF (Inflation 1.00: 膨張なし)',
+        type: 'POEnKF',
+        label: 'POEnKF (Inflation 1.00: 膨張なし)',
         params: { ensembleSize: 20, inflation: 1.00, localization: 10 }
       },
       {
-        type: 'EnKF',
-        label: 'EnKF (Inflation 1.15: 適正膨張)',
+        type: 'POEnKF',
+        label: 'POEnKF (Inflation 1.15: 適正膨張)',
         params: { ensembleSize: 20, inflation: 1.15, localization: 10 }
       }
     ],
@@ -34,13 +34,13 @@ export const PRESETS = [
     obsMode: 'full',
     methods: [
       {
-        type: 'EnKF',
-        label: 'EnKF (Localization 5)',
+        type: 'POEnKF',
+        label: 'POEnKF (Localization 5)',
         params: { ensembleSize: 15, inflation: 1.05, localization: 5 }
       },
       {
-        type: 'EnKF',
-        label: 'EnKF (Localization 20)',
+        type: 'POEnKF',
+        label: 'POEnKF (Localization 20)',
         params: { ensembleSize: 15, inflation: 1.05, localization: 20 }
       }
     ],

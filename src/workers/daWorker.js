@@ -131,7 +131,7 @@ function runSimulation(payload) {
         if (m.type === 'EKF') {
           state.P = matScale(identity(N), 1.0);
         }
-      } else if (['EnKF', 'EnSRF', 'LETKF', 'PF'].includes(m.type)) {
+      } else if (['POEnKF', 'EnKF', 'EnSRF', 'LETKF', 'PF'].includes(m.type)) {
         const M = p.ensembleSize || 30;
         state.ensembleSize = M;
         state.ensemble = [];
@@ -212,7 +212,7 @@ function runSimulation(payload) {
               const Q = matScale(identity(N), Q_val);
               state.P = matAdd(matMul(matMul(M_lin, state.P), matTranspose(M_lin)), Q);
             }
-          } else if (['EnKF', 'EnSRF', 'LETKF', 'PF'].includes(state.type)) {
+          } else if (['POEnKF', 'EnKF', 'EnSRF', 'LETKF', 'PF'].includes(state.type)) {
             for (let i = 0; i < state.ensembleSize; i++) {
               state.ensemble[i] = rk4_step(state.ensemble[i], dt, F);
               if (state.type === 'PF') {
@@ -235,7 +235,7 @@ function runSimulation(payload) {
             update3DVar(state, y, applyH);
           } else if (state.type === '4DVar') {
             update4DVar(state, step, numSteps, dt, F, N, H_T, R_inv, applyH);
-          } else if (['EnKF', 'EnSRF', 'LETKF'].includes(state.type)) {
+          } else if (['POEnKF', 'EnKF', 'EnSRF', 'LETKF'].includes(state.type)) {
             const M = state.ensembleSize;
             const ens = state.ensemble;
             const inflation = p.inflation || 1.05;
@@ -256,7 +256,7 @@ function runSimulation(payload) {
             x_mean = vecScale(x_mean, 1 / M);
             state.x_mean = x_mean;
 
-            if (state.type === 'EnKF') {
+            if (state.type === 'POEnKF' || state.type === 'EnKF') {
               updateEnKF(state, y, H, nobs, N, obsIndices, R_diag, R, localization, applyH);
             } else if (state.type === 'EnSRF') {
               updateEnSRF(state, y, nobs, N, obsIndices, R_diag, localization);

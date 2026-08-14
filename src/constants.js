@@ -20,9 +20,9 @@ export const DA_METHODS = [
     ]
   },
   {
-    id: 'EnKF',
-    label: 'EnKF',
-    fullName: '確率的アンサンブルカルマンフィルタ',
+    id: 'POEnKF',
+    label: 'POEnKF',
+    fullName: '確率的アンサンブルカルマンフィルタ (観測摂動型)',
     category: 'ensemble',
     summary: '観測値にランダムな摂動を加える確率的手法。流れ依存の背景誤差共分散を効率的に表現。',
     params: [
