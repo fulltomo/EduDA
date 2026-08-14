@@ -28,7 +28,7 @@
 .obs-tab {
   background: none;
   border: none;
-  font-family: 'Inter', sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 12px;
   font-weight: 700;
   line-height: 16px;
@@ -115,6 +115,12 @@
 }
 
 .obs-grid-point-col {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,7 +163,7 @@
   background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
   color: var(--on-surface-variant);
-  font-family: 'Inter', sans-serif;
+  font-family: Inter, sans-serif;
   font-size: 11px;
   font-weight: 500;
   padding: 3px 8px;
@@ -174,6 +180,12 @@
 
 .obs-grid-point-col--clickable {
   cursor: pointer;
+}
+
+.obs-grid-point-col--clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .obs-grid-point-col--clickable:hover .obs-grid-point-dot {
