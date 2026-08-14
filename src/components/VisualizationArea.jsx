@@ -31,6 +31,7 @@ export default function VisualizationArea({
   showSpread,
   onToggleRmse,
   onToggleSpread,
+  onUpdateMethod,
   activePreset,
 }) {
   const chartRef = useRef(null);
@@ -67,6 +68,11 @@ export default function VisualizationArea({
       const color = colors[idx % colors.length];
       const method = methods.find(m => m.instanceId === r.methodId);
       const label = method?.label || r.methodId;
+
+      // Skip rendering dataset if visible is explicitly false
+      if (method && method.visible === false) {
+        return;
+      }
 
       if (showRmse && r.rmseTimeSeries) {
         datasets.push({
@@ -263,9 +269,38 @@ export default function VisualizationArea({
             const color = colors[idx % colors.length];
             const method = methods.find(m => m.instanceId === r.methodId);
             const label = method?.label || r.methodId;
+            const isVisible = method ? method.visible !== false : true;
+
             return (
-              <div className="viz-summary-card card" key={r.methodId}>
+              <div
+                className={`viz-summary-card card ${!isVisible ? 'is-hidden' : ''}`}
+                key={r.methodId}
+                style={{
+                  opacity: isVisible ? 1 : 0.5,
+                  transition: 'opacity 0.2s ease',
+                }}
+              >
                 <div className="viz-summary-left">
+                  <button
+                    className="viz-summary-visibility-btn"
+                    onClick={() => onUpdateMethod && onUpdateMethod(r.methodId, { visible: !isVisible })}
+                    aria-label={isVisible ? "非表示にする" : "表示する"}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: isVisible ? 'var(--on-surface-variant)' : 'var(--outline)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      borderRadius: 'var(--rounded)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginRight: '4px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+                      {isVisible ? 'visibility' : 'visibility_off'}
+                    </span>
+                  </button>
                   <div className="color-dot-sm" style={{ backgroundColor: color }} />
                   <span className="viz-summary-name">{label}</span>
                 </div>

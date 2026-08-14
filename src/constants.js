@@ -120,6 +120,7 @@ export function createMethodInstance(methodType) {
     label: `${methodType}-${String(methodCounter).padStart(2, '0')}`,
     paramDefs: methodDef.params,
     params: paramValues,
+    visible: true,
     // Results (filled after simulation)
     rmseTimeSeries: null,
     spreadTimeSeries: null,
