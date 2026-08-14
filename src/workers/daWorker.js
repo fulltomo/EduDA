@@ -224,18 +224,12 @@ function runSimulation(payload) {
       let dk3 = new Float64Array(n);
       let dk4 = new Float64Array(n);
       let v_temp = new Float64Array(n);
+      let e_j = new Float64Array(n);
 
       for (let j = 0; j < n; j++) {
-        for (let i = 0; i < n; i++) {
-          let im2 = (i - 2 + n) % n;
-          let im1 = (i - 1 + n) % n;
-          let ip1 = (i + 1) % n;
-          if (j === im2) dk1[i] = -x[im1];
-          else if (j === im1) dk1[i] = x[ip1] - x[im2];
-          else if (j === i) dk1[i] = -1.0;
-          else if (j === ip1) dk1[i] = x[im1];
-          else dk1[i] = 0.0;
-        }
+        e_j.fill(0.0);
+        e_j[j] = 1.0;
+        applyJ(x, e_j, dk1);
 
         for (let i = 0; i < n; i++) v_temp[i] = (i === j ? 1.0 : 0.0) + 0.5 * dt * dk1[i];
         applyJ(x2, v_temp, dk2);
@@ -675,31 +669,39 @@ function runSimulation(payload) {
                   for (let j = 0; j < M; j++) HXb_loc[o][j] = Xb[obIdx][j];
                 }
 
-                // Construct Pa_tilde_inv = (M-1)I + Y^T R^-1 Y
+                // Construct Pa_tilde_inv = (M-1)I + Y^T R^-1 Y (lower triangle + mirror)
                 let Pa_tilde_inv = matScale(identity(M), M - 1);
                 for (let r = 0; r < M; r++) {
-                  for (let c = 0; c < M; c++) {
+                  for (let c = 0; c <= r; c++) {
                     let sum = 0;
                     for (let o = 0; o < l_nobs; o++) {
                       sum += HXb_loc[o][r] * R_loc_inv[o] * HXb_loc[o][c];
                     }
                     Pa_tilde_inv[r][c] += sum;
+                    if (r !== c) {
+                      Pa_tilde_inv[c][r] = Pa_tilde_inv[r][c];
+                    }
                   }
                 }
 
                 // Cholesky decomposition: Pa_tilde_inv = L * L^T
                 let L = Array(M).fill().map(() => new Float64Array(M));
+                let clampEvents = 0;
                 for (let r = 0; r < M; r++) {
                   for (let c = 0; c <= r; c++) {
                     let sum = 0;
                     for (let k = 0; k < c; k++) sum += L[r][k] * L[c][k];
                     if (r === c) {
                       let val = Pa_tilde_inv[r][r] - sum;
+                      if (val <= 0) clampEvents++;
                       L[r][c] = Math.sqrt(Math.max(1e-12, val));
                     } else {
                       L[r][c] = (Pa_tilde_inv[r][c] - sum) / L[c][c];
                     }
                   }
+                }
+                if (clampEvents > 0) {
+                  console.warn(`[LETKF] Cholesky diagonal clamp needed ${clampEvents} times.`);
                 }
 
                 // Compute Y^T R^-1 (y - Hx)
@@ -727,28 +729,42 @@ function runSimulation(payload) {
                   wa_mean[r] = (y_temp[r] - sum) / L[r][r];
                 }
 
-                // Compute L^-T * sqrt(M-1) to get Wa
+                // Compute W_a = sqrt(M-1) * L^-T
+                // Solving L * y_k = e_k gives y_k = k-th column of L^-1.
+                // Then (W_a)_{k, j} = sqrt(M-1) * (L^-1)_{j, k} = sqrt(M-1) * y_k[j].
                 let L_inv_T = Array(M).fill().map(() => new Float64Array(M));
-                for (let col = 0; col < M; col++) {
-                  let e = new Float64Array(M); e[col] = 1.0;
+                for (let k = 0; k < M; k++) {
+                  let e = new Float64Array(M); e[k] = 1.0;
                   let y_sol = new Float64Array(M);
                   for (let r = 0; r < M; r++) {
                     let sum = 0;
                     for (let c = 0; c < r; c++) sum += L[r][c] * y_sol[c];
                     y_sol[r] = (e[r] - sum) / L[r][r];
                   }
-                  for (let r = 0; r < M; r++) {
-                    L_inv_T[r][col] = y_sol[r] * sqrtM1;
+                  for (let j = 0; j < M; j++) {
+                    L_inv_T[k][j] = y_sol[j] * sqrtM1;
                   }
                 }
 
+                // Construct analysis ensemble members
+                let target_mean = x_mean[i];
+                for (let k = 0; k < M; k++) target_mean += Xb[i][k] * wa_mean[k];
+
                 for (let j = 0; j < M; j++) {
-                  let sum = 0;
+                  let pert_sum = 0;
                   for (let k = 0; k < M; k++) {
-                    let w_jk = wa_mean[k] + L_inv_T[k][j];
-                    sum += Xb[i][k] * w_jk;
+                    pert_sum += Xb[i][k] * L_inv_T[k][j];
                   }
-                  ens_new[j][i] = x_mean[i] + sum;
+                  ens_new[j][i] = target_mean + pert_sum;
+                }
+
+                // Recenter perturbations to ensure exact zero-mean
+                let actual_sum = 0;
+                for (let j = 0; j < M; j++) actual_sum += ens_new[j][i];
+                let actual_mean = actual_sum / M;
+                let mean_shift = target_mean - actual_mean;
+                for (let j = 0; j < M; j++) {
+                  ens_new[j][i] += mean_shift;
                 }
               }
               state.ensemble = ens_new;
