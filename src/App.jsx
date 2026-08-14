@@ -10,6 +10,7 @@ import {
   CHART_COLORS,
   DEFAULT_ADVANCED,
   createMethodInstance,
+  createPresetMethodInstance,
 } from './constants';
 
 export default function App() {
@@ -26,28 +27,42 @@ export default function App() {
   const [simulationResults, setSimulationResults] = useState(null);
   const [showRmse, setShowRmse] = useState(true);
   const [showSpread, setShowSpread] = useState(true);
+  const [activePreset, setActivePreset] = useState(null);
 
   const workerRef = useRef(null);
 
+  const handleObsModeChange = useCallback((mode) => {
+    setActivePreset(null);
+    setObsMode(mode);
+  }, []);
+
+  const handleUpdateAdvancedOptions = useCallback((options) => {
+    setActivePreset(null);
+    setAdvancedOptions(options);
+  }, []);
+
   // --- Handlers ---
   const handleUpdateMethod = useCallback((instanceId, updates) => {
+    setActivePreset(null);
     setMethods(prev =>
       prev.map(m => m.instanceId === instanceId ? { ...m, ...updates } : m)
     );
   }, []);
 
   const handleRemoveMethod = useCallback((instanceId) => {
+    setActivePreset(null);
     setMethods(prev => prev.filter(m => m.instanceId !== instanceId));
   }, []);
 
   const handleAddMethod = useCallback((methodType) => {
+    setActivePreset(null);
     const instance = createMethodInstance(methodType);
     setMethods(prev => [...prev, instance]);
     setShowAddMethod(false);
   }, []);
 
-  const handleRun = useCallback(() => {
-    if (methods.length === 0) return;
+  const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced) => {
+    if (targetMethods.length === 0) return;
 
     setIsRunning(true);
     setProgress(0);
@@ -110,16 +125,35 @@ export default function App() {
     worker.postMessage({
       type: 'RUN_SIMULATION',
       payload: {
-        methods: methods.map(m => ({
+        methods: targetMethods.map(m => ({
           id: m.instanceId,
           type: m.type,
           params: m.params || {},
         })),
-        observationMode: obsMode,
-        advancedOptions,
+        observationMode: targetObsMode,
+        advancedOptions: targetAdvanced,
       },
     });
-  }, [methods, obsMode, advancedOptions]);
+  }, []);
+
+  const handleRun = useCallback(() => {
+    runSimulation(methods, obsMode, advancedOptions);
+  }, [runSimulation, methods, obsMode, advancedOptions]);
+
+  const handleSelectPreset = useCallback((preset) => {
+    const instantiatedMethods = preset.methods.map(m =>
+      createPresetMethodInstance(m.type, m.label, m.params)
+    );
+    const targetAdvanced = { ...DEFAULT_ADVANCED, ...preset.advancedOptions };
+
+    setActivePreset(preset);
+    setObsMode(preset.obsMode);
+    setMethods(instantiatedMethods);
+    setAdvancedOptions(targetAdvanced);
+
+    // Run simulation immediately
+    runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced);
+  }, [runSimulation]);
 
   const handleCsvExport = useCallback(() => {
     if (!simulationResults) return;
@@ -173,11 +207,11 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <TopNav onOpenAdvanced={() => setShowAdvanced(true)} />
+      <TopNav onSelectPreset={handleSelectPreset} onOpenAdvanced={() => setShowAdvanced(true)} />
       <ObsTabs
         modes={OBS_MODES}
         activeMode={obsMode}
-        onChangeMode={setObsMode}
+        onChangeMode={handleObsModeChange}
         description={currentObsMode?.desc}
       />
 
@@ -203,6 +237,8 @@ export default function App() {
           showSpread={showSpread}
           onToggleRmse={() => setShowRmse(v => !v)}
           onToggleSpread={() => setShowSpread(v => !v)}
+          activePreset={activePreset}
+          onClearPreset={() => setActivePreset(null)}
         />
       </main>
 
@@ -210,7 +246,7 @@ export default function App() {
         <AdvancedModal
           options={advancedOptions}
           obsMode={obsMode}
-          onUpdate={setAdvancedOptions}
+          onUpdate={handleUpdateAdvancedOptions}
           onClose={() => setShowAdvanced(false)}
         />
       )}

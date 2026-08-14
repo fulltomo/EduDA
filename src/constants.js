@@ -129,7 +129,144 @@ export function createMethodInstance(methodType) {
   };
 }
 
+export function createPresetMethodInstance(methodType, customLabel, customParams) {
+  methodCounter++;
+  const methodDef = DA_METHODS.find(m => m.id === methodType) || DA_METHODS[1];
+
+  const paramValues = {};
+  methodDef.params.forEach(p => {
+    paramValues[p.key] = customParams[p.key] !== undefined ? customParams[p.key] : p.default;
+  });
+
+  return {
+    instanceId: `${methodType}-${String(methodCounter).padStart(2, '0')}`,
+    type: methodType,
+    label: customLabel || `${methodType}-${String(methodCounter).padStart(2, '0')}`,
+    paramDefs: methodDef.params,
+    params: paramValues,
+    rmseTimeSeries: null,
+    spreadTimeSeries: null,
+    avgRmse: null,
+    avgSpread: null,
+    timeSteps: null,
+  };
+}
+
 /** Reset the counter (for tests) */
 export function resetMethodCounter() {
   methodCounter = 0;
 }
+
+export const PRESETS = [
+  {
+    id: 'preset1',
+    title: '実験1: インフレーションの効果',
+    theme: 'アンサンブル縮小・過信（Filter Divergence）の防止効果を体験。',
+    description: '共分散インフレーション（膨張）がない場合（Inflation 1.00）、アンサンブルメンバーが互いに近づきすぎて実際の状態（真値）から離れ、最終的に同化が機能しなくなる「フィルター発散」が発生します。インフレーションを1.05に設定することで、アンサンブルのばらつき（Spread）が適切に維持され、安定した同化が可能になります。',
+    obsMode: 'full',
+    methods: [
+      {
+        type: 'EnKF',
+        label: 'EnKF (Inflation 1.00)',
+        params: { ensembleSize: 30, inflation: 1.00, localization: 5 }
+      },
+      {
+        type: 'EnKF',
+        label: 'EnKF (Inflation 1.05)',
+        params: { ensembleSize: 30, inflation: 1.05, localization: 5 }
+      }
+    ],
+    advancedOptions: {
+      N: 40,
+      F: 8.0,
+      obsErrorVar: 1.0,
+      obsInterval: 1,
+      numSteps: 500,
+      dt: 0.05,
+    }
+  },
+  {
+    id: 'preset2',
+    title: '実験2: 局所化 (Localization) の効果',
+    theme: '少アンサンブルサイズにおける疑似相関（Spurious Correlation）の影響を比較。',
+    description: 'アンサンブル数が少ないとき、物理的に無関係な遠く離れた地点間で偶然に相関が生じる「疑似相関」が発生します。局所化半径を小さく設定する（Localization 5）ことで、不要な遠隔相関をカットし同化精度が向上します。局所化半径が大きすぎる場合（Localization 20）、疑似相関のノイズを拾ってしまい精度が悪化します。',
+    obsMode: 'full',
+    methods: [
+      {
+        type: 'EnKF',
+        label: 'EnKF (Localization 5)',
+        params: { ensembleSize: 15, inflation: 1.05, localization: 5 }
+      },
+      {
+        type: 'EnKF',
+        label: 'EnKF (Localization 20)',
+        params: { ensembleSize: 15, inflation: 1.05, localization: 20 }
+      }
+    ],
+    advancedOptions: {
+      N: 40,
+      F: 8.0,
+      obsErrorVar: 1.0,
+      obsInterval: 1,
+      numSteps: 500,
+      dt: 0.05,
+    }
+  },
+  {
+    id: 'preset3',
+    title: '実験3: 疎密観測における変分法 vs アンサンブル手法',
+    theme: '固定共分散（3DVar）と流れに依存する共分散（LETKF）の未観測領域における補正能力差を比較。',
+    description: '観測データが存在しない領域（疎密観測）において、静的で一様な背景誤差共分散を用いる3DVarと、時々刻々のダイナミクスから「流れに依存する共分散（flow-dependent covariance）」を算出するLETKFの性能を比較します。LETKFは未観測領域でも物理構造に応じた高度な修正が可能です。',
+    obsMode: 'sparse',
+    methods: [
+      {
+        type: '3DVar',
+        label: '3DVar',
+        params: { bgErrorVar: 1.0, corrLength: 5 }
+      },
+      {
+        type: 'LETKF',
+        label: 'LETKF',
+        params: { ensembleSize: 30, inflation: 1.05, localization: 5 }
+      }
+    ],
+    advancedOptions: {
+      N: 40,
+      F: 8.0,
+      obsErrorVar: 1.0,
+      obsInterval: 1,
+      numSteps: 500,
+      dt: 0.05,
+      sparseInterval: 4,
+      sparseRegionStart: 0,
+      sparseRegionEnd: 39,
+    }
+  },
+  {
+    id: 'preset4',
+    title: '実験4: 高次元空間での粒子フィルタ (PF) の限界',
+    theme: '次元の呪い（Weight Collapse）と粒子数の関係を体験。',
+    description: '粒子フィルタ（PF）は非線形・非ガウス分布を表現できますが、システム次元（状態空間の大きさ N=40）が大きくなると、特定の1つの粒子に極端に重みが集中する「重みの崩壊（Weight Collapse）」が発生します。粒子数が少ない場合（PF 50）はすぐに発散し、粒子数を増やしても（PF 500）高次元の呪いにより精度維持には膨大な数の粒子が必要となる限界を体感します。',
+    obsMode: 'full',
+    methods: [
+      {
+        type: 'PF',
+        label: 'PF (Particle Size 50)',
+        params: { ensembleSize: 50, resampleThreshold: 0.5 }
+      },
+      {
+        type: 'PF',
+        label: 'PF (Particle Size 500)',
+        params: { ensembleSize: 500, resampleThreshold: 0.5 }
+      }
+    ],
+    advancedOptions: {
+      N: 40,
+      F: 8.0,
+      obsErrorVar: 1.0,
+      obsInterval: 1,
+      numSteps: 500,
+      dt: 0.05,
+    }
+  }
+];
