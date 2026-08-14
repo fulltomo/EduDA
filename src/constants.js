@@ -8,6 +8,8 @@ export const DA_METHODS = [
     id: 'EKF',
     label: 'EKF',
     fullName: '拡張カルマンフィルタ',
+    category: 'kalman',
+    summary: '線形近似により共分散を陽に更新する基本手法。高次元では計算コストが急増する。',
     params: [
       { key: 'processNoise', label: 'Process Noise (Q)', min: 0.001, max: 0.20, step: 0.005, default: 0.01 },
     ]
@@ -16,6 +18,8 @@ export const DA_METHODS = [
     id: 'EnKF',
     label: 'EnKF',
     fullName: '確率的アンサンブルカルマンフィルタ',
+    category: 'ensemble',
+    summary: '観測値にランダムな摂動を加える確率的手法。流れ依存の背景誤差共分散を効率的に表現。',
     params: [
       { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
       { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
@@ -26,6 +30,8 @@ export const DA_METHODS = [
     id: 'EnSRF',
     label: 'EnSRF',
     fullName: 'アンサンブル平方根フィルタ',
+    category: 'ensemble',
+    summary: '観測摂動を伴わない決定論的手法。摂動によるサンプリング誤差を回避。',
     params: [
       { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
       { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
@@ -36,6 +42,8 @@ export const DA_METHODS = [
     id: 'LETKF',
     label: 'LETKF',
     fullName: '局所アンサンブル変換カルマンフィルタ',
+    category: 'ensemble',
+    summary: '局所化と流れ依存共分散を両立した現業気象予報の標準手法。',
     params: [
       { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
       { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
@@ -46,6 +54,8 @@ export const DA_METHODS = [
     id: '3DVar',
     label: '3DVar',
     fullName: '3次元変分法',
+    category: 'variational',
+    summary: '時間変化しない固定共分散行列を用いる。計算が軽いが流れ依存性は表現できない。',
     params: [
       { key: 'bgErrorVar', label: 'Background Error Var (σb²)', min: 0.1, max: 5.0, step: 0.1, default: 1.0 },
       { key: 'corrLength', label: 'Correlation Length (L)', min: 1, max: 20, step: 1, default: 5 }
@@ -55,6 +65,8 @@ export const DA_METHODS = [
     id: '4DVar',
     label: '4DVar',
     fullName: '4次元変分法',
+    category: 'variational',
+    summary: '同化ウィンドウ内の時系列観測を時間一貫性を保ち最適化。随伴（アジョイント）モデルが必要。',
     params: [
       { key: 'bgErrorVar', label: 'Background Error Var (σb²)', min: 0.1, max: 5.0, step: 0.1, default: 1.0 },
       { key: 'windowSize', label: 'Assimilation Window', min: 1, max: 15, step: 1, default: 5 }
@@ -64,6 +76,8 @@ export const DA_METHODS = [
     id: 'PF',
     label: 'PF',
     fullName: '粒子フィルタ',
+    category: 'particle',
+    summary: '非線形・非ガウス分布を表現可能だが、高次元空間では次元の呪いを受ける。',
     params: [
       { key: 'ensembleSize', label: 'Particle Size (M)', min: 10, max: 500, step: 10, default: 50 },
       { key: 'resampleThreshold', label: 'Resample Threshold', min: 0.1, max: 1.0, step: 0.05, default: 0.5 }
