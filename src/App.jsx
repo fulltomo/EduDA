@@ -28,17 +28,20 @@ export default function App() {
   const [showRmse, setShowRmse] = useState(true);
   const [showSpread, setShowSpread] = useState(true);
   const [activePreset, setActivePreset] = useState(null);
+  const [needsRecalc, setNeedsRecalc] = useState(false);
 
   const workerRef = useRef(null);
 
   const handleObsModeChange = useCallback((mode) => {
     setActivePreset(null);
     setObsMode(mode);
+    setNeedsRecalc(true);
   }, []);
 
   const handleUpdateAdvancedOptions = useCallback((options) => {
     setActivePreset(null);
     setAdvancedOptions(options);
+    setNeedsRecalc(true);
   }, []);
 
   // --- Handlers ---
@@ -47,17 +50,20 @@ export default function App() {
     setMethods(prev =>
       prev.map(m => m.instanceId === instanceId ? { ...m, ...updates } : m)
     );
+    setNeedsRecalc(true);
   }, []);
 
   const handleRemoveMethod = useCallback((instanceId) => {
     setActivePreset(null);
     setMethods(prev => prev.filter(m => m.instanceId !== instanceId));
+    setNeedsRecalc(true);
   }, []);
 
   const handleAddMethod = useCallback((methodType) => {
     setActivePreset(null);
     const instance = createMethodInstance(methodType);
     setMethods(prev => [...prev, instance]);
+    setNeedsRecalc(true);
     setShowAddMethod(false);
   }, []);
 
@@ -67,6 +73,7 @@ export default function App() {
     setIsRunning(true);
     setProgress(0);
     setSimulationResults(null);
+    setNeedsRecalc(false);
 
     // Terminate existing worker
     if (workerRef.current) {
@@ -213,6 +220,7 @@ export default function App() {
         activeMode={obsMode}
         onChangeMode={handleObsModeChange}
         description={currentObsMode?.desc}
+        advancedOptions={advancedOptions}
       />
 
       <main className="app-main" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -227,6 +235,7 @@ export default function App() {
           isRunning={isRunning}
           progress={progress}
           hasResults={!!simulationResults}
+          needsRecalc={needsRecalc}
         />
 
         <VisualizationArea

@@ -74,8 +74,8 @@ export const DA_METHODS = [
 /** Observation mode tabs */
 export const OBS_MODES = [
   { id: 'full',    label: '全観測',     desc: '全40格子点を毎ステップ観測' },
-  { id: 'sparse',  label: '疎密観測',   desc: '特定の間隔・一部の領域のみを観測' },
-  { id: 'thinned', label: '間引き観測', desc: '観測頻度を間引いて同化' },
+  { id: 'sparse',  label: '疎密観測',   desc: '前半領域（例: 格子点0〜19）のみを集中観測' },
+  { id: 'thinned', label: '間引き観測', desc: '全格子点を空間的に等間隔でサンプリング観測' },
 ];
 
 /** Chart color palette for up to 7 methods */
@@ -99,8 +99,8 @@ export const DEFAULT_ADVANCED = {
   dt: 0.05,
   sparseInterval: 4,
   sparseRegionStart: 0,
-  sparseRegionEnd: 39,
-  thinInterval: 2,
+  sparseRegionEnd: 19,
+  thinNumObs: 20,
 };
 
 /** Create a new method instance with method-specific defaults */
