@@ -1,14 +1,28 @@
 .obs-tabs-container {
   background: var(--surface-container-low);
   border-bottom: 1px solid var(--outline-variant);
-  padding: var(--stack-sm) var(--container-padding) 0;
+  padding: 8px var(--container-padding) 6px;
   flex-shrink: 0;
+}
+
+.obs-tabs-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.obs-tabs-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .obs-tabs-row {
   display: flex;
-  gap: 24px;
-  margin-bottom: 0;
+  gap: 16px;
 }
 
 .obs-tab {
@@ -21,7 +35,7 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--on-surface-variant);
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color 0.2s ease, border-color 0.2s ease;
@@ -37,71 +51,66 @@
 }
 
 .obs-tabs-desc {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--outline);
-  padding-bottom: 8px;
+  padding-bottom: 0;
 }
 
-/* 1D Observation Grid Map Styles */
-.obs-grid-map {
-  background: var(--surface-container-lowest);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--rounded-lg);
-  padding: 12px 16px;
-  margin-bottom: 12px;
+.obs-tabs-right {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.obs-grid-map-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
-.obs-grid-map-title {
-  color: var(--on-surface-variant);
-  font-size: 11px;
-}
-
-.obs-grid-map-legend {
-  display: flex;
-  gap: 16px;
+.obs-count-badge {
   font-size: 12px;
   color: var(--on-surface-variant);
+  background: var(--surface-container-lowest);
+  padding: 3px 10px;
+  border-radius: var(--rounded-md);
+  border: 1px solid var(--outline-variant);
 }
 
-.legend-item {
-  display: flex;
+.obs-count-badge strong {
+  color: var(--primary);
+}
+
+.obs-grid-toggle-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--rounded-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
+.obs-grid-toggle-btn:hover {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  border-color: var(--outline);
 }
 
-.legend-dot--observed {
-  background-color: var(--primary);
-  box-shadow: 0 0 6px rgba(142, 213, 255, 0.6);
-}
-
-.legend-dot--unobserved {
-  background-color: var(--outline-variant);
-  border: 1px solid var(--outline);
+/* 1D Observation Grid Map Strip (Ultra-Compact) */
+.obs-grid-strip {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--rounded-md);
+  padding: 6px 10px 4px;
+  margin-top: 6px;
+  margin-bottom: 2px;
 }
 
 .obs-grid-points {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
   scrollbar-width: thin;
 }
 
@@ -109,21 +118,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
-  min-width: 24px;
+  min-width: 18px;
 }
 
 .obs-grid-point-dot {
-  width: 12px;
-  height: 12px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .obs-grid-point-dot--observed {
   background-color: var(--primary);
-  box-shadow: 0 0 8px rgba(142, 213, 255, 0.8);
+  box-shadow: 0 0 6px rgba(142, 213, 255, 0.8);
 }
 
 .obs-grid-point-dot--unobserved {
@@ -132,6 +141,7 @@
 }
 
 .obs-grid-point-label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--outline);
+  line-height: 1;
 }

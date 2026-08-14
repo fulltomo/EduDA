@@ -28,7 +28,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   ];
 
   const thinnedFields = [
-    { key: 'thinInterval', label: '間引き間隔', type: 'number', min: 2, max: 10, step: 1 },
+    { key: 'thinNumObs', label: '観測数', type: 'number', min: 1, max: options.N, step: 1 },
   ];
 
   return (
