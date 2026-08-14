@@ -10,6 +10,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
+import EduTooltip from './EduTooltip';
 import './VisualizationArea.css';
 
 Chart.register(
@@ -248,15 +249,18 @@ export default function VisualizationArea({
           <div className="viz-legend-line viz-legend-solid" />
           <span>RMSE (Solid)</span>
         </label>
-        <label className="viz-legend-item">
-          <input
-            type="checkbox"
-            checked={showSpread}
-            onChange={onToggleSpread}
-          />
-          <div className="viz-legend-line viz-legend-dashed" />
-          <span>Spread (Dashed)</span>
-        </label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <label className="viz-legend-item" style={{ marginRight: 0 }}>
+            <input
+              type="checkbox"
+              checked={showSpread}
+              onChange={onToggleSpread}
+            />
+            <div className="viz-legend-line viz-legend-dashed" />
+            <span>Spread (Dashed)</span>
+          </label>
+          <EduTooltip paramId="spread" align="right" position="top" />
+        </div>
       </div>
     </section>
   );

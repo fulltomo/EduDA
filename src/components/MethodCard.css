@@ -93,6 +93,11 @@
   align-items: center;
 }
 
+.slider-label-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
 .slider-label {
   font-size: 14px;
   color: var(--on-surface-variant);
@@ -102,17 +107,30 @@
   font-weight: 500;
 }
 
+.method-card-stats-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
 .method-card-stats {
   display: flex;
   justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid rgba(62, 72, 79, 0.5);
+  align-items: center;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.stat-label-wrapper {
+  display: inline-flex;
+  align-items: center;
 }
 
 .stat-label {

@@ -1,14 +1,32 @@
 import { useState } from 'react';
+import { EduTooltipDrawer } from './EduTooltip';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [openDrawers, setOpenDrawers] = useState({});
 
   const glowColor = color + '99'; // ~60% opacity
 
   const handleParamChange = (key, val) => {
     const newParams = { ...method.params, [key]: val };
     onUpdate({ params: newParams });
+  };
+
+  const toggleDrawer = (key, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpenDrawers((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const closeDrawer = (key) => {
+    setOpenDrawers((prev) => ({
+      ...prev,
+      [key]: false,
+    }));
   };
 
   const ensembleSize = method.params?.ensembleSize;
@@ -49,14 +67,27 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
       <div className="card-body method-card-body">
         {method.paramDefs && method.paramDefs.map((p) => {
           const val = method.params?.[p.key] ?? p.default;
+          const isDrawerOpen = !!openDrawers[p.key];
           return (
             <div className="slider-group" key={p.key}>
               <div className="slider-header">
-                <label className="slider-label">{p.label}</label>
+                <div className="slider-label-wrapper">
+                  <span className="slider-label">{p.label}</span>
+                  <button
+                    type="button"
+                    className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
+                    onClick={(e) => toggleDrawer(p.key, e)}
+                    aria-label={`${p.label} の説明を表示`}
+                    title="解説を表示"
+                  >
+                    <span className="material-symbols-outlined">info</span>
+                  </button>
+                </div>
                 <span className="slider-value typo-data" style={{ color }}>
                   {typeof val === 'number' && !Number.isInteger(val) ? val.toFixed(2) : val}
                 </span>
               </div>
+
               <input
                 type="range"
                 min={p.min}
@@ -66,21 +97,51 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 onChange={(e) => handleParamChange(p.key, Number(e.target.value))}
                 style={{ accentColor: color }}
               />
+
+              {isDrawerOpen && (
+                <EduTooltipDrawer
+                  paramId={p.key}
+                  onClose={() => closeDrawer(p.key)}
+                />
+              )}
             </div>
           );
         })}
 
         {/* Inline Stats */}
         {method.avgRmse != null && (
-          <div className="method-card-stats">
-            <div className="stat-item">
-              <span className="stat-label typo-label-caps">RMSE:</span>
-              <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
+          <div className="method-card-stats-wrapper">
+            <div className="method-card-stats">
+              <div className="stat-item">
+                <span className="stat-label typo-label-caps">RMSE:</span>
+                <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
+              </div>
+              <div className="stat-item">
+                <div className="stat-label-wrapper">
+                  <span className="stat-label typo-label-caps">Spread</span>
+                  <button
+                    type="button"
+                    className={`edu-tooltip-trigger ${openDrawers['spread'] ? 'active' : ''}`}
+                    onClick={(e) => toggleDrawer('spread', e)}
+                    aria-label="Spread の説明を表示"
+                    title="解説を表示"
+                  >
+                    <span className="material-symbols-outlined">info</span>
+                  </button>
+                  <span className="stat-label typo-label-caps">:</span>
+                </div>
+                <span className="stat-value typo-data">
+                  {method.avgSpread != null ? method.avgSpread.toFixed(3) : '—'}
+                </span>
+              </div>
             </div>
-            <div className="stat-item">
-              <span className="stat-label typo-label-caps">Spread:</span>
-              <span className="stat-value typo-data">{method.avgSpread != null ? method.avgSpread.toFixed(3) : '—'}</span>
-            </div>
+
+            {openDrawers['spread'] && (
+              <EduTooltipDrawer
+                paramId="spread"
+                onClose={() => closeDrawer('spread')}
+              />
+            )}
           </div>
         )}
       </div>
