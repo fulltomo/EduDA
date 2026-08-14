@@ -20,6 +20,9 @@ export default function App() {
     createMethodInstance('EnKF'),
   ]);
   const [advancedOptions, setAdvancedOptions] = useState({ ...DEFAULT_ADVANCED });
+  const [customObsIndices, setCustomObsIndices] = useState(() =>
+    Array.from({ length: DEFAULT_ADVANCED.N }, (_, i) => i)
+  );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showAddMethod, setShowAddMethod] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -42,7 +45,46 @@ export default function App() {
     setActivePreset(null);
     setAdvancedOptions(options);
     setNeedsRecalc(true);
+    setCustomObsIndices(prev => prev.filter(idx => idx < options.N));
   }, []);
+
+  const handleToggleCustomObsIndex = useCallback((index) => {
+    setActivePreset(null);
+    setCustomObsIndices(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(i => i !== index);
+      } else {
+        return [...prev, index].sort((a, b) => a - b);
+      }
+    });
+    setNeedsRecalc(true);
+  }, []);
+
+  const handleSelectAllCustomObs = useCallback(() => {
+    setActivePreset(null);
+    setCustomObsIndices(Array.from({ length: advancedOptions.N }, (_, i) => i));
+    setNeedsRecalc(true);
+  }, [advancedOptions.N]);
+
+  const handleClearAllCustomObs = useCallback(() => {
+    setActivePreset(null);
+    setCustomObsIndices([]);
+    setNeedsRecalc(true);
+  }, []);
+
+  const handleRandomCustomObs = useCallback((count = 10) => {
+    setActivePreset(null);
+    const N = advancedOptions.N;
+    const actualCount = Math.min(count, N);
+    const indices = Array.from({ length: N }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const selected = indices.slice(0, actualCount).sort((a, b) => a - b);
+    setCustomObsIndices(selected);
+    setNeedsRecalc(true);
+  }, [advancedOptions.N]);
 
   // --- Handlers ---
   const handleUpdateMethod = useCallback((instanceId, updates) => {
@@ -67,7 +109,7 @@ export default function App() {
     setShowAddMethod(false);
   }, []);
 
-  const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced) => {
+  const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced, targetCustomObsIndices) => {
     if (targetMethods.length === 0) return;
 
     setIsRunning(true);
@@ -139,13 +181,14 @@ export default function App() {
         })),
         observationMode: targetObsMode,
         advancedOptions: targetAdvanced,
+        customObsIndices: targetCustomObsIndices,
       },
     });
   }, []);
 
   const handleRun = useCallback(() => {
-    runSimulation(methods, obsMode, advancedOptions);
-  }, [runSimulation, methods, obsMode, advancedOptions]);
+    runSimulation(methods, obsMode, advancedOptions, customObsIndices);
+  }, [runSimulation, methods, obsMode, advancedOptions, customObsIndices]);
 
   const handleSelectPreset = useCallback((preset) => {
     const instantiatedMethods = preset.methods.map(m =>
@@ -159,8 +202,8 @@ export default function App() {
     setAdvancedOptions(targetAdvanced);
 
     // Run simulation immediately
-    runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced);
-  }, [runSimulation]);
+    runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, customObsIndices);
+  }, [runSimulation, customObsIndices]);
 
   const handleCsvExport = useCallback(() => {
     if (!simulationResults) return;
@@ -221,6 +264,11 @@ export default function App() {
         onChangeMode={handleObsModeChange}
         description={currentObsMode?.desc}
         advancedOptions={advancedOptions}
+        customObsIndices={customObsIndices}
+        onToggleCustomObsIndex={handleToggleCustomObsIndex}
+        onSelectAllCustomObs={handleSelectAllCustomObs}
+        onClearAllCustomObs={handleClearAllCustomObs}
+        onRandomCustomObs={handleRandomCustomObs}
       />
 
       <main className="app-main" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
