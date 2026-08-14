@@ -1,7 +1,9 @@
 import { DivergenceBadge } from '../EduTooltip';
 import { DIVERGENCE_THRESHOLD } from '../../constants';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function SummaryBar({ results, methods, colors, onUpdateMethod }) {
+  const { t } = useLanguage();
   if (!results || results.length === 0) return null;
 
   return (
@@ -25,7 +27,7 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
               <button
                 className="viz-summary-visibility-btn"
                 onClick={() => onUpdateMethod && onUpdateMethod(r.methodId, { visible: !isVisible })}
-                aria-label={isVisible ? "非表示にする" : "表示する"}
+                aria-label={isVisible ? t('methodCard.visibilityHide') : t('methodCard.visibilityShow')}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -47,7 +49,9 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
             </div>
             <div className="viz-summary-metrics">
               <div className="viz-summary-metric">
-                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>Avg RMSE</span>
+                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>
+                  {t('visualization.summary.avgRmse')}
+                </span>
                 {!Number.isFinite(r.avgRmse) || r.avgRmse > DIVERGENCE_THRESHOLD ? (
                   <DivergenceBadge align="center" position="bottom" />
                 ) : (
@@ -55,7 +59,9 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
                 )}
               </div>
               <div className="viz-summary-metric">
-                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>Avg Spread</span>
+                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>
+                  {t('visualization.summary.avgSpread')}
+                </span>
                 <span className="typo-data" style={{ fontSize: '13px' }}>{Number.isFinite(r.avgSpread) ? r.avgSpread.toFixed(3) : '—'}</span>
               </div>
             </div>

@@ -4,6 +4,7 @@ import PresetBanner from './visualization/PresetBanner';
 import SummaryBar from './visualization/SummaryBar';
 import VisualizationChart from './visualization/VisualizationChart';
 import HovmollerDiagram from './visualization/HovmollerDiagram';
+import { useLanguage } from '../context/LanguageContext';
 import './VisualizationArea.css';
 
 export default function VisualizationArea({
@@ -17,6 +18,7 @@ export default function VisualizationArea({
   onUpdateMethod,
   activePreset,
 }) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState('timeseries');
   const [selectedStepIdx, setSelectedStepIdx] = useState(0);
   const [selectedMethodId, setSelectedMethodId] = useState('');
@@ -59,31 +61,33 @@ export default function VisualizationArea({
               className={`viz-tab-btn ${viewMode === 'timeseries' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('timeseries')}
             >
-              時系列 (RMSE/Spread)
+              {t('visualization.tabTimeseries')}
             </button>
             <button
               className={`viz-tab-btn ${viewMode === 'state1d' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('state1d')}
             >
-              1D 状態プロット
+              {t('visualization.tabState1d')}
             </button>
             <button
               className={`viz-tab-btn ${viewMode === 'hovmoller' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('hovmoller')}
             >
-              Hovmöller ダイヤグラム
+              {t('visualization.tabHovmoller')}
             </button>
           </div>
 
           {/* Hovmöller Method Selector */}
           {viewMode === 'hovmoller' && results && results.length > 0 && (
             <div className="hov-method-selector-container">
-              <span className="typo-body-sm" style={{ color: 'var(--on-surface-variant)' }}>手法:</span>
+              <span className="typo-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
+                {t('visualization.methodLabel')}
+              </span>
               <select
                 className="hov-method-select"
                 value={selectedMethodId}
                 onChange={(e) => setSelectedMethodId(e.target.value)}
-                aria-label="表示手法選択"
+                aria-label={t('visualization.methodLabel')}
               >
                 {results.map(r => {
                   const method = methods.find(m => m.instanceId === r.methodId);
@@ -106,7 +110,7 @@ export default function VisualizationArea({
                 show_chart
               </span>
               <p style={{ color: 'var(--outline)', marginTop: 12 }}>
-                手法を追加して「同化を実行」を押してください
+                {t('visualization.placeholder')}
               </p>
             </div>
           )}
@@ -135,8 +139,10 @@ export default function VisualizationArea({
         {viewMode === 'state1d' && results && results.length > 0 && results[0].timeSteps && results[0].timeSteps.length > 0 && (
           <div className="viz-slider-container">
             <div className="viz-slider-header">
-              <span className="viz-slider-title">タイムステップ選択:</span>
-              <span className="viz-slider-value">Step {results[0].timeSteps[selectedStepIdx]}</span>
+              <span className="viz-slider-title">{t('visualization.stepSelect')}</span>
+              <span className="viz-slider-value">
+                {t('visualization.step')} {results[0].timeSteps[selectedStepIdx]}
+              </span>
             </div>
             <input
               type="range"
@@ -145,7 +151,7 @@ export default function VisualizationArea({
               value={selectedStepIdx}
               onChange={(e) => setSelectedStepIdx(parseInt(e.target.value, 10))}
               className="viz-slider"
-              aria-label="タイムステップ選択"
+              aria-label={t('visualization.stepSelect')}
             />
           </div>
         )}
@@ -161,7 +167,7 @@ export default function VisualizationArea({
               onChange={onToggleRmse}
             />
             <div className="viz-legend-line viz-legend-solid" />
-            <span>RMSE (Solid)</span>
+            <span>{t('visualization.rmseSolid')}</span>
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <label className="viz-legend-item" style={{ marginRight: 0 }}>
@@ -171,7 +177,7 @@ export default function VisualizationArea({
                 onChange={onToggleSpread}
               />
               <div className="viz-legend-line viz-legend-dashed" />
-              <span>Spread (Dashed)</span>
+              <span>{t('visualization.spreadDashed')}</span>
             </label>
             <EduTooltip paramId="spread" align="right" position="top" />
           </div>

@@ -10,11 +10,13 @@ import {
   CHART_COLORS,
   DEFAULT_ADVANCED,
   PRESETS,
+  getLocalizedPreset,
   createMethodInstance,
   createPresetMethodInstance,
 } from './constants';
 import { exportSimulationCsv } from './utils/csvExport';
 import { useSimulationWorker } from './hooks/useSimulationWorker';
+import { useLanguage } from './context/LanguageContext';
 
 export default function App() {
   // --- State ---
@@ -131,8 +133,11 @@ export default function App() {
     runSimulation(methods, obsMode, advancedOptions, customObsIndices);
   }, [runSimulation, methods, obsMode, advancedOptions, customObsIndices]);
 
+  const { lang, t } = useLanguage();
+
   const handleSelectPreset = useCallback((preset) => {
-    const instantiatedMethods = preset.methods.map(m =>
+    const locPreset = getLocalizedPreset(preset, lang);
+    const instantiatedMethods = locPreset.methods.map(m =>
       createPresetMethodInstance(m.type, m.label, m.params)
     );
     const targetAdvanced = { ...DEFAULT_ADVANCED, ...preset.advancedOptions };
@@ -144,7 +149,7 @@ export default function App() {
     setNeedsRecalc(false);
 
     runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, customObsIndices);
-  }, [runSimulation, customObsIndices]);
+  }, [lang, runSimulation, customObsIndices]);
 
   // --- URL Search Params Deep-Linking Sync ---
   useEffect(() => {
@@ -187,6 +192,7 @@ export default function App() {
   }, [simulationResults, advancedOptions.N]);
 
   const currentObsMode = OBS_MODES.find(m => m.id === obsMode);
+  const currentObsModeDesc = t(`obsModes.${obsMode}.desc`, currentObsMode?.desc);
 
   return (
     <div className="app-layout">
@@ -201,7 +207,7 @@ export default function App() {
         modes={OBS_MODES}
         activeMode={obsMode}
         onChangeMode={handleObsModeChange}
-        description={currentObsMode?.desc}
+        description={currentObsModeDesc}
         advancedOptions={advancedOptions}
         customObsIndices={customObsIndices}
         onToggleCustomObsIndex={handleToggleCustomObsIndex}

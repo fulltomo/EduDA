@@ -10,6 +10,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
+import { useLanguage } from '../../context/LanguageContext';
 
 Chart.register(
   LineController,
@@ -39,6 +40,7 @@ export default function VisualizationChart({
   showSpread,
   selectedStepIdx,
 }) {
+  const { t, lang } = useLanguage();
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
@@ -65,8 +67,8 @@ export default function VisualizationChart({
     const datasets = [];
     let labels = [];
     let xType = 'linear';
-    let xTitle = 'Time Step';
-    let yTitle = 'RMSE / Spread';
+    let xTitle = t('visualization.chart.timeStepAxis');
+    let yTitle = t('visualization.chart.rmseAxis');
     let showLegend = false;
     let animDuration = 600;
 
@@ -76,8 +78,8 @@ export default function VisualizationChart({
     if (viewMode === 'timeseries') {
       labels = timeSteps;
       xType = 'linear';
-      xTitle = 'Time Step';
-      yTitle = 'RMSE / Spread';
+      xTitle = t('visualization.chart.timeStepAxis');
+      yTitle = t('visualization.chart.rmseAxis');
       showLegend = false;
       animDuration = 600;
 
@@ -129,15 +131,15 @@ export default function VisualizationChart({
       const N = results[0].truthHistory[step].length;
       labels = Array.from({ length: N }, (_, i) => String(i + 1));
       xType = 'category';
-      xTitle = 'Grid Point (格子点)';
-      yTitle = 'State Value (状態値)';
+      xTitle = t('visualization.chart.gridPointAxis');
+      yTitle = t('visualization.chart.stateAxis');
       showLegend = true;
       animDuration = 0;
 
       // 1. True state
       const truthData = results[0].truthHistory[step];
       datasets.push({
-        label: '真値 (True)',
+        label: t('visualization.chart.truth'),
         data: truthData,
         borderColor: 'rgba(255, 255, 255, 0.85)',
         backgroundColor: 'transparent',
@@ -158,7 +160,7 @@ export default function VisualizationChart({
         });
 
         datasets.push({
-          label: '観測値 (Obs)',
+          label: t('visualization.chart.obs'),
           data: obsData,
           borderColor: 'transparent',
           backgroundColor: errorColor,
@@ -183,7 +185,7 @@ export default function VisualizationChart({
         const analysisData = r.analysisHistory[selectedStepIdx];
         if (analysisData) {
           datasets.push({
-            label: `${label} 解析値`,
+            label: `${label} (${t('visualization.chart.analysisSuffix')})`,
             data: analysisData,
             borderColor: color,
             backgroundColor: 'transparent',
@@ -237,7 +239,9 @@ export default function VisualizationChart({
             displayColors: true,
             boxPadding: 4,
             callbacks: {
-              title: (items) => viewMode === 'timeseries' ? `Step: ${items[0].label}` : `Grid Point: ${items[0].label}`,
+              title: (items) => viewMode === 'timeseries'
+                ? `${t('visualization.step')}: ${items[0].label}`
+                : `${t('obsActions.gridPoint')}: ${items[0].label}`,
             },
           },
         },
@@ -248,19 +252,16 @@ export default function VisualizationChart({
               display: true,
               text: xTitle,
               color: '#87929a',
-              font: { family: 'Inter', size: 12, weight: 700 },
+              font: { family: 'Inter', size: 12, weight: 600 },
+              padding: { top: 8 },
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)',
             },
             ticks: {
               color: '#87929a',
-              font: { family: 'Inter', size: 12 },
-              maxTicksLimit: viewMode === 'timeseries' ? 8 : undefined,
-            },
-            grid: {
-              color: 'rgba(62, 72, 79, 0.3)',
-              drawTicks: false,
-            },
-            border: {
-              color: 'rgba(62, 72, 79, 0.3)',
+              font: { family: 'JetBrains Mono', size: 11 },
+              maxRotation: 0,
             },
           },
           y: {
@@ -268,21 +269,16 @@ export default function VisualizationChart({
               display: true,
               text: yTitle,
               color: '#87929a',
-              font: { family: 'Inter', size: 12, weight: 700 },
+              font: { family: 'Inter', size: 12, weight: 600 },
+              padding: { bottom: 8 },
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.05)',
             },
             ticks: {
               color: '#87929a',
-              font: { family: 'JetBrains Mono', size: 12 },
-              maxTicksLimit: 6,
+              font: { family: 'JetBrains Mono', size: 11 },
             },
-            grid: {
-              color: 'rgba(62, 72, 79, 0.3)',
-              drawTicks: false,
-            },
-            border: {
-              color: 'rgba(62, 72, 79, 0.3)',
-            },
-            beginAtZero: true,
           },
         },
       },
@@ -294,13 +290,21 @@ export default function VisualizationChart({
         chartInstance.current = null;
       }
     };
-  }, [simulationResults, showRmse, showSpread, methods, colors, viewMode, selectedStepIdx]);
+  }, [
+    viewMode,
+    simulationResults,
+    methods,
+    colors,
+    showRmse,
+    showSpread,
+    selectedStepIdx,
+    lang,
+    t,
+  ]);
 
   return (
-    <canvas
-      ref={chartRef}
-      id="rmse-chart"
-      style={{ display: (simulationResults?.results?.length > 0 && viewMode !== 'hovmoller') ? 'block' : 'none' }}
-    />
+    <div className="viz-chart-canvas-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <canvas ref={chartRef} id="viz-chart" />
+    </div>
   );
 }

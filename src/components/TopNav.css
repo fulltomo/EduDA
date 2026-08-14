@@ -48,6 +48,27 @@
   font-size: 14px;
 }
 
+.topnav-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--rounded-lg);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  transition: all 0.2s ease;
+}
+
+.topnav-lang-btn:hover {
+  color: var(--primary);
+  background: var(--surface-container);
+}
+
+.topnav-lang-label {
+  font-size: 14px;
+}
+
 .topnav-share-btn {
   display: flex;
   align-items: center;
@@ -151,6 +172,10 @@
   }
 
   .topnav-preset-label {
+    display: none;
+  }
+
+  .topnav-lang-label {
     display: none;
   }
 
