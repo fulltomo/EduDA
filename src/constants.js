@@ -162,25 +162,25 @@ export const PRESETS = [
     id: 'preset1',
     title: '実験1: インフレーションの効果',
     theme: 'アンサンブル縮小・過信（Filter Divergence）の防止効果を体験。',
-    description: '共分散インフレーション（膨張）がない場合（Inflation 1.00）、アンサンブルメンバーが互いに近づきすぎて実際の状態（真値）から離れ、最終的に同化が機能しなくなる「フィルター発散」が発生します。インフレーションを1.05に設定することで、アンサンブルのばらつき（Spread）が適切に維持され、安定した同化が可能になります。',
+    description: 'アンサンブル数が少ない場合（M=20）、サンプリング誤差によりアンサンブルのばらつき（Spread）が実際のエラーより小さく見積もられ、同化が機能しなくなる「フィルター発散」が発生します。インフレーションなし（Inflation 1.00）ではRMSEが著しく悪化しますが、適正インフレーション（Inflation 1.10）を設定することでSpreadが適切に拡張され、低いRMSEを維持できます。',
     obsMode: 'full',
     methods: [
       {
         type: 'EnKF',
-        label: 'EnKF (Inflation 1.00)',
-        params: { ensembleSize: 30, inflation: 1.00, localization: 5 }
+        label: 'EnKF (Inflation 1.00: 膨張なし)',
+        params: { ensembleSize: 20, inflation: 1.00, localization: 5 }
       },
       {
         type: 'EnKF',
-        label: 'EnKF (Inflation 1.05)',
-        params: { ensembleSize: 30, inflation: 1.05, localization: 5 }
+        label: 'EnKF (Inflation 1.10: 適正膨張)',
+        params: { ensembleSize: 20, inflation: 1.10, localization: 5 }
       }
     ],
     advancedOptions: {
       N: 40,
       F: 8.0,
       obsErrorVar: 1.0,
-      obsInterval: 1,
+      obsInterval: 2,
       numSteps: 500,
       dt: 0.05,
     }
@@ -214,19 +214,19 @@ export const PRESETS = [
   },
   {
     id: 'preset3',
-    title: '実験3: 疎密観測における変分法 vs アンサンブル手法',
-    theme: '固定共分散（3DVar）と流れに依存する共分散（LETKF）の未観測領域における補正能力差を比較。',
-    description: '観測データが存在しない領域（疎密観測）において、静的で一様な背景誤差共分散を用いる3DVarと、時々刻々のダイナミクスから「流れに依存する共分散（flow-dependent covariance）」を算出するLETKFの性能を比較します。LETKFは未観測領域でも物理構造に応じた高度な修正が可能です。',
+    title: '実験3: 固定共分散（3DVar）vs 流れ依存共分散（LETKF）',
+    theme: '固定背景誤差共分散（Static B）と時々刻々変化する流れ依存共分散（Flow-dependent P）の未観測領域における補正能力を比較。',
+    description: 'データ同化手法の最大の違いの1つは背景誤差共分散の扱い方です。変分法の代表格である3DVarは時間変化しない固定共分散（Static B）を用いるため、未観測領域への修正は空間距離のみに依存した等方的な広がりになります。一方、アンサンブル手法の代表格であるLETKFはアンサンブルのばらつきから「流れ依存の共分散（Flow-dependent P）」をリアルタイムに計算するため、観測がない領域でも物理的な流れや波の伝播に沿った高度な修正が可能です。',
     obsMode: 'sparse',
     methods: [
       {
         type: '3DVar',
-        label: '3DVar',
+        label: '3DVar (固定共分散 B)',
         params: { bgErrorVar: 1.0, corrLength: 5 }
       },
       {
         type: 'LETKF',
-        label: 'LETKF',
+        label: 'LETKF (流れ依存共分散 P)',
         params: { ensembleSize: 30, inflation: 1.05, localization: 5 }
       }
     ],

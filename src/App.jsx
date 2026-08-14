@@ -247,7 +247,6 @@ export default function App() {
           onToggleRmse={() => setShowRmse(v => !v)}
           onToggleSpread={() => setShowSpread(v => !v)}
           activePreset={activePreset}
-          onClearPreset={() => setActivePreset(null)}
         />
       </main>
 
