@@ -26,6 +26,7 @@ export default function App() {
   const [simulationResults, setSimulationResults] = useState(null);
   const [showRmse, setShowRmse] = useState(true);
   const [showSpread, setShowSpread] = useState(true);
+  const [needsRecalc, setNeedsRecalc] = useState(false);
 
   const workerRef = useRef(null);
 
@@ -34,16 +35,29 @@ export default function App() {
     setMethods(prev =>
       prev.map(m => m.instanceId === instanceId ? { ...m, ...updates } : m)
     );
+    setNeedsRecalc(true);
   }, []);
 
   const handleRemoveMethod = useCallback((instanceId) => {
     setMethods(prev => prev.filter(m => m.instanceId !== instanceId));
+    setNeedsRecalc(true);
   }, []);
 
   const handleAddMethod = useCallback((methodType) => {
     const instance = createMethodInstance(methodType);
     setMethods(prev => [...prev, instance]);
+    setNeedsRecalc(true);
     setShowAddMethod(false);
+  }, []);
+
+  const handleObsModeChange = useCallback((mode) => {
+    setObsMode(mode);
+    setNeedsRecalc(true);
+  }, []);
+
+  const handleUpdateAdvancedOptions = useCallback((options) => {
+    setAdvancedOptions(options);
+    setNeedsRecalc(true);
   }, []);
 
   const handleRun = useCallback(() => {
@@ -52,6 +66,7 @@ export default function App() {
     setIsRunning(true);
     setProgress(0);
     setSimulationResults(null);
+    setNeedsRecalc(false);
 
     // Terminate existing worker
     if (workerRef.current) {
@@ -177,8 +192,9 @@ export default function App() {
       <ObsTabs
         modes={OBS_MODES}
         activeMode={obsMode}
-        onChangeMode={setObsMode}
+        onChangeMode={handleObsModeChange}
         description={currentObsMode?.desc}
+        advancedOptions={advancedOptions}
       />
 
       <main className="app-main" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -193,6 +209,7 @@ export default function App() {
           isRunning={isRunning}
           progress={progress}
           hasResults={!!simulationResults}
+          needsRecalc={needsRecalc}
         />
 
         <VisualizationArea
@@ -210,7 +227,7 @@ export default function App() {
         <AdvancedModal
           options={advancedOptions}
           obsMode={obsMode}
-          onUpdate={setAdvancedOptions}
+          onUpdate={handleUpdateAdvancedOptions}
           onClose={() => setShowAdvanced(false)}
         />
       )}
