@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import EduTooltip from './EduTooltip';
 
 export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   const [local, setLocal] = useState({ ...options });
@@ -23,12 +24,12 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
 
   const sparseFields = [
     { key: 'sparseInterval', label: '疎密観測間隔', type: 'number', min: 2, max: 20, step: 1 },
-    { key: 'sparseRegionStart', label: '観測領域開始', type: 'number', min: 0, max: options.N - 1, step: 1 },
-    { key: 'sparseRegionEnd', label: '観測領域終了', type: 'number', min: 0, max: options.N - 1, step: 1 },
+    { key: 'sparseRegionStart', label: '観測領域開始 (格子点)', type: 'number', min: 1, max: local.N, step: 1 },
+    { key: 'sparseRegionEnd', label: '観測領域終了 (格子点)', type: 'number', min: 1, max: local.N, step: 1 },
   ];
 
   const thinnedFields = [
-    { key: 'thinNumObs', label: '観測数', type: 'number', min: 1, max: options.N, step: 1 },
+    { key: 'thinNumObs', label: '観測数', type: 'number', min: 1, max: local.N, step: 1 },
   ];
 
   return (
@@ -52,7 +53,10 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             </h3>
             {fields.map(f => (
               <div className="field-group" key={f.key}>
-                <label className="field-label">{f.label}</label>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <label className="field-label" style={{ margin: 0 }}>{f.label}</label>
+                  <EduTooltip paramId={f.key} align="left" position="top" />
+                </div>
                 <input
                   className="field-input"
                   type={f.type}
@@ -74,15 +78,21 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
               </h3>
               {sparseFields.map(f => (
                 <div className="field-group" key={f.key}>
-                  <label className="field-label">{f.label}</label>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <label className="field-label" style={{ margin: 0 }}>{f.label}</label>
+                    <EduTooltip paramId={f.key} align="left" position="top" />
+                  </div>
                   <input
                     className="field-input"
                     type={f.type}
                     min={f.min}
                     max={f.max}
                     step={f.step}
-                    value={local[f.key]}
-                    onChange={(e) => handleChange(f.key, Number(e.target.value))}
+                    value={f.key.startsWith('sparseRegion') ? local[f.key] + 1 : local[f.key]}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      handleChange(f.key, f.key.startsWith('sparseRegion') ? val - 1 : val);
+                    }}
                   />
                 </div>
               ))}
@@ -97,7 +107,10 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
               </h3>
               {thinnedFields.map(f => (
                 <div className="field-group" key={f.key}>
-                  <label className="field-label">{f.label}</label>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <label className="field-label" style={{ margin: 0 }}>{f.label}</label>
+                    <EduTooltip paramId={f.key} align="left" position="top" />
+                  </div>
                   <input
                     className="field-input"
                     type={f.type}

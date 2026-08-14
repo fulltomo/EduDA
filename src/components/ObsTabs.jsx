@@ -75,9 +75,9 @@ export default function ObsTabs({ modes, activeMode, onChangeMode, description, 
               <div key={pt.index} className="obs-grid-point-col">
                 <span
                   className={`obs-grid-point-dot ${pt.isObserved ? 'obs-grid-point-dot--observed' : 'obs-grid-point-dot--unobserved'}`}
-                  title={pt.isObserved ? `格子点 ${pt.index}: 観測点` : `格子点 ${pt.index}: 未観測点`}
+                  title={pt.isObserved ? `格子点 ${pt.index + 1}: 観測点` : `格子点 ${pt.index + 1}: 未観測点`}
                 />
-                <span className="obs-grid-point-label typo-data">{pt.index}</span>
+                <span className="obs-grid-point-label typo-data">{pt.index + 1}</span>
               </div>
             ))}
           </div>
