@@ -839,13 +839,15 @@ function runSimulation(payload) {
       let evalRmseSeries = state.rmseTimeSeries.slice(burnInCutoff);
       let evalSpreadSeries = state.spreadTimeSeries.slice(burnInCutoff);
 
+      const isDeterministic = state.type === '3DVar' || state.type === '4DVar';
+
       return {
         methodId: state.id,
         methodType: state.type,
         rmseTimeSeries: state.rmseTimeSeries,
-        spreadTimeSeries: state.spreadTimeSeries,
+        spreadTimeSeries: isDeterministic ? null : state.spreadTimeSeries,
         avgRmse: mean(evalRmseSeries.length > 0 ? evalRmseSeries : state.rmseTimeSeries),
-        avgSpread: mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
+        avgSpread: isDeterministic ? null : mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
         timeSteps: state.timeSteps,
         truthHistory: truthHistory,
         obsHistory: obsHistory,

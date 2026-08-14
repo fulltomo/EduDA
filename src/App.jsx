@@ -203,6 +203,7 @@ export default function App() {
           showSpread={showSpread}
           onToggleRmse={() => setShowRmse(v => !v)}
           onToggleSpread={() => setShowSpread(v => !v)}
+          onUpdateMethod={handleUpdateMethod}
         />
       </main>
 
