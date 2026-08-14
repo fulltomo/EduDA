@@ -667,7 +667,7 @@ export default function VisualizationArea({
                 <div className="viz-summary-metrics">
                   <div className="viz-summary-metric">
                     <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg RMSE</span>
-                    {Number.isNaN(r.avgRmse) || r.avgRmse > DIVERGENCE_THRESHOLD ? (
+                    {!Number.isFinite(r.avgRmse) || r.avgRmse > DIVERGENCE_THRESHOLD ? (
                       <DivergenceBadge align="center" position="bottom" />
                     ) : (
                       <span className="typo-data" style={{ color }}>{r.avgRmse.toFixed(3)}</span>
@@ -675,7 +675,7 @@ export default function VisualizationArea({
                   </div>
                   <div className="viz-summary-metric">
                     <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg Spread</span>
-                    <span className="typo-data">{r.avgSpread?.toFixed(3) ?? '—'}</span>
+                    <span className="typo-data">{Number.isFinite(r.avgSpread) ? r.avgSpread.toFixed(3) : '—'}</span>
                   </div>
                 </div>
               </div>

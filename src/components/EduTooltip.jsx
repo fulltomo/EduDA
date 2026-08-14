@@ -61,6 +61,66 @@ const TOOLTIP_DATA = {
     description: 'データ同化の計算過程において、推定値の誤差（RMSE）が異常に大きくなったり、数値が非数（NaN）や無限大（Infinity）に陥ってシミュレーションが破綻する現象です。「システムのバグ」ではなく、モデルの非線形性や誤差共分散の過小評価などにより、実際の現象とシミュレーションの整合性が取れなくなることで発生します。',
     formula: '【主な発生理由の例】\n・非線形性の強さに対する線形近似誤差の累積（EKFなど）\n・ヤコビアン計算の誤差蓄積による共分散行列の非正定値化（EKFなど）\n・アンサンブルの過信（スプレッドの過小評価）による観測データの無視（EnKFなど）\n・高次元空間でのサンプリング不足（「次元の呪い」）による重みの崩壊（PFなど）',
     guideline: '【主な回避策・対策】\n・インフレーション（共分散膨張）の追加・調整（EnKF/EnSRF/LETKF）\n・局所化（Localization）の適用（疑似相関の排除）\n・プロセスノイズ（Q）や背景誤差分散の調整・増加\n・粒子数の増加またはリサンプリングの適正化（PF）'
+  },
+  N: {
+    title: 'N (変数個数 / 格子点数)',
+    description: 'Lorenz \'96モデルにおける状態変数の総数（格子点数）です。各格子点は大気などの一層における物理量を表しており、円環状（周期境界条件）に接続されています。',
+    formula: 'x_i (i = 1, 2, ..., N)',
+    guideline: '標準値は 40。値を大きくするとシミュレーションの次元数が上がり、特に粒子フィルタ（PF）などで同化難易度が急激に上昇します（次元の呪い）。'
+  },
+  F: {
+    title: 'F (強制項)',
+    description: 'システムに外部から加わるエネルギー入力を表す強制パラメータです。この値の大きさによって、システムの力学的な挙動が大きく変化します。',
+    formula: 'dx_i/dt = (x_{i+1} - x_{i-2})x_{i-1} - x_i + F',
+    guideline: '標準値は 8.0。F=8.0 のときは非線形性が強くカオス的な挙動を示し、データ同化のベンチマークとして広く使われます。F=4.0 などの小さい値では周期解や減衰解に落ち着くため、同化は容易になります。'
+  },
+  obsErrorVar: {
+    title: 'σ² (観測誤差分散)',
+    description: '実際の観測データに含まれるノイズ（測定誤差）の大きさを表す分散パラメータです。この値が大きいほど、観測データの信頼性が低くなります。',
+    formula: 'R = σ² I\n(R: 観測誤差共分散行列, I: 単位行列)',
+    guideline: '標準値は 1.0。観測誤差分散を小さくすると、同化時に観測値がより強く重視され、解析値は観測値に近づきます。ただし、小さすぎると極端な修正による不安定化を招くことがあります。'
+  },
+  obsInterval: {
+    title: 'Δt_obs (観測間隔)',
+    description: '観測データが何タイムステップごとに得られるかという時間的頻度です。観測間隔が大きくなる（間引かれる）ほど、次の観測までの予測期間が長くなり、非線形な誤差成長によって同化が困難になります。',
+    formula: 't_obs = k × Δt_obs × dt',
+    guideline: '標準値は 1（毎ステップ観測）。カオス的挙動（F=8.0）下では、観測間隔が大きすぎると（例: 4〜8以上）予測誤差が飽和し、どの同化手法でも追従できなくなる「フィルター発散」を引き起こします。'
+  },
+  numSteps: {
+    title: 'Simulation Steps (シミュレーションステップ数)',
+    description: 'データ同化シミュレーションを実行する全体のタイムステップ数です。長期間実行することで、初期状態の過渡応答が消えた後の統計的に安定した同化性能（RMSE等）を評価できます。',
+    formula: 'Total Time = Steps × dt',
+    guideline: '標準値は 500。ステップ数を増やすと全体の同化傾向を詳細に確認できますが、Webブラウザの計算負荷が増え、シミュレーション完了までの待ち時間が長くなります。'
+  },
+  dt: {
+    title: 'dt (積分タイムステップ)',
+    description: 'Lorenz \'96モデルをルンゲ・クッタ法等で数値積分する際の時間刻み幅です。状態変化の速さと数値計算の安定性・解像度を決定します。',
+    formula: 't_{k+1} = t_k + dt',
+    guideline: '標準値は 0.05（気象で約6時間相当）。値を小さくする（例: 0.01）と数値解の精度や安定性は向上しますが、一定ステップ数内の物理的な時間変化が小さくなります。大きくしすぎると数値計算が破綻（発散）します。'
+  },
+  sparseInterval: {
+    title: 'Sparse Interval (疎密観測間隔)',
+    description: '一部のプリセットや実験設定等で参照される、観測を行う格子点の間隔（スキップ幅）です。本シミュレータの「疎密観測」では、指定した領域全体（開始〜終了）がすべて観測される設計になっています。',
+    formula: 'N/A',
+    guideline: '通常は4。このパラメータは現状、特定の実験プリセットなどでの空間解像度の設計基準値として扱われます。'
+  },
+  sparseRegionStart: {
+    title: 'Sparse Region Start (観測領域開始)',
+    description: '「疎密観測」モードにおいて、観測を行う領域の開始位置（格子点番号）を指定します。',
+    formula: 'Start Grid Point',
+    guideline: 'デフォルト値は 1（内部インデックス 0）。終了地点よりも小さい値を設定するのが基本ですが、大きい値を設定した場合は自動的に範囲が調整されます。'
+  },
+  sparseRegionEnd: {
+    title: 'Sparse Region End (観測領域終了)',
+    description: '「疎密観測」モードにおいて、観測を行う領域の終了位置（格子点番号）を指定します。',
+    formula: 'End Grid Point',
+    guideline: 'デフォルト値は 20（内部インデックス 19）。開始位置から終了位置までの範囲にある格子点が一括して観測されます。'
+  },
+  thinNumObs: {
+    title: 'Thin Num Obs (間引き観測数)',
+    description: '「間引き観測」モードにおいて、全格子点の中から空間的に等間隔になるように選択して配置する観測点の総数です。',
+    formula: 'Observation interval ≈ N / thinNumObs',
+    guideline: 'デフォルト値は 20。この値を小さく（例: 5〜10）すると、空間的な情報が非常に少なくなり、高精度な同化が極めて困難になります。'
   }
 };
 
@@ -189,7 +249,6 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
       ref={containerRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ display: 'inline-block', position: 'relative', marginLeft: '4px', verticalAlign: 'middle' }}
     >
       <button
         type="button"
@@ -199,21 +258,6 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
         onTouchStart={(e) => e.stopPropagation()}
         aria-label={`${data.title} の説明を表示`}
         title="解説を表示"
-        style={{
-          backgroundColor: 'rgba(255, 180, 171, 0.15)',
-          color: '#ffb4ab',
-          border: '1px solid #ffb4ab',
-          borderRadius: '4px',
-          padding: '2px 8px',
-          fontSize: '11px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          whiteSpace: 'nowrap',
-          lineHeight: '1.2',
-        }}
       >
         <span>⚠️ 発散 (Diverged)</span>
       </button>
@@ -262,10 +306,29 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
 // Inline Accordion Help Drawer Component
 export function EduTooltipDrawer({ paramId, onClose }) {
   const data = TOOLTIP_DATA[paramId];
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (e.target.closest && e.target.closest('.edu-tooltip-trigger')) {
+        return;
+      }
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        if (onClose) onClose();
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [onClose]);
+
   if (!data) return null;
 
   return (
-    <div className="edu-help-inline animate-expand" onClick={(e) => e.stopPropagation()}>
+    <div ref={containerRef} className="edu-help-inline animate-expand" onClick={(e) => e.stopPropagation()}>
       <div className="edu-help-inline-header">
         <span className="edu-help-inline-title">{data.title}</span>
         <button

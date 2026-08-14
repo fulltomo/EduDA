@@ -263,18 +263,25 @@ function runSimulation(payload) {
         let idx = Math.round(k * N / numObs) % N;
         obsIndices.push(idx);
       }
+    } else if (observationMode === 'custom') {
+      const rawIndices = payload.customObsIndices || [];
+      obsIndices = rawIndices.filter(idx => idx >= 0 && idx < N).sort((a, b) => a - b);
     }
     
     let nobs = obsIndices.length;
-    let H = Array(nobs).fill().map(() => Array(N).fill(0));
-    for (let i = 0; i < nobs; i++) H[i][obsIndices[i]] = 1.0;
-    let H_T = matTranspose(H);
-    
-    let R = identity(nobs);
-    R = matScale(R, R_diag);
-    let R_inv = matScale(identity(nobs), 1.0 / R_diag);
+    let H = [], H_T = [], R = [], R_inv = [];
+    if (nobs > 0) {
+      H = Array(nobs).fill().map(() => Array(N).fill(0));
+      for (let i = 0; i < nobs; i++) H[i][obsIndices[i]] = 1.0;
+      H_T = matTranspose(H);
+      
+      R = identity(nobs);
+      R = matScale(R, R_diag);
+      R_inv = matScale(identity(nobs), 1.0 / R_diag);
+    }
 
     function applyH(x) {
+      if (nobs === 0) return [];
       return obsIndices.map(idx => x[idx]);
     }
 
@@ -292,7 +299,7 @@ function runSimulation(payload) {
       
       let isObsTime = (step % obsInterval === 0);
       
-      if (isObsTime && step > 0) {
+      if (isObsTime && step > 0 && nobs > 0) {
         let y = applyH(state_true).map(val => val + randomNormal() * Math.sqrt(R_diag));
         obsHistory.push(y);
       } else {
@@ -352,22 +359,27 @@ function runSimulation(payload) {
         state.B = B;
         state.B_inv = matInverse(B);
         
-        let HB = matMul(H, B);
-        let HBH = matMul(HB, H_T);
-        let S_3d = matAdd(HBH, R);
-        state.K_3dvar = matMul(matMul(B, H_T), matInverse(S_3d));
+        if (nobs > 0) {
+          let HB = matMul(H, B);
+          let HBH = matMul(HB, H_T);
+          let S_3d = matAdd(HBH, R);
+          state.K_3dvar = matMul(matMul(B, H_T), matInverse(S_3d));
 
-        // Compute Analysis Error Covariance Matrix Pa = (I - K*H) * B for Spread calculation
-        let I_KH = matSub(identity(N), matMul(state.K_3dvar, H));
-        let Pa = matMul(I_KH, B);
-        for (let r = 0; r < N; r++) {
-          for (let c = r; c < N; c++) {
-            let sym = 0.5 * (Pa[r][c] + Pa[c][r]);
-            Pa[r][c] = sym;
-            Pa[c][r] = sym;
+          // Compute Analysis Error Covariance Matrix Pa = (I - K*H) * B for Spread calculation
+          let I_KH = matSub(identity(N), matMul(state.K_3dvar, H));
+          let Pa = matMul(I_KH, B);
+          for (let r = 0; r < N; r++) {
+            for (let c = r; c < N; c++) {
+              let sym = 0.5 * (Pa[r][c] + Pa[c][r]);
+              Pa[r][c] = sym;
+              Pa[c][r] = sym;
+            }
           }
+          state.Pa = Pa;
+        } else {
+          state.K_3dvar = Array(N).fill().map(() => Array(0).fill(0));
+          state.Pa = B;
         }
-        state.Pa = Pa;
       }
       
       if (m.type === '4DVar') {
@@ -383,8 +395,9 @@ function runSimulation(payload) {
         self.postMessage({ type: 'PROGRESS', progress: Math.round((step / numSteps) * 100) });
       }
 
+      let isObsStep = (step % obsInterval === 0 && step > 0);
       let y = obsHistory[step];
-      let hasObs = y !== null;
+      let hasObs = isObsStep && nobs > 0 && y !== null;
       
       for (let m = 0; m < methodStates.length; m++) {
         let state = methodStates[m];
@@ -846,7 +859,7 @@ function runSimulation(payload) {
         } // end if (hasObs)
         
         // --- 5.3 Record Stats at Observation Steps ---
-        if (hasObs) {
+        if (isObsStep) {
           let analysisMean = Array(N).fill(0);
           let analysisSpread = 0;
           

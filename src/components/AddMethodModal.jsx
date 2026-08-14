@@ -1,4 +1,12 @@
 import { DA_METHODS } from '../constants';
+import './AddMethodModal.css';
+
+const CATEGORY_LABELS = {
+  kalman: 'カルマン系',
+  ensemble: 'アンサンブル',
+  variational: '変分法',
+  particle: '粒子フィルタ',
+};
 
 export default function AddMethodModal({ onSelect, onClose }) {
   return (
@@ -23,8 +31,16 @@ export default function AddMethodModal({ onSelect, onClose }) {
               id={`add-method-${method.id}`}
             >
               <div className="add-method-option-left">
-                <span className="add-method-option-id typo-data">{method.label}</span>
-                <span className="add-method-option-name">{method.fullName}</span>
+                <div className="add-method-option-header">
+                  <span className="add-method-option-id typo-data">{method.label}</span>
+                  <span className="add-method-option-name">{method.fullName}</span>
+                  <span className={`category-badge category-${method.category}`}>
+                    {CATEGORY_LABELS[method.category]}
+                  </span>
+                </div>
+                <div className="add-method-option-summary">
+                  {method.summary}
+                </div>
               </div>
               <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--outline)' }}>
                 add_circle
