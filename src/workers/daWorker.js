@@ -263,6 +263,9 @@ function runSimulation(payload) {
         let idx = Math.round(k * N / numObs) % N;
         obsIndices.push(idx);
       }
+    } else if (observationMode === 'custom') {
+      const rawIndices = payload.customObsIndices || [];
+      obsIndices = rawIndices.filter(idx => idx >= 0 && idx < N).sort((a, b) => a - b);
     }
     
     let nobs = obsIndices.length;
