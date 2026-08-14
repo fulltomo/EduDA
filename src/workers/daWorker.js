@@ -855,7 +855,7 @@ function runSimulation(payload) {
 
     self.postMessage({
       type: 'RESULT',
-      payload: { results }
+      payload: { results, obsIndices }
     });
 
   } catch (error) {

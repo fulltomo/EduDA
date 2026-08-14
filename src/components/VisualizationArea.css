@@ -134,3 +134,190 @@
   border-top: 2px dashed var(--outline);
   border-radius: var(--rounded-full);
 }
+
+/* Tab Row & Buttons */
+.viz-tab-row {
+  display: flex;
+  gap: 8px;
+  background: var(--surface-container-low);
+  padding: 4px;
+  border-radius: var(--rounded-lg);
+  border: 1px solid var(--outline-variant);
+}
+
+.viz-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--on-surface-variant);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--rounded-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viz-tab-btn:hover {
+  color: var(--on-surface);
+  background: var(--surface-container-high);
+}
+
+.viz-tab-btn--active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.viz-tab-btn--active:hover {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+/* Hovmöller Method Selector */
+.hov-method-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hov-method-select {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--rounded-md);
+  color: var(--on-surface);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.hov-method-select:focus {
+  border-color: var(--primary);
+}
+
+/* 1D State Plot Step Slider */
+.viz-slider-container {
+  margin-top: 16px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--rounded-xl);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.viz-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.viz-slider-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.viz-slider-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.viz-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--surface-container-highest);
+  border-radius: var(--rounded-full);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Hovmöller View & Legend */
+.hovmoller-view-container {
+  position: absolute;
+  inset: 8px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hovmoller-canvas-wrapper {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.hovmoller-canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.hovmoller-legend-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--outline-variant);
+  flex-shrink: 0;
+}
+
+.hovmoller-legend-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--outline);
+}
+
+.hovmoller-gradient-bar {
+  width: 200px;
+  height: 12px;
+  border-radius: var(--rounded-sm);
+  border: 1px solid var(--outline-variant);
+  background: linear-gradient(
+    to right,
+    #0b1326 0%,   /* Deep Indigo */
+    #00668a 25%,  /* Deep Cyan */
+    #45dfa4 50%,  /* Mint Green */
+    #ffb4ab 75%,  /* Coral Orange */
+    #ffffff 100%  /* White */
+  );
+}
+
+/* Responsive adjustment for Mobile view */
+@media (max-width: 768px) {
+  .viz-chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hov-method-selector-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hov-method-select {
+    width: 70%;
+  }
+
+  .viz-tab-row {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .viz-tab-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
