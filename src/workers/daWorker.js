@@ -170,46 +170,6 @@ function runSimulation(payload) {
       return I;
     }
 
-    function jacobiEigen(A, iterMax=50) {
-      let n = A.length;
-      let V = identity(n);
-      let D = A.map(row => row.slice());
-      for(let it=0; it<iterMax; it++){
-        let maxVal = 0, p=0, q=1;
-        for(let r=0; r<n-1; r++){
-          for(let c=r+1; c<n; c++){
-            if(Math.abs(D[r][c]) > maxVal){
-              maxVal = Math.abs(D[r][c]); p=r; q=c;
-            }
-          }
-        }
-        if(maxVal < 1e-9) break;
-        let theta = (D[q][q] - D[p][p]) / (2*D[p][q]);
-        let t = Math.sign(theta) / (Math.abs(theta) + Math.sqrt(theta*theta + 1));
-        if(theta === 0) t = 1.0; 
-        let c_rot = 1.0 / Math.sqrt(t*t + 1);
-        let s_rot = c_rot * t;
-        
-        for(let r=0; r<n; r++){
-          if(r !== p && r !== q){
-            let Drp = D[r][p], Drq = D[r][q];
-            D[r][p] = c_rot*Drp - s_rot*Drq;
-            D[p][r] = D[r][p];
-            D[r][q] = c_rot*Drq + s_rot*Drp;
-            D[q][r] = D[r][q];
-          }
-          let Vrp = V[r][p], Vrq = V[r][q];
-          V[r][p] = c_rot*Vrp - s_rot*Vrq;
-          V[r][q] = c_rot*Vrq + s_rot*Vrp;
-        }
-        let Dpp = D[p][p], Dqq = D[q][q], Dpq = D[p][q];
-        D[p][p] = c_rot*c_rot*Dpp - 2*s_rot*c_rot*Dpq + s_rot*s_rot*Dqq;
-        D[q][q] = s_rot*s_rot*Dpp + 2*s_rot*c_rot*Dpq + c_rot*c_rot*Dqq;
-        D[p][q] = 0; D[q][p] = 0;
-      }
-      return {V, D};
-    }
-
     // 2. L96 Model Integration (RK4)
     function l96_rhs(x, F) {
       let n = x.length;
@@ -241,15 +201,53 @@ function runSimulation(payload) {
 
     function linearize_l96(x, F, dt) {
       let n = x.length;
-      let M = identity(n);
-      let eps = 1e-5;
-      for (let j = 0; j < n; j++) {
-        let xp = x.slice(); xp[j] += eps;
-        let xm = x.slice(); xm[j] -= eps;
-        let yp = rk4_step(xp, dt, F);
-        let ym = rk4_step(xm, dt, F);
+      let M = Array(n).fill().map(() => new Float64Array(n));
+      
+      let k1_x = l96_rhs(x, F);
+      let x2 = vecAdd(x, vecScale(k1_x, dt / 2));
+      let k2_x = l96_rhs(x2, F);
+      let x3 = vecAdd(x, vecScale(k2_x, dt / 2));
+      let k3_x = l96_rhs(x3, F);
+      let x4 = vecAdd(x, vecScale(k3_x, dt));
+
+      function applyJ(curr_x, v, out) {
         for (let i = 0; i < n; i++) {
-          M[i][j] = (yp[i] - ym[i]) / (2 * eps);
+          let im2 = (i - 2 + n) % n;
+          let im1 = (i - 1 + n) % n;
+          let ip1 = (i + 1) % n;
+          out[i] = -curr_x[im1] * v[im2] + (curr_x[ip1] - curr_x[im2]) * v[im1] - v[i] + curr_x[im1] * v[ip1];
+        }
+      }
+
+      let dk1 = new Float64Array(n);
+      let dk2 = new Float64Array(n);
+      let dk3 = new Float64Array(n);
+      let dk4 = new Float64Array(n);
+      let v_temp = new Float64Array(n);
+
+      for (let j = 0; j < n; j++) {
+        for (let i = 0; i < n; i++) {
+          let im2 = (i - 2 + n) % n;
+          let im1 = (i - 1 + n) % n;
+          let ip1 = (i + 1) % n;
+          if (j === im2) dk1[i] = -x[im1];
+          else if (j === im1) dk1[i] = x[ip1] - x[im2];
+          else if (j === i) dk1[i] = -1.0;
+          else if (j === ip1) dk1[i] = x[im1];
+          else dk1[i] = 0.0;
+        }
+
+        for (let i = 0; i < n; i++) v_temp[i] = (i === j ? 1.0 : 0.0) + 0.5 * dt * dk1[i];
+        applyJ(x2, v_temp, dk2);
+
+        for (let i = 0; i < n; i++) v_temp[i] = (i === j ? 1.0 : 0.0) + 0.5 * dt * dk2[i];
+        applyJ(x3, v_temp, dk3);
+
+        for (let i = 0; i < n; i++) v_temp[i] = (i === j ? 1.0 : 0.0) + dt * dk3[i];
+        applyJ(x4, v_temp, dk4);
+
+        for (let i = 0; i < n; i++) {
+          M[i][j] = (i === j ? 1.0 : 0.0) + (dt / 6.0) * (dk1[i] + 2.0 * dk2[i] + 2.0 * dk3[i] + dk4[i]);
         }
       }
       return M;
@@ -646,83 +644,108 @@ function runSimulation(payload) {
                 }
               }
 
-            // D.3 LETKF
+            // D.3 LETKF (Optimized via Cholesky Decomposition)
             } else if (state.type === 'LETKF') {
               let X = [];
               for (let i = 0; i < M; i++) X.push(vecSub(ens[i], x_mean));
               let Xb = matTranspose(X);
-              
               let ens_new = Array(M).fill().map(() => Array(N).fill(0));
-              
+              let sqrtM1 = Math.sqrt(M - 1);
+
               for (let i = 0; i < N; i++) {
                 let localObs = [];
                 for (let ob = 0; ob < nobs; ob++) {
                   let dist = periodicDist(i, obsIndices[ob], N);
                   let gloc = gaspariCohn(dist, localization);
-                  if (gloc > 1e-4) {
-                    localObs.push({ idx: ob, gloc: gloc });
-                  }
+                  if (gloc > 1e-4) localObs.push({ idx: ob, gloc });
                 }
-                
+
                 let l_nobs = localObs.length;
                 if (l_nobs === 0) {
-                  for(let j=0; j<M; j++) ens_new[j][i] = ens[j][i];
+                  for (let j = 0; j < M; j++) ens_new[j][i] = ens[j][i];
                   continue;
                 }
-                
+
                 let y_loc = localObs.map(o => y[o.idx]);
-                let R_loc_inv = localObs.map(o => o.gloc / R_diag); 
+                let R_loc_inv = localObs.map(o => o.gloc / R_diag);
                 let Hx_mean_loc = localObs.map(o => x_mean[obsIndices[o.idx]]);
                 let HXb_loc = Array(l_nobs).fill().map(() => Array(M).fill(0));
-                for(let o=0; o<l_nobs; o++){
+                for (let o = 0; o < l_nobs; o++) {
                   let obIdx = obsIndices[localObs[o].idx];
-                  for(let j=0; j<M; j++) {
-                     HXb_loc[o][j] = Xb[obIdx][j];
-                  }
+                  for (let j = 0; j < M; j++) HXb_loc[o][j] = Xb[obIdx][j];
                 }
-                
+
+                // Construct Pa_tilde_inv = (M-1)I + Y^T R^-1 Y
                 let Pa_tilde_inv = matScale(identity(M), M - 1);
-                for(let r=0; r<M; r++){
-                  for(let c=0; c<M; c++){
+                for (let r = 0; r < M; r++) {
+                  for (let c = 0; c < M; c++) {
                     let sum = 0;
-                    for(let o=0; o<l_nobs; o++){
+                    for (let o = 0; o < l_nobs; o++) {
                       sum += HXb_loc[o][r] * R_loc_inv[o] * HXb_loc[o][c];
                     }
                     Pa_tilde_inv[r][c] += sum;
                   }
                 }
-                let Pa_tilde = matInverse(Pa_tilde_inv);
-                
-                let innov = vecSub(y_loc, Hx_mean_loc);
-                let R_inv_innov = innov.map((v, idx) => v * R_loc_inv[idx]);
-                let Y_T_R_inv_innov = Array(M).fill(0);
-                for(let r=0; r<M; r++){
-                  for(let o=0; o<l_nobs; o++){
-                    Y_T_R_inv_innov[r] += HXb_loc[o][r] * R_inv_innov[o];
-                  }
-                }
-                let wa_mean = matVecMul(Pa_tilde, Y_T_R_inv_innov);
-                
-                let eig = jacobiEigen(Pa_tilde);
-                let V = eig.V, D = eig.D;
-                let Wa = Array(M).fill().map(() => Array(M).fill(0));
-                for(let r=0; r<M; r++){
-                  for(let c=0; c<M; c++){
+
+                // Cholesky decomposition: Pa_tilde_inv = L * L^T
+                let L = Array(M).fill().map(() => new Float64Array(M));
+                for (let r = 0; r < M; r++) {
+                  for (let c = 0; c <= r; c++) {
                     let sum = 0;
-                    for(let k=0; k<M; k++){
-                      let dVal = D[k][k];
-                      if (dVal > 1e-12) {
-                        sum += V[r][k] * Math.sqrt(dVal * (M - 1)) * V[c][k];
-                      }
+                    for (let k = 0; k < c; k++) sum += L[r][k] * L[c][k];
+                    if (r === c) {
+                      let val = Pa_tilde_inv[r][r] - sum;
+                      L[r][c] = Math.sqrt(Math.max(1e-12, val));
+                    } else {
+                      L[r][c] = (Pa_tilde_inv[r][c] - sum) / L[c][c];
                     }
-                    Wa[r][c] = sum;
                   }
                 }
-                
-                for(let j=0; j<M; j++){
+
+                // Compute Y^T R^-1 (y - Hx)
+                let innov = vecSub(y_loc, Hx_mean_loc);
+                let b = new Float64Array(M);
+                for (let r = 0; r < M; r++) {
                   let sum = 0;
-                  for(let k=0; k<M; k++){
-                    let w_jk = wa_mean[k] + Wa[k][j];
+                  for (let o = 0; o < l_nobs; o++) {
+                    sum += HXb_loc[o][r] * R_loc_inv[o] * innov[o];
+                  }
+                  b[r] = sum;
+                }
+
+                // Solve L * L^T * wa_mean = b
+                let y_temp = new Float64Array(M);
+                for (let r = 0; r < M; r++) {
+                  let sum = 0;
+                  for (let c = 0; c < r; c++) sum += L[r][c] * y_temp[c];
+                  y_temp[r] = (b[r] - sum) / L[r][r];
+                }
+                let wa_mean = new Float64Array(M);
+                for (let r = M - 1; r >= 0; r--) {
+                  let sum = 0;
+                  for (let c = r + 1; c < M; c++) sum += L[c][r] * wa_mean[c];
+                  wa_mean[r] = (y_temp[r] - sum) / L[r][r];
+                }
+
+                // Compute L^-T * sqrt(M-1) to get Wa
+                let L_inv_T = Array(M).fill().map(() => new Float64Array(M));
+                for (let col = 0; col < M; col++) {
+                  let e = new Float64Array(M); e[col] = 1.0;
+                  let y_sol = new Float64Array(M);
+                  for (let r = 0; r < M; r++) {
+                    let sum = 0;
+                    for (let c = 0; c < r; c++) sum += L[r][c] * y_sol[c];
+                    y_sol[r] = (e[r] - sum) / L[r][r];
+                  }
+                  for (let r = 0; r < M; r++) {
+                    L_inv_T[r][col] = y_sol[r] * sqrtM1;
+                  }
+                }
+
+                for (let j = 0; j < M; j++) {
+                  let sum = 0;
+                  for (let k = 0; k < M; k++) {
+                    let w_jk = wa_mean[k] + L_inv_T[k][j];
                     sum += Xb[i][k] * w_jk;
                   }
                   ens_new[j][i] = x_mean[i] + sum;
