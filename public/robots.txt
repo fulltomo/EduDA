@@ -33,4 +33,4 @@ User-agent: Bytespider
 Allow: /
 
 # Sitemap location
-Sitemap: https://fulltomo.github.io/EduDA/sitemap.xml
+Sitemap: https://eduda.pages.dev/sitemap.xml

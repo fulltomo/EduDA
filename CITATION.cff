@@ -7,7 +7,7 @@ authors:
     alias: "fulltomo"
 abstract: "An interactive educational web platform for exploring, visualizing, and comparing data assimilation algorithms (EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, Particle Filter) on the chaotic Lorenz '96 atmospheric model."
 repository-code: "https://github.com/fulltomo/EduDA"
-url: "https://fulltomo.github.io/EduDA/"
+url: "https://eduda.pages.dev/"
 license: "MIT"
 keywords:
   - "data-assimilation"

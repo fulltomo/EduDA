@@ -2,35 +2,48 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Top level canonical page -->
   <url>
-    <loc>https://fulltomo.github.io/EduDA/</loc>
+    <loc>https://eduda.pages.dev/</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <!-- Language variants -->
+  <url>
+    <loc>https://eduda.pages.dev/?lang=en</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://eduda.pages.dev/?lang=ja</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
   <!-- Preset 1: Inflation Lab -->
   <url>
-    <loc>https://fulltomo.github.io/EduDA/?preset=preset1</loc>
+    <loc>https://eduda.pages.dev/?preset=preset1</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Preset 2: Localization Lab -->
   <url>
-    <loc>https://fulltomo.github.io/EduDA/?preset=preset2</loc>
+    <loc>https://eduda.pages.dev/?preset=preset2</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Preset 3: 3DVar vs LETKF Lab -->
   <url>
-    <loc>https://fulltomo.github.io/EduDA/?preset=preset3</loc>
+    <loc>https://eduda.pages.dev/?preset=preset3</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Preset 4: Particle Filter Weight Collapse Lab -->
   <url>
-    <loc>https://fulltomo.github.io/EduDA/?preset=preset4</loc>
+    <loc>https://eduda.pages.dev/?preset=preset4</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

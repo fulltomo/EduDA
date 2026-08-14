@@ -13,9 +13,13 @@ function detectInitialLanguage() {
   }
 
   // 2. Check localStorage
-  const saved = localStorage.getItem('eduda_lang');
-  if (saved && (saved === 'en' || saved === 'ja')) {
-    return saved;
+  try {
+    const saved = localStorage.getItem('eduda_lang');
+    if (saved && (saved === 'en' || saved === 'ja')) {
+      return saved;
+    }
+  } catch {
+    // Storage access blocked; fall through to browser language.
   }
 
   // 3. Check browser language (default to 'ja' if Japanese, else 'en')

@@ -15,10 +15,10 @@ EduDA (Educational Data Assimilation) は、気象学・海洋学・地球惑星
    - 3DVar (3次元変分法): Gaspari-Cohn相関関数に基づく静的背景誤差共分散行列(B)による変分同化
    - 4DVar (4次元変分法): 同化ウィンドウ内の時系列観測を随伴モデル(Adjoint)を用いて同時最適化
    - PF (粒子フィルタ / SIR): 有効粒子数に基づく再サンプリング(Sequential Importance Resampling)を備えた非ガウス対応フィルタ
-2. **3つの観測シナリオ**: 全観測 (Full), 疎密観測 (Sparse: 半分のみ観測), 間引き観測 (Thinned: 2格子おき)
+2. **4つの観測シナリオ**: 全観測 (Full), 疎密観測 (Sparse: 半分のみ観測), 間引き観測 (Thinned: 2格子おき), カスタム観測 (Custom)
 3. **3つのリアルタイム可視化モード**:
    - 時系列プロット (RMSE & Spread)
-   - 1D 状態空間プロット (全40格子点の真値・観測・解析値・アンサンブル±1σ信頼区間)
+   - 1D 状態空間プロット (全40格子点の真値・観測・解析値)
    - Hovmöller (ホフメラー) ダイヤグラム (時間-空間の解析誤差ヒートマップ)
 4. **4つの事前設計プリセット実験ラボ**:
    - 実験1: インフレーションの効果 (Filter Divergence の抑制)
@@ -34,10 +34,10 @@ dx_j / dt = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F   (j = 1, ..., 40, F = 8.0, �
 数値積分: 4次ルンゲ＝クッタ法 (RK4), dt = 0.05 (大気時間で約6時間に相当)
 
 ## URLクエリによるプリセット共有 (Deep Links)
-- 実験1 (インフレーション): `https://fulltomo.github.io/EduDA/?preset=preset1`
-- 実験2 (局所化): `https://fulltomo.github.io/EduDA/?preset=preset2`
-- 実験3 (3DVar vs LETKF): `https://fulltomo.github.io/EduDA/?preset=preset3`
-- 実験4 (粒子フィルタの限界): `https://fulltomo.github.io/EduDA/?preset=preset4`
+- 実験1 (インフレーション): `https://eduda.pages.dev/?preset=preset1`
+- 実験2 (局所化): `https://eduda.pages.dev/?preset=preset2`
+- 実験3 (3DVar vs LETKF): `https://eduda.pages.dev/?preset=preset3`
+- 実験4 (粒子フィルタの限界): `https://eduda.pages.dev/?preset=preset4`
 
 ## 完全版仕様 (Full Documentation)
-より詳細な数理モデルの導出、アルゴリズムの擬似コード、Web Workerアーキテクチャについては `/llms-full.txt` を参照してください。
+より詳細な数理モデルの導出、アルゴリズムの擬似コード、Web Workerアーキテクチャについては `./llms-full.txt` を参照してください。

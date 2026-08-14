@@ -302,6 +302,8 @@ export default function VisualizationChart({
     t,
   ]);
 
+  if (viewMode === 'hovmoller') return null;
+
   return (
     <div className="viz-chart-canvas-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
       <canvas ref={chartRef} id="viz-chart" />

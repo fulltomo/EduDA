@@ -22,11 +22,16 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
   }, []);
 
   const handleShare = useCallback(() => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(() => {
+          // Clipboard write permission denied or unsecure context
+        });
     }
   }, []);
 
