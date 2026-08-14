@@ -162,18 +162,18 @@ export const PRESETS = [
     id: 'preset1',
     title: '実験1: インフレーションの効果',
     theme: 'アンサンブル縮小・過信（Filter Divergence）の防止効果を体験。',
-    description: 'アンサンブル数が少ない場合（M=20）、サンプリング誤差によりアンサンブルのばらつき（Spread）が実際のエラーより小さく見積もられ、同化が機能しなくなる「フィルター発散」が発生します。インフレーションなし（Inflation 1.00）ではRMSEが著しく悪化しますが、適正インフレーション（Inflation 1.10）を設定することでSpreadが適切に拡張され、低いRMSEを維持できます。',
+    description: '共分散インフレーション（膨張）がない場合（Inflation 1.00）、少アンサンブル（M=20）のサンプリング誤差によってメンバーが真値から離れて互いに縮小し、同化が機能しなくなる「フィルター発散」が発生します。Inflation 1.00ではRMSEが約2.5以上へと著しく悪化・発散しますが、適正インフレーション（Inflation 1.15）を設定することでSpreadが適切に維持され、低RMSE（約0.35）の安定した同化が可能になります。',
     obsMode: 'full',
     methods: [
       {
         type: 'EnKF',
         label: 'EnKF (Inflation 1.00: 膨張なし)',
-        params: { ensembleSize: 20, inflation: 1.00, localization: 5 }
+        params: { ensembleSize: 20, inflation: 1.00, localization: 10 }
       },
       {
         type: 'EnKF',
-        label: 'EnKF (Inflation 1.10: 適正膨張)',
-        params: { ensembleSize: 20, inflation: 1.10, localization: 5 }
+        label: 'EnKF (Inflation 1.15: 適正膨張)',
+        params: { ensembleSize: 20, inflation: 1.15, localization: 10 }
       }
     ],
     advancedOptions: {
