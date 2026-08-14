@@ -4,6 +4,7 @@ import PresetBanner from './visualization/PresetBanner';
 import SummaryBar from './visualization/SummaryBar';
 import VisualizationChart from './visualization/VisualizationChart';
 import HovmollerDiagram from './visualization/HovmollerDiagram';
+import PlaybackControls from './visualization/PlaybackControls';
 import { useLanguage } from '../context/LanguageContext';
 import './VisualizationArea.css';
 
@@ -22,13 +23,16 @@ export default function VisualizationArea({
   const [viewMode, setViewMode] = useState('timeseries');
   const [selectedStepIdx, setSelectedStepIdx] = useState(0);
   const [selectedMethodId, setSelectedMethodId] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1); // 1x, 2x, 5x
 
-  // Reset selected step and selected method when new simulation results are loaded
+  // Reset selected step, selected method, and stop playing when new simulation results are loaded
   useEffect(() => {
     if (simulationResults && simulationResults.results && simulationResults.results.length > 0) {
       const results = simulationResults.results;
       const stepsCount = results[0].timeSteps?.length || 0;
       setSelectedStepIdx(stepsCount > 0 ? stepsCount - 1 : 0);
+      setIsPlaying(false);
       setSelectedMethodId(prev => {
         if (!prev || !results.some(r => r.methodId === prev)) {
           return results[0].methodId;
@@ -37,6 +41,53 @@ export default function VisualizationArea({
       });
     }
   }, [simulationResults]);
+
+  // Pause playback when switching away from state1d view
+  useEffect(() => {
+    if (viewMode !== 'state1d') {
+      setIsPlaying(false);
+    }
+  }, [viewMode]);
+
+  // Handle auto playback interval
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const results = simulationResults?.results;
+    const totalSteps = results?.[0]?.timeSteps?.length || 0;
+    if (totalSteps <= 1) {
+      setIsPlaying(false);
+      return;
+    }
+
+    const intervalTime = Math.round(300 / playbackSpeed);
+    const interval = setInterval(() => {
+      setSelectedStepIdx(prev => (prev >= totalSteps - 1 ? 0 : prev + 1));
+    }, intervalTime);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, playbackSpeed, simulationResults]);
+
+  const handleStepBack = () => {
+    setIsPlaying(false);
+    const results = simulationResults?.results;
+    const totalSteps = results?.[0]?.timeSteps?.length || 0;
+    if (totalSteps <= 1) return;
+    setSelectedStepIdx(prev => (prev - 1 + totalSteps) % totalSteps);
+  };
+
+  const handleStepForward = () => {
+    setIsPlaying(false);
+    const results = simulationResults?.results;
+    const totalSteps = results?.[0]?.timeSteps?.length || 0;
+    if (totalSteps <= 1) return;
+    setSelectedStepIdx(prev => (prev + 1) % totalSteps);
+  };
+
+  const handleSliderChange = (e) => {
+    setIsPlaying(false);
+    setSelectedStepIdx(parseInt(e.target.value, 10));
+  };
 
   const results = simulationResults?.results;
 
@@ -58,18 +109,21 @@ export default function VisualizationArea({
         <div className="viz-chart-header">
           <div className="viz-tab-row">
             <button
+              type="button"
               className={`viz-tab-btn ${viewMode === 'timeseries' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('timeseries')}
             >
               {t('visualization.tabTimeseries')}
             </button>
             <button
+              type="button"
               className={`viz-tab-btn ${viewMode === 'state1d' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('state1d')}
             >
               {t('visualization.tabState1d')}
             </button>
             <button
+              type="button"
               className={`viz-tab-btn ${viewMode === 'hovmoller' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('hovmoller')}
             >
@@ -135,7 +189,7 @@ export default function VisualizationArea({
           )}
         </div>
 
-        {/* 1D State Plot Step Slider */}
+        {/* 1D State Plot Step Slider & Playback Controls */}
         {viewMode === 'state1d' && results && results.length > 0 && results[0].timeSteps && results[0].timeSteps.length > 0 && (
           <div className="viz-slider-container">
             <div className="viz-slider-header">
@@ -149,9 +203,18 @@ export default function VisualizationArea({
               min={0}
               max={results[0].timeSteps.length - 1}
               value={selectedStepIdx}
-              onChange={(e) => setSelectedStepIdx(parseInt(e.target.value, 10))}
+              onChange={handleSliderChange}
               className="viz-slider"
               aria-label={t('visualization.stepSelect')}
+            />
+
+            <PlaybackControls
+              isPlaying={isPlaying}
+              playbackSpeed={playbackSpeed}
+              onTogglePlay={() => setIsPlaying(!isPlaying)}
+              onStepBack={handleStepBack}
+              onStepForward={handleStepForward}
+              onSpeedChange={setPlaybackSpeed}
             />
           </div>
         )}

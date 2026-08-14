@@ -108,6 +108,11 @@ export const TRANSLATIONS = {
       placeholder: '手法を追加して「同化を実行」を押してください',
       stepSelect: 'タイムステップ選択:',
       step: 'Step',
+      play: '再生',
+      pause: '一時停止',
+      stepBack: '1ステップ戻る',
+      stepForward: '1ステップ進む',
+      playbackSpeed: '再生速度',
       rmseSolid: 'RMSE (実線)',
       spreadDashed: 'Spread (破線)',
       // Chart datasets & axis
@@ -257,6 +262,11 @@ export const TRANSLATIONS = {
       placeholder: 'Add methods and click "Run Assimilation" to start',
       stepSelect: 'Time Step Selection:',
       step: 'Step',
+      play: 'Play',
+      pause: 'Pause',
+      stepBack: 'Step Back',
+      stepForward: 'Step Forward',
+      playbackSpeed: 'Playback Speed',
       rmseSolid: 'RMSE (Solid)',
       spreadDashed: 'Spread (Dashed)',
       // Chart datasets & axis
