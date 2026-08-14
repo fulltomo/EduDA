@@ -11,15 +11,13 @@ function runSimulation(payload) {
       N = 40,
       F = 8.0,
       obsErrorVar = 1.0,
-      obsInterval = 4,
+      obsInterval = 1,
       numSteps = 500,
       dt = 0.05,
       sparseInterval = 4,
       sparseRegionStart = 0,
       sparseRegionEnd = 39,
       thinInterval = 2,
-      pfResampleThreshold = 0.5,
-      varWindow = 5
     } = advancedOptions || {};
 
     const R_diag = obsErrorVar;
@@ -370,7 +368,7 @@ function runSimulation(payload) {
       }
       
       if (m.type === '4DVar') {
-        state.windowBuffer = [];
+        state.windowBuffer = [{ step: 0, x_bg: state.x.slice(), y: obsHistory[0] }];
       }
       
       return state;
@@ -418,9 +416,6 @@ function runSimulation(payload) {
         if (hasObs) {
           // A. EKF
           if (state.type === 'EKF') {
-            // Apply covariance inflation for EKF if requested
-            let inf = p.inflation || 1.0;
-            state.P = matScale(state.P, inf);
             for(let r=0; r<N; r++) {
               for(let c=0; c<N; c++) {
                 if (isNaN(state.P[r][c])) state.P[r][c] = r === c ? 1.0 : 0;
@@ -440,7 +435,15 @@ function runSimulation(payload) {
             state.x = vecAdd(state.x, matVecMul(K, innov));
             
             let I_KH = matSub(identity(N), matMul(K, H));
-            state.P = matMul(I_KH, state.P);
+            let P_upd = matMul(I_KH, state.P);
+            for (let r = 0; r < N; r++) {
+              for (let c = r; c < N; c++) {
+                let sym = 0.5 * (P_upd[r][c] + P_upd[c][r]);
+                P_upd[r][c] = sym;
+                P_upd[c][r] = sym;
+              }
+            }
+            state.P = P_upd;
 
           // B. 3DVar
           } else if (state.type === '3DVar') {
@@ -451,77 +454,82 @@ function runSimulation(payload) {
 
           // C. 4DVar
           } else if (state.type === '4DVar') {
-            if (state.windowBuffer.length > 0) {
-              let window = state.windowBuffer;
-              let x0_b = window[0].x_bg.slice();
-              let x0 = x0_b.slice();
-              
-              function cost4DVar(x0_eval) {
-                let dx0 = vecSub(x0_eval, x0_b);
-                let J = 0.5 * dotProduct(dx0, matVecMul(state.B_inv, dx0));
-                let x_curr = x0_eval.slice();
+            let targetWindow = p.windowSize || 5;
+            if (state.windowBuffer.length >= targetWindow || step === numSteps) {
+              if (state.windowBuffer.length > 0) {
+                let window = state.windowBuffer;
+                let x0_b = window[0].x_bg.slice();
+                let x0 = x0_b.slice();
+                
+                function cost4DVar(x0_eval) {
+                  let dx0 = vecSub(x0_eval, x0_b);
+                  let J = 0.5 * dotProduct(dx0, matVecMul(state.B_inv, dx0));
+                  let x_curr = x0_eval.slice();
+                  for (let k = 0; k < window.length; k++) {
+                    if (k > 0) x_curr = rk4_step(x_curr, dt, F);
+                    let wy = window[k].y;
+                    if (wy !== null) {
+                      let dy = vecSub(applyH(x_curr), wy);
+                      J += 0.5 * dotProduct(dy, matVecMul(R_inv, dy));
+                    }
+                  }
+                  return J;
+                }
+
+                function dotProduct(u, v) {
+                  let s = 0;
+                  for (let i = 0; i < u.length; i++) s += u[i] * v[i];
+                  return s;
+                }
+
+                for (let iter = 0; iter < 25; iter++) {
+                  let traj = [x0];
+                  let M_list = [];
+                  let x_curr = x0;
+                  for (let k = 0; k < window.length - 1; k++) {
+                    M_list.push(linearize_l96(x_curr, F, dt));
+                    x_curr = rk4_step(x_curr, dt, F);
+                    traj.push(x_curr);
+                  }
+                  
+                  let grad = matVecMul(state.B_inv, vecSub(x0, x0_b));
+                  let adj = Array(N).fill(0);
+                  for (let k = window.length - 1; k >= 0; k--) {
+                    let wy = window[k].y;
+                    if (wy !== null) {
+                      let Hx = applyH(traj[k]);
+                      let diff = vecSub(Hx, wy);
+                      let forcing = matVecMul(H_T, matVecMul(R_inv, diff));
+                      adj = vecAdd(adj, forcing);
+                    }
+                    if (k > 0) {
+                      let M_T = matTranspose(M_list[k-1]);
+                      adj = matVecMul(M_T, adj);
+                    }
+                  }
+                  grad = vecAdd(grad, adj);
+                  
+                  let stepSize = 0.05;
+                  let currentCost = cost4DVar(x0);
+                  for (let ls = 0; ls < 10; ls++) {
+                    let x0_next = vecSub(x0, vecScale(grad, stepSize));
+                    if (cost4DVar(x0_next) < currentCost) {
+                      x0 = x0_next;
+                      break;
+                    }
+                    stepSize *= 0.5;
+                  }
+                }
+                
+                let x_curr = x0;
                 for (let k = 0; k < window.length; k++) {
                   if (k > 0) x_curr = rk4_step(x_curr, dt, F);
-                  let wy = window[k].y;
-                  if (wy !== null) {
-                    let dy = vecSub(applyH(x_curr), wy);
-                    J += 0.5 * dotProduct(dy, matVecMul(R_inv, dy));
-                  }
                 }
-                return J;
+                state.x = x_curr;
+                // Re-initialize windowBuffer with the latest state for the next window.
+                // The observation at this step belongs to the window just optimized, so set y: null to prevent double assimilation.
+                state.windowBuffer = [{ step, x_bg: state.x.slice(), y: null }];
               }
-
-              function dotProduct(u, v) {
-                let s = 0;
-                for (let i = 0; i < u.length; i++) s += u[i] * v[i];
-                return s;
-              }
-
-              for (let iter = 0; iter < 25; iter++) {
-                let traj = [x0];
-                let M_list = [];
-                let x_curr = x0;
-                for (let k = 0; k < window.length - 1; k++) {
-                  M_list.push(linearize_l96(x_curr, F, dt));
-                  x_curr = rk4_step(x_curr, dt, F);
-                  traj.push(x_curr);
-                }
-                
-                let grad = matVecMul(state.B_inv, vecSub(x0, x0_b));
-                let adj = Array(N).fill(0);
-                for (let k = window.length - 1; k >= 0; k--) {
-                  let wy = window[k].y;
-                  if (wy !== null) {
-                    let Hx = applyH(traj[k]);
-                    let diff = vecSub(Hx, wy);
-                    let forcing = matVecMul(H_T, matVecMul(R_inv, diff));
-                    adj = vecAdd(adj, forcing);
-                  }
-                  if (k > 0) {
-                    let M_T = matTranspose(M_list[k-1]);
-                    adj = matVecMul(M_T, adj);
-                  }
-                }
-                grad = vecAdd(grad, adj);
-                
-                let stepSize = 0.05;
-                let currentCost = cost4DVar(x0);
-                for (let ls = 0; ls < 10; ls++) {
-                  let x0_next = vecSub(x0, vecScale(grad, stepSize));
-                  if (cost4DVar(x0_next) < currentCost) {
-                    x0 = x0_next;
-                    break;
-                  }
-                  stepSize *= 0.5;
-                }
-              }
-              
-              let x_curr = x0;
-              for (let k = 0; k < window.length; k++) {
-                if (k > 0) x_curr = rk4_step(x_curr, dt, F);
-              }
-              state.x = x_curr;
-              state.windowBuffer = [];
             }
 
           // D. Ensemble Methods (EnKF, EnSRF, LETKF)
@@ -823,18 +831,27 @@ function runSimulation(payload) {
     }
 
     // 6. Format and Send Results
-    let results = methodStates.map(state => ({
-      methodId: state.id,
-      methodType: state.type,
-      rmseTimeSeries: state.rmseTimeSeries,
-      spreadTimeSeries: state.spreadTimeSeries,
-      avgRmse: mean(state.rmseTimeSeries),
-      avgSpread: mean(state.spreadTimeSeries),
-      timeSteps: state.timeSteps,
-      truthHistory: truthHistory,
-      obsHistory: obsHistory,
-      analysisHistory: state.analysisHistory,
-    }));
+    let results = methodStates.map(state => {
+      // Exclude initial burn-in / spin-up period (first 20% of observation steps, max 50 steps)
+      // from average performance metrics so transient initial errors do not distort avgRmse / avgSpread
+      let totalSteps = state.rmseTimeSeries.length;
+      let burnInCutoff = Math.min(Math.floor(totalSteps * 0.2), 50);
+      let evalRmseSeries = state.rmseTimeSeries.slice(burnInCutoff);
+      let evalSpreadSeries = state.spreadTimeSeries.slice(burnInCutoff);
+
+      return {
+        methodId: state.id,
+        methodType: state.type,
+        rmseTimeSeries: state.rmseTimeSeries,
+        spreadTimeSeries: state.spreadTimeSeries,
+        avgRmse: mean(evalRmseSeries.length > 0 ? evalRmseSeries : state.rmseTimeSeries),
+        avgSpread: mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
+        timeSteps: state.timeSteps,
+        truthHistory: truthHistory,
+        obsHistory: obsHistory,
+        analysisHistory: state.analysisHistory,
+      };
+    });
 
     self.postMessage({
       type: 'RESULT',
