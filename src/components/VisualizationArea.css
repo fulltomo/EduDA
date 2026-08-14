@@ -297,6 +297,97 @@
   outline-offset: 2px;
 }
 
+/* Playback Controls */
+.viz-playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--outline-variant);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.viz-playback-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-playback-btn {
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface);
+  border-radius: var(--rounded-md);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viz-playback-btn:hover {
+  background: var(--surface-container-highest);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.viz-playback-btn:active {
+  transform: scale(0.95);
+}
+
+.viz-playback-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.viz-play-pause-btn {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-color: var(--primary);
+  width: 44px;
+  height: 36px;
+}
+
+.viz-play-pause-btn:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+/* Speed Selector Group */
+.viz-speed-group {
+  display: flex;
+  background: var(--surface-container-highest);
+  padding: 2px;
+  border-radius: var(--rounded-md);
+  border: 1px solid var(--outline-variant);
+}
+
+.viz-speed-btn {
+  background: transparent;
+  border: none;
+  color: var(--on-surface-variant);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--rounded-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.viz-speed-btn:hover {
+  color: var(--on-surface);
+}
+
+.viz-speed-btn--active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
 /* Hovmöller View & Legend */
 .hovmoller-view-container {
   position: absolute;
