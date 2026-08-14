@@ -32,7 +32,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
   const ensembleSize = method.params?.ensembleSize;
 
   return (
-    <div className="method-card card" id={`card-${method.instanceId}`}>
+    <div className={`method-card card ${method.visible === false ? 'is-hidden' : ''}`} id={`card-${method.instanceId}`}>
       {/* Card Header */}
       <div className="card-header method-card-header">
         <div className="method-card-title">
@@ -44,7 +44,26 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             {method.label} {ensembleSize ? `(M=${ensembleSize})` : ''}
           </span>
         </div>
-        <div className="method-card-actions">
+        <div className="method-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button
+            className="method-card-visibility-btn"
+            onClick={() => onUpdate({ visible: method.visible !== false ? false : true })}
+            aria-label={method.visible !== false ? "非表示にする" : "表示する"}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: method.visible !== false ? 'var(--on-surface-variant)' : 'var(--outline)',
+              cursor: 'pointer',
+              padding: '4px',
+              borderRadius: 'var(--rounded)',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+              {method.visible !== false ? 'visibility' : 'visibility_off'}
+            </span>
+          </button>
           <button
             className="method-card-menu-btn"
             onClick={() => setShowMenu(!showMenu)}

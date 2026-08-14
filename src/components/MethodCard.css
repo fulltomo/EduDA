@@ -1,6 +1,10 @@
 .method-card {
   flex-shrink: 0;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.method-card.is-hidden {
+  opacity: 0.5;
 }
 
 .method-card:hover {

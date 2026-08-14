@@ -14,10 +14,9 @@ function runSimulation(payload) {
       obsInterval = 1,
       numSteps = 500,
       dt = 0.05,
-      sparseInterval = 4,
       sparseRegionStart = 0,
-      sparseRegionEnd = 39,
-      thinInterval = 2,
+      sparseRegionEnd = 19,
+      thinNumObs = 20,
     } = advancedOptions || {};
 
     const R_diag = obsErrorVar;
@@ -263,12 +262,15 @@ function runSimulation(payload) {
     } else if (observationMode === 'sparse') {
       let start = Math.min(sparseRegionStart, sparseRegionEnd);
       let end = Math.max(sparseRegionStart, sparseRegionEnd);
-      let step = Math.max(1, sparseInterval);
-      for (let i = start; i <= end; i += step) {
+      for (let i = start; i <= end; i++) {
         obsIndices.push(i % N);
       }
     } else if (observationMode === 'thinned') {
-      for (let i = 0; i < N; i++) obsIndices.push(i);
+      let numObs = Math.min(N, Math.max(1, thinNumObs || 20));
+      for (let k = 0; k < numObs; k++) {
+        let idx = Math.round(k * N / numObs) % N;
+        obsIndices.push(idx);
+      }
     }
     
     let nobs = obsIndices.length;
@@ -297,9 +299,6 @@ function runSimulation(payload) {
       truthHistory.push(state_true.slice());
       
       let isObsTime = (step % obsInterval === 0);
-      if (observationMode === 'thinned' && (step / obsInterval) % thinInterval !== 0) {
-        isObsTime = false;
-      }
       
       if (isObsTime && step > 0) {
         let y = applyH(state_true).map(val => val + randomNormal() * Math.sqrt(R_diag));
@@ -365,6 +364,18 @@ function runSimulation(payload) {
         let HBH = matMul(HB, H_T);
         let S_3d = matAdd(HBH, R);
         state.K_3dvar = matMul(matMul(B, H_T), matInverse(S_3d));
+
+        // Compute Analysis Error Covariance Matrix Pa = (I - K*H) * B for Spread calculation
+        let I_KH = matSub(identity(N), matMul(state.K_3dvar, H));
+        let Pa = matMul(I_KH, B);
+        for (let r = 0; r < N; r++) {
+          for (let c = r; c < N; c++) {
+            let sym = 0.5 * (Pa[r][c] + Pa[c][r]);
+            Pa[r][c] = sym;
+            Pa[c][r] = sym;
+          }
+        }
+        state.Pa = Pa;
       }
       
       if (m.type === '4DVar') {
@@ -788,7 +799,11 @@ function runSimulation(payload) {
             analysisSpread = Math.sqrt(Math.max(0, traceP / N));
           } else if (state.type === '3DVar' || state.type === '4DVar') {
             analysisMean = state.x.slice();
-            analysisSpread = 0;
+            let tracePa = 0;
+            if (state.Pa) {
+              for (let i = 0; i < N; i++) tracePa += state.Pa[i][i];
+            }
+            analysisSpread = Math.sqrt(Math.max(0, tracePa / N));
           } else if (state.type === 'PF') {
             for(let i=0; i<state.ensembleSize; i++){
               for(let j=0; j<N; j++){
@@ -855,7 +870,7 @@ function runSimulation(payload) {
 
     self.postMessage({
       type: 'RESULT',
-      payload: { results }
+      payload: { results, obsIndices }
     });
 
   } catch (error) {
