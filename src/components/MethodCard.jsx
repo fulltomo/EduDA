@@ -6,7 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
   const [openDrawers, setOpenDrawers] = useState({});
   const menuRef = useRef(null);
@@ -96,16 +96,17 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
         {method.paramDefs && method.paramDefs.map((p) => {
           const val = method.params?.[p.key] ?? p.default;
           const isDrawerOpen = !!openDrawers[p.key];
+          const paramLabel = lang === 'en' ? (p.labelEn || p.label) : p.label;
           return (
             <div className="slider-group" key={p.key}>
               <div className="slider-header">
                 <div className="slider-label-wrapper">
-                  <span className="slider-label">{p.label}</span>
+                  <span className="slider-label">{paramLabel}</span>
                   <button
                     type="button"
                     className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
                     onClick={(e) => toggleDrawer(p.key, e)}
-                    aria-label={`${p.label} ${t('methodCard.showExplanation')}`}
+                    aria-label={`${paramLabel} ${t('methodCard.showExplanation')}`}
                     title={t('methodCard.showExplanation')}
                   >
                     <span className="material-symbols-outlined">info</span>

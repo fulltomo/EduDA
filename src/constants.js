@@ -18,7 +18,15 @@ export const DA_METHODS = [
     summary: '線形近似により共分散を陽に更新する基本手法。高次元では計算コストが急増する。',
     summaryEn: 'Explicitly updates covariance via tangent linear approximation. High computational cost in large systems.',
     params: [
-      { key: 'processNoise', label: 'Process Noise (Q)', min: 0.001, max: 0.20, step: 0.005, default: 0.01 },
+      {
+        key: 'processNoise',
+        label: 'プロセスノイズ (Q)',
+        labelEn: 'Process Noise (Q)',
+        min: 0.001,
+        max: 0.20,
+        step: 0.005,
+        default: 0.01,
+      },
     ]
   },
   {
@@ -30,9 +38,33 @@ export const DA_METHODS = [
     summary: '観測値にランダムな摂動を加える確率的手法。流れ依存の背景誤差共分散を効率的に表現。',
     summaryEn: 'Monte Carlo ensemble with perturbed observations. Efficiently captures flow-dependent error covariance.',
     params: [
-      { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
-      { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
-      { key: 'localization', label: 'Localization Radius', min: 1, max: 20, step: 1, default: 5 }
+      {
+        key: 'ensembleSize',
+        label: 'アンサンブルサイズ (M)',
+        labelEn: 'Ensemble Size (M)',
+        min: 5,
+        max: 200,
+        step: 5,
+        default: 30,
+      },
+      {
+        key: 'inflation',
+        label: 'インフレーション (λ)',
+        labelEn: 'Inflation (λ)',
+        min: 1.00,
+        max: 1.50,
+        step: 0.01,
+        default: 1.05,
+      },
+      {
+        key: 'localization',
+        label: '局所化半径 (L)',
+        labelEn: 'Localization Radius (L)',
+        min: 1,
+        max: 20,
+        step: 1,
+        default: 5,
+      }
     ]
   },
   {
@@ -44,9 +76,33 @@ export const DA_METHODS = [
     summary: '観測摂動を伴わない決定論的手法。摂動によるサンプリング誤差を回避。',
     summaryEn: 'Deterministic square root update without observation perturbations, eliminating noise sampling errors.',
     params: [
-      { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
-      { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
-      { key: 'localization', label: 'Localization Radius', min: 1, max: 20, step: 1, default: 5 }
+      {
+        key: 'ensembleSize',
+        label: 'アンサンブルサイズ (M)',
+        labelEn: 'Ensemble Size (M)',
+        min: 5,
+        max: 200,
+        step: 5,
+        default: 30,
+      },
+      {
+        key: 'inflation',
+        label: 'インフレーション (λ)',
+        labelEn: 'Inflation (λ)',
+        min: 1.00,
+        max: 1.50,
+        step: 0.01,
+        default: 1.05,
+      },
+      {
+        key: 'localization',
+        label: '局所化半径 (L)',
+        labelEn: 'Localization Radius (L)',
+        min: 1,
+        max: 20,
+        step: 1,
+        default: 5,
+      }
     ]
   },
   {
@@ -58,9 +114,33 @@ export const DA_METHODS = [
     summary: '局所化と流れ依存共分散を両立した現業気象予報の標準手法。',
     summaryEn: 'State-of-the-art operational weather forecasting method combining local parallel transforms and flow-dependent covariance.',
     params: [
-      { key: 'ensembleSize', label: 'Ensemble Size (M)', min: 5, max: 200, step: 5, default: 30 },
-      { key: 'inflation', label: 'Inflation', min: 1.00, max: 1.50, step: 0.01, default: 1.05 },
-      { key: 'localization', label: 'Localization Radius', min: 1, max: 20, step: 1, default: 5 }
+      {
+        key: 'ensembleSize',
+        label: 'アンサンブルサイズ (M)',
+        labelEn: 'Ensemble Size (M)',
+        min: 5,
+        max: 200,
+        step: 5,
+        default: 30,
+      },
+      {
+        key: 'inflation',
+        label: 'インフレーション (λ)',
+        labelEn: 'Inflation (λ)',
+        min: 1.00,
+        max: 1.50,
+        step: 0.01,
+        default: 1.05,
+      },
+      {
+        key: 'localization',
+        label: '局所化半径 (L)',
+        labelEn: 'Localization Radius (L)',
+        min: 1,
+        max: 20,
+        step: 1,
+        default: 5,
+      }
     ]
   },
   {
@@ -72,8 +152,24 @@ export const DA_METHODS = [
     summary: '時間変化しない固定共分散行列を用いる。計算が軽いが流れ依存性は表現できない。',
     summaryEn: 'Uses a static, time-invariant background error covariance matrix (B). Computationally light but lacks flow dependency.',
     params: [
-      { key: 'bgErrorVar', label: 'Background Error Var (σb²)', min: 0.1, max: 5.0, step: 0.1, default: 1.0 },
-      { key: 'corrLength', label: 'Correlation Length (L)', min: 1, max: 20, step: 1, default: 5 }
+      {
+        key: 'bgErrorVar',
+        label: '背景誤差分散 (σb²)',
+        labelEn: 'Background Error Var (σb²)',
+        min: 0.1,
+        max: 5.0,
+        step: 0.1,
+        default: 1.0,
+      },
+      {
+        key: 'corrLength',
+        label: '相関距離 (L)',
+        labelEn: 'Correlation Length (L)',
+        min: 1,
+        max: 20,
+        step: 1,
+        default: 5,
+      }
     ]
   },
   {
@@ -85,8 +181,24 @@ export const DA_METHODS = [
     summary: '同化ウィンドウ内の時系列観測を時間一貫性を保ち最適化。随伴（アジョイント）モデルが必要。',
     summaryEn: 'Optimizes initial states across a time window with dynamical consistency using adjoint model gradient descent.',
     params: [
-      { key: 'bgErrorVar', label: 'Background Error Var (σb²)', min: 0.1, max: 5.0, step: 0.1, default: 1.0 },
-      { key: 'windowSize', label: 'Assimilation Window', min: 1, max: 15, step: 1, default: 5 }
+      {
+        key: 'bgErrorVar',
+        label: '背景誤差分散 (σb²)',
+        labelEn: 'Background Error Var (σb²)',
+        min: 0.1,
+        max: 5.0,
+        step: 0.1,
+        default: 1.0,
+      },
+      {
+        key: 'windowSize',
+        label: '同化ウィンドウ (W)',
+        labelEn: 'Assimilation Window (W)',
+        min: 1,
+        max: 15,
+        step: 1,
+        default: 5,
+      }
     ]
   },
   {
@@ -98,8 +210,24 @@ export const DA_METHODS = [
     summary: '非線形・非ガウス分布を表現可能だが、高次元空間では次元の呪いを受ける。',
     summaryEn: 'Represents fully nonlinear and non-Gaussian distributions, but suffers from the curse of dimensionality in high dimensions.',
     params: [
-      { key: 'ensembleSize', label: 'Particle Size (M)', min: 10, max: 500, step: 10, default: 50 },
-      { key: 'resampleThreshold', label: 'Resample Threshold', min: 0.1, max: 1.0, step: 0.05, default: 0.5 }
+      {
+        key: 'ensembleSize',
+        label: '粒子数 (M)',
+        labelEn: 'Particle Size (M)',
+        min: 10,
+        max: 500,
+        step: 10,
+        default: 50,
+      },
+      {
+        key: 'resampleThreshold',
+        label: 'リサンプリング閾値',
+        labelEn: 'Resample Threshold',
+        min: 0.1,
+        max: 1.0,
+        step: 0.05,
+        default: 0.5,
+      }
     ]
   },
 ];
