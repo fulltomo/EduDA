@@ -98,13 +98,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             </div>
             <div className="stat-item">
               <span className="stat-label typo-label-caps">Spread:</span>
-              <span className="stat-value typo-data">
-                {method.type === '3DVar' || method.type === '4DVar'
-                  ? 'N/A'
-                  : method.avgSpread != null
-                    ? method.avgSpread.toFixed(3)
-                    : '—'}
-              </span>
+              <span className="stat-value typo-data">{method.avgSpread != null ? method.avgSpread.toFixed(3) : '—'}</span>
             </div>
           </div>
         )}

@@ -14,10 +14,9 @@ function runSimulation(payload) {
       obsInterval = 1,
       numSteps = 500,
       dt = 0.05,
-      sparseInterval = 4,
       sparseRegionStart = 0,
-      sparseRegionEnd = 39,
-      thinInterval = 2,
+      sparseRegionEnd = 19,
+      thinNumObs = 20,
     } = advancedOptions || {};
 
     const R_diag = obsErrorVar;
@@ -263,12 +262,15 @@ function runSimulation(payload) {
     } else if (observationMode === 'sparse') {
       let start = Math.min(sparseRegionStart, sparseRegionEnd);
       let end = Math.max(sparseRegionStart, sparseRegionEnd);
-      let step = Math.max(1, sparseInterval);
-      for (let i = start; i <= end; i += step) {
+      for (let i = start; i <= end; i++) {
         obsIndices.push(i % N);
       }
     } else if (observationMode === 'thinned') {
-      for (let i = 0; i < N; i++) obsIndices.push(i);
+      let numObs = Math.min(N, Math.max(1, thinNumObs || 20));
+      for (let k = 0; k < numObs; k++) {
+        let idx = Math.round(k * N / numObs) % N;
+        obsIndices.push(idx);
+      }
     }
     
     let nobs = obsIndices.length;
@@ -297,9 +299,6 @@ function runSimulation(payload) {
       truthHistory.push(state_true.slice());
       
       let isObsTime = (step % obsInterval === 0);
-      if (observationMode === 'thinned' && (step / obsInterval) % thinInterval !== 0) {
-        isObsTime = false;
-      }
       
       if (isObsTime && step > 0) {
         let y = applyH(state_true).map(val => val + randomNormal() * Math.sqrt(R_diag));
@@ -839,15 +838,13 @@ function runSimulation(payload) {
       let evalRmseSeries = state.rmseTimeSeries.slice(burnInCutoff);
       let evalSpreadSeries = state.spreadTimeSeries.slice(burnInCutoff);
 
-      const isDeterministic = state.type === '3DVar' || state.type === '4DVar';
-
       return {
         methodId: state.id,
         methodType: state.type,
         rmseTimeSeries: state.rmseTimeSeries,
-        spreadTimeSeries: isDeterministic ? null : state.spreadTimeSeries,
+        spreadTimeSeries: state.spreadTimeSeries,
         avgRmse: mean(evalRmseSeries.length > 0 ? evalRmseSeries : state.rmseTimeSeries),
-        avgSpread: isDeterministic ? null : mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
+        avgSpread: mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
         timeSteps: state.timeSteps,
         truthHistory: truthHistory,
         obsHistory: obsHistory,
