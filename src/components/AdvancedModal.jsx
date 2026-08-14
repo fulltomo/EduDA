@@ -5,11 +5,38 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   const [local, setLocal] = useState({ ...options });
 
   const handleChange = (key, value) => {
-    setLocal(prev => ({ ...prev, [key]: value }));
+    setLocal(prev => {
+      const next = { ...prev, [key]: value };
+      if (key === 'N') {
+        const maxIdx = Math.max(0, value - 1);
+        if (next.sparseRegionStart != null && next.sparseRegionStart > maxIdx) {
+          next.sparseRegionStart = maxIdx;
+        }
+        if (next.sparseRegionEnd != null && next.sparseRegionEnd > maxIdx) {
+          next.sparseRegionEnd = maxIdx;
+        }
+        if (next.thinNumObs != null && next.thinNumObs > value) {
+          next.thinNumObs = Math.max(1, value);
+        }
+      }
+      return next;
+    });
   };
 
   const handleSave = () => {
-    onUpdate(local);
+    const sanitized = { ...local };
+    const N = Math.max(4, Math.min(100, Math.round(sanitized.N || 40)));
+    sanitized.N = N;
+    if (sanitized.sparseRegionStart != null) {
+      sanitized.sparseRegionStart = Math.max(0, Math.min(N - 1, Math.round(sanitized.sparseRegionStart)));
+    }
+    if (sanitized.sparseRegionEnd != null) {
+      sanitized.sparseRegionEnd = Math.max(0, Math.min(N - 1, Math.round(sanitized.sparseRegionEnd)));
+    }
+    if (sanitized.thinNumObs != null) {
+      sanitized.thinNumObs = Math.max(1, Math.min(N, Math.round(sanitized.thinNumObs)));
+    }
+    onUpdate(sanitized);
     onClose();
   };
 
@@ -64,7 +91,13 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
                   max={f.max}
                   step={f.step}
                   value={local[f.key]}
-                  onChange={(e) => handleChange(f.key, Number(e.target.value))}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === '') return;
+                    const val = Number(raw);
+                    if (!Number.isFinite(val)) return;
+                    handleChange(f.key, val);
+                  }}
                 />
               </div>
             ))}
@@ -90,7 +123,10 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
                     step={f.step}
                     value={f.key.startsWith('sparseRegion') ? local[f.key] + 1 : local[f.key]}
                     onChange={(e) => {
-                      const val = Number(e.target.value);
+                      const raw = e.target.value;
+                      if (raw === '') return;
+                      const val = Number(raw);
+                      if (!Number.isFinite(val)) return;
                       handleChange(f.key, f.key.startsWith('sparseRegion') ? val - 1 : val);
                     }}
                   />
@@ -118,7 +154,13 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
                     max={f.max}
                     step={f.step}
                     value={local[f.key]}
-                    onChange={(e) => handleChange(f.key, Number(e.target.value))}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === '') return;
+                      const val = Number(raw);
+                      if (!Number.isFinite(val)) return;
+                      handleChange(f.key, val);
+                    }}
                   />
                 </div>
               ))}

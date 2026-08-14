@@ -206,6 +206,9 @@ export function EduTooltipDrawer({ paramId, onClose }) {
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
+      if (e.target.closest && e.target.closest('.edu-tooltip-trigger')) {
+        return;
+      }
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         if (onClose) onClose();
       }
