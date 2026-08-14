@@ -284,3 +284,33 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* Divergence Warning Badge */
+.divergence-badge-container {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.divergence-badge {
+  background-color: rgba(255, 180, 171, 0.15);
+  color: var(--error);
+  border: 1px solid var(--error);
+  border-radius: var(--rounded);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+}
+
+.divergence-badge:hover,
+.divergence-badge.active {
+  background-color: rgba(255, 180, 171, 0.25);
+  box-shadow: 0 0 8px rgba(255, 180, 171, 0.3);
+}
+

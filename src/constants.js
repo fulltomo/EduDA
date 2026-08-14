@@ -2,6 +2,9 @@
  * EduDA Constants & Configuration
  */
 
+/** Filter divergence threshold (RMSE above this or NaN is considered diverged) */
+export const DIVERGENCE_THRESHOLD = 10.0;
+
 /** Available DA methods with parameter specifications */
 export const DA_METHODS = [
   {

@@ -56,6 +56,12 @@ const TOOLTIP_DATA = {
     formula: 'J(x₀) = 第一推定値の不確実性 + 期間内の観測残差和\n(W: 同化ウィンドウサイズ, x₀: 制御変数となる初期値)',
     guideline: '通常 3 〜 10。長すぎるとモデルの非線形性により最適化の収束（勾配降下）が極めて難しくなり、短すぎると時間発展の拘束力が弱まります。'
   },
+  filterDivergence: {
+    title: '⚠️ フィルター発散 (Filter Divergence)',
+    description: 'データ同化の計算過程において、推定値の誤差（RMSE）が異常に大きくなったり、数値が非数（NaN）や無限大（Infinity）に陥ってシミュレーションが破綻する現象です。「システムのバグ」ではなく、モデルの非線形性や誤差共分散の過小評価などにより、実際の現象とシミュレーションの整合性が取れなくなることで発生します。',
+    formula: '【主な発生理由の例】\n・非線形性の強さに対する線形近似誤差の累積（EKFなど）\n・ヤコビアン計算の誤差蓄積による共分散行列の非正定値化（EKFなど）\n・アンサンブルの過信（スプレッドの過小評価）による観測データの無視（EnKFなど）\n・高次元空間でのサンプリング不足（「次元の呪い」）による重みの崩壊（PFなど）',
+    guideline: '【主な回避策・対策】\n・インフレーション（共分散膨張）の追加・調整（EnKF/EnSRF/LETKF）\n・局所化（Localization）の適用（疑似相関の排除）\n・プロセスノイズ（Q）や背景誤差分散の調整・増加\n・粒子数の増加またはリサンプリングの適正化（PF）'
+  },
   N: {
     title: 'N (変数個数 / 格子点数)',
     description: 'Lorenz \'96モデルにおける状態変数の総数（格子点数）です。各格子点は大気などの一層における物理量を表しており、円環状（周期境界条件）に接続されています。',
@@ -191,6 +197,104 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
             <div className="edu-tooltip-section">
               <h4 className="edu-tooltip-sec-title">💡 設定の目安・推奨値</h4>
               <p className="edu-tooltip-sec-text">{data.guideline}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Divergence Badge with Hover and Click Tooltip Support
+export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  const data = TOOLTIP_DATA['filterDivergence'];
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [isOpen]);
+
+  const toggleTooltip = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+  };
+
+  const handleMouseEnter = () => {
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsOpen(false);
+  };
+
+  if (!data) return null;
+
+  return (
+    <div
+      className="edu-tooltip-container mode-floating divergence-badge-container"
+      ref={containerRef}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <button
+        type="button"
+        className={`divergence-badge ${isOpen ? 'active' : ''}`}
+        onClick={toggleTooltip}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        aria-label={`${data.title} の説明を表示`}
+        title="解説を表示"
+      >
+        <span>⚠️ 発散 (Diverged)</span>
+      </button>
+
+      {isOpen && (
+        <div
+          className={`edu-tooltip-box edu-tooltip-align-${align} edu-tooltip-pos-${position} custom-scroll`}
+          onClick={(e) => e.stopPropagation()}
+          style={{ width: '320px', pointerEvents: 'auto', display: 'flex', flexDirection: 'column' }}
+        >
+          <div className="edu-tooltip-header">
+            <span className="edu-tooltip-title">{data.title}</span>
+            <button
+              type="button"
+              className="edu-tooltip-close"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOpen(false);
+              }}
+              aria-label="閉じる"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div className="edu-tooltip-body">
+            <div className="edu-tooltip-section">
+              <h4 className="edu-tooltip-sec-title">📖 フィルター発散とは</h4>
+              <p className="edu-tooltip-sec-text">{data.description}</p>
+            </div>
+            <div className="edu-tooltip-section">
+              <h4 className="edu-tooltip-sec-title">🚨 主な発生理由</h4>
+              <pre className="edu-tooltip-sec-formula">{data.formula}</pre>
+            </div>
+            <div className="edu-tooltip-section">
+              <h4 className="edu-tooltip-sec-title">💡 回避策・対策</h4>
+              <p className="edu-tooltip-sec-text" style={{ fontSize: '11.5px', whiteSpace: 'pre-line' }}>{data.guideline}</p>
             </div>
           </div>
         </div>
