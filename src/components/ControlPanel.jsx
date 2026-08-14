@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import MethodCard from './MethodCard';
+import { useLanguage } from '../context/LanguageContext';
 import './ControlPanel.css';
 
 export default function ControlPanel({
@@ -15,20 +16,21 @@ export default function ControlPanel({
   hasResults,
   needsRecalc = false,
 }) {
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <aside
       className={`control-panel ${isCollapsed ? 'is-collapsed' : ''}`}
       id="control-panel"
-      aria-label="Methods サイドバー"
+      aria-label="Methods sidebar"
     >
       {/* Header */}
       <div className="cp-header">
         {!isCollapsed ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="typo-headline-md">Methods</span>
+              <span className="typo-headline-md">{t('controlPanel.title')}</span>
               <span className="badge" style={{ fontSize: '11px', background: 'var(--surface-container-high)', color: 'var(--outline)', padding: '2px 6px', borderRadius: 'var(--rounded-full)' }}>
                 {methods.length}
               </span>
@@ -38,16 +40,16 @@ export default function ControlPanel({
                 className="btn-ghost cp-add-btn"
                 onClick={onAddMethod}
                 id="btn-add-method"
-                title="比較手法を追加"
+                title={t('controlPanel.addMethod')}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
-                比較手法を追加
+                {t('controlPanel.addMethod')}
               </button>
               <button
                 className="btn-ghost cp-collapse-btn"
                 onClick={() => setIsCollapsed(true)}
-                title="サイドバーを縮小"
-                aria-label="サイドバーを縮小"
+                title={t('controlPanel.sidebarCollapse')}
+                aria-label={t('controlPanel.sidebarCollapse')}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 20 }}>dock_to_left</span>
               </button>
@@ -58,8 +60,8 @@ export default function ControlPanel({
             <button
               className="btn-ghost cp-expand-btn"
               onClick={() => setIsCollapsed(false)}
-              title="サイドバーを展開"
-              aria-label="サイドバーを展開"
+              title={t('controlPanel.sidebarExpand')}
+              aria-label={t('controlPanel.sidebarExpand')}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_right</span>
             </button>
@@ -76,7 +78,7 @@ export default function ControlPanel({
                 science
               </span>
               <p style={{ color: 'var(--outline)', marginTop: 8 }}>
-                「比較手法を追加」から手法を選択してください
+                {t('controlPanel.emptyHint')}
               </p>
             </div>
           )}
@@ -95,8 +97,8 @@ export default function ControlPanel({
           <button
             className="btn-ghost cp-collapsed-add-btn"
             onClick={onAddMethod}
-            title="比較手法を追加"
-            aria-label="比較手法を追加"
+            title={t('controlPanel.addMethod')}
+            aria-label={t('controlPanel.addMethod')}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
           </button>
@@ -105,13 +107,14 @@ export default function ControlPanel({
             {methods.map((method, index) => {
               const color = colors[index % colors.length];
               const isVisible = method.visible !== false;
+              const statusDesc = isVisible ? t('controlPanel.visibleTooltip') : t('controlPanel.hiddenTooltip');
               return (
                 <button
                   key={method.instanceId}
                   className={`cp-collapsed-method-item ${!isVisible ? 'is-hidden' : ''}`}
                   onClick={() => onUpdateMethod(method.instanceId, { visible: !isVisible })}
-                  title={`${method.label} (${isVisible ? '表示中 - クリックで非表示' : '非表示 - クリックで表示'})`}
-                  aria-label={`${method.label} 表示切り替え`}
+                  title={`${method.label} (${statusDesc})`}
+                  aria-label={`${method.label} ${t('controlPanel.toggleVisibility')}`}
                 >
                   <div
                     className="color-dot"
@@ -143,7 +146,7 @@ export default function ControlPanel({
               style={{ position: 'relative' }}
             >
               <span className="material-symbols-outlined">play_arrow</span>
-              <span>{isRunning ? '計算中...' : '同化を実行'}</span>
+              <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.runAssimilation')}</span>
               {isRunning && <div className="spinner" />}
               {needsRecalc && !isRunning && methods.length > 0 && (
                 <span className="cp-run-badge" />
@@ -166,7 +169,7 @@ export default function ControlPanel({
               id="btn-csv"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>download</span>
-              CSVダウンロード
+              {t('controlPanel.exportCsv')}
             </button>
           </>
         ) : (
@@ -176,8 +179,8 @@ export default function ControlPanel({
               onClick={onRun}
               disabled={isRunning || methods.length === 0}
               id="btn-run-collapsed"
-              title="同化を実行"
-              aria-label="同化を実行"
+              title={t('controlPanel.runAssimilation')}
+              aria-label={t('controlPanel.runAssimilation')}
             >
               <span className="material-symbols-outlined">play_arrow</span>
               {needsRecalc && !isRunning && methods.length > 0 && (
@@ -189,8 +192,8 @@ export default function ControlPanel({
               onClick={onCsvExport}
               disabled={!hasResults}
               id="btn-csv-collapsed"
-              title="CSVダウンロード"
-              aria-label="CSVダウンロード"
+              title={t('controlPanel.exportCsv')}
+              aria-label={t('controlPanel.exportCsv')}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
             </button>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import './ObsTabs.css';
 
 export default function ObsTabs({
@@ -13,6 +14,7 @@ export default function ObsTabs({
   onClearAllCustomObs,
   onRandomCustomObs,
 }) {
+  const { t } = useLanguage();
   const [showGrid, setShowGrid] = useState(true);
   const N = advancedOptions?.N ?? 40;
 
@@ -52,22 +54,31 @@ export default function ObsTabs({
       <div className="obs-tabs-main-row">
         <div className="obs-tabs-left">
           <div className="obs-tabs-row">
-            {modes.map(mode => (
-              <button
-                key={mode.id}
-                className={`obs-tab ${activeMode === mode.id ? 'obs-tab--active' : ''}`}
-                onClick={() => onChangeMode(mode.id)}
-                id={`tab-${mode.id}`}
-              >
-                {mode.label}
-              </button>
-            ))}
+            {modes.map(mode => {
+              const locLabel = t(`obsModes.${mode.id}.label`, mode.label);
+              return (
+                <button
+                  key={mode.id}
+                  className={`obs-tab ${activeMode === mode.id ? 'obs-tab--active' : ''}`}
+                  onClick={() => onChangeMode(mode.id)}
+                  id={`tab-${mode.id}`}
+                >
+                  {locLabel}
+                </button>
+              );
+            })}
           </div>
           {activeMode === 'custom' && (
             <div className="obs-custom-actions">
-              <button className="obs-custom-btn" onClick={onSelectAllCustomObs}>全選択</button>
-              <button className="obs-custom-btn" onClick={onClearAllCustomObs}>全解除</button>
-              <button className="obs-custom-btn" onClick={() => onRandomCustomObs(10)}>ランダム (10点)</button>
+              <button className="obs-custom-btn" onClick={onSelectAllCustomObs}>
+                {t('obsActions.selectAll')}
+              </button>
+              <button className="obs-custom-btn" onClick={onClearAllCustomObs}>
+                {t('obsActions.clearAll')}
+              </button>
+              <button className="obs-custom-btn" onClick={() => onRandomCustomObs(10)}>
+                {t('obsActions.random10')}
+              </button>
             </div>
           )}
           {description && (
@@ -77,17 +88,17 @@ export default function ObsTabs({
 
         <div className="obs-tabs-right">
           <span className="obs-count-badge">
-            観測点: <strong>{observedIndices.size}</strong> / {N} 格子点
+            {t('obsActions.pointsCount')}: <strong>{observedIndices.size}</strong> / {N} {t('obsActions.gridUnits')}
           </span>
           <button
             className="obs-grid-toggle-btn"
             onClick={() => setShowGrid(prev => !prev)}
-            title={showGrid ? "1Dマップを隠す" : "1Dマップを表示"}
+            title={showGrid ? t('obsActions.toggleMapHide') : t('obsActions.toggleMapShow')}
           >
             <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
               {showGrid ? 'expand_less' : 'map'}
             </span>
-            <span>{showGrid ? '非表示' : '1Dマップ'}</span>
+            <span>{showGrid ? t('obsActions.toggleMapHide') : t('obsActions.toggleMapShow')}</span>
           </button>
         </div>
       </div>
@@ -98,6 +109,10 @@ export default function ObsTabs({
             {gridPoints.map(pt => {
               const isCustom = activeMode === 'custom';
               const displayIndex = pt.index + 1;
+              const gridLabel = t('obsActions.gridPoint');
+              const statusText = isCustom
+                ? (pt.isObserved ? t('obsActions.obsOn') : t('obsActions.obsOff'))
+                : (pt.isObserved ? t('obsActions.observed') : t('obsActions.unobserved'));
               return (
                 <button
                   type="button"
@@ -106,11 +121,7 @@ export default function ObsTabs({
                   onClick={isCustom ? () => onToggleCustomObsIndex(pt.index) : undefined}
                   disabled={!isCustom}
                   aria-pressed={isCustom ? pt.isObserved : undefined}
-                  title={
-                    isCustom
-                      ? `格子点 ${displayIndex}: ${pt.isObserved ? '観測ON (クリックでOFF)' : '観測OFF (クリックでON)'}`
-                      : (pt.isObserved ? `格子点 ${displayIndex}: 観測点` : `格子点 ${displayIndex}: 未観測点`)
-                  }
+                  title={`${gridLabel} ${displayIndex}: ${statusText}`}
                 >
                   <span
                     className={`obs-grid-point-dot ${pt.isObserved ? 'obs-grid-point-dot--observed' : 'obs-grid-point-dot--unobserved'}`}

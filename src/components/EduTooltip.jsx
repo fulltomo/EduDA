@@ -1,24 +1,29 @@
 import { useState, useRef } from 'react';
-import { TOOLTIP_DATA } from '../data/tooltips';
+import { getLocalizedTooltip } from '../data/tooltips';
 import { useClickOutside } from '../hooks/useClickOutside';
+import { useLanguage } from '../context/LanguageContext';
 import './EduTooltip.css';
 
 /**
  * Reusable Tooltip Content Sections
  */
-function TooltipBody({ data, isDivergence = false }) {
+function TooltipBody({ data, isDivergence = false, t }) {
+  const secTitle1 = isDivergence ? t('tooltipDrawer.explanationDivergence') : t('tooltipDrawer.explanation');
+  const secTitle2 = isDivergence ? t('tooltipDrawer.formulaDivergence') : t('tooltipDrawer.formula');
+  const secTitle3 = isDivergence ? t('tooltipDrawer.guidelineDivergence') : t('tooltipDrawer.guideline');
+
   return (
     <div className="edu-tooltip-body">
       <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{isDivergence ? '📖 フィルター発散とは' : '📖 直感的な解説'}</h4>
+        <h4 className="edu-tooltip-sec-title">{secTitle1}</h4>
         <p className="edu-tooltip-sec-text">{data.description}</p>
       </div>
       <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{isDivergence ? '🚨 主な発生理由' : '🧮 関連する数式表現'}</h4>
+        <h4 className="edu-tooltip-sec-title">{secTitle2}</h4>
         <pre className="edu-tooltip-sec-formula">{data.formula}</pre>
       </div>
       <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{isDivergence ? '💡 回避策・対策' : '💡 設定の目安・推奨値'}</h4>
+        <h4 className="edu-tooltip-sec-title">{secTitle3}</h4>
         <p className="edu-tooltip-sec-text" style={isDivergence ? { fontSize: '11.5px', whiteSpace: 'pre-line' } : undefined}>
           {data.guideline}
         </p>
@@ -30,7 +35,7 @@ function TooltipBody({ data, isDivergence = false }) {
 /**
  * Floating Popover Box
  */
-function TooltipBox({ data, align, position, onClose, style, isDivergence }) {
+function TooltipBox({ data, align, position, onClose, style, isDivergence, t }) {
   return (
     <div
       className={`edu-tooltip-box edu-tooltip-align-${align} edu-tooltip-pos-${position} custom-scroll`}
@@ -47,12 +52,12 @@ function TooltipBox({ data, align, position, onClose, style, isDivergence }) {
             e.stopPropagation();
             onClose();
           }}
-          aria-label="閉じる"
+          aria-label={t('tooltipDrawer.close')}
         >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
-      <TooltipBody data={data} isDivergence={isDivergence} />
+      <TooltipBody data={data} isDivergence={isDivergence} t={t} />
     </div>
   );
 }
@@ -61,9 +66,10 @@ function TooltipBox({ data, align, position, onClose, style, isDivergence }) {
  * Default Floating Tooltip Component
  */
 export default function EduTooltip({ paramId, align = 'center', position = 'bottom' }) {
+  const { lang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
-  const data = TOOLTIP_DATA[paramId];
+  const data = getLocalizedTooltip(paramId, lang);
 
   useClickOutside(containerRef, () => setIsOpen(false), isOpen);
 
@@ -83,8 +89,8 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
         onClick={toggleTooltip}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        aria-label={`${data.title} の説明を表示`}
-        title="解説を表示"
+        aria-label={`${data.title} ${t('methodCard.showExplanation')}`}
+        title={t('methodCard.showExplanation')}
       >
         <span className="material-symbols-outlined">info</span>
       </button>
@@ -95,6 +101,7 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
           align={align}
           position={position}
           onClose={() => setIsOpen(false)}
+          t={t}
         />
       )}
     </div>
@@ -105,9 +112,10 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
  * Divergence Badge with Hover and Click Tooltip Support
  */
 export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
+  const { lang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
-  const data = TOOLTIP_DATA['filterDivergence'];
+  const data = getLocalizedTooltip('filterDivergence', lang);
 
   useClickOutside(containerRef, () => setIsOpen(false), isOpen);
 
@@ -132,10 +140,10 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
         onClick={toggleTooltip}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
-        aria-label={`${data.title} の説明を表示`}
-        title="解説を表示"
+        aria-label={t('methodCard.divergedTooltip')}
+        title={t('methodCard.showExplanation')}
       >
-        <span>⚠️ 発散 (Diverged)</span>
+        <span>{t('methodCard.diverged')}</span>
       </button>
 
       {isOpen && (
@@ -146,6 +154,7 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
           onClose={() => setIsOpen(false)}
           style={{ width: '320px', pointerEvents: 'auto', display: 'flex', flexDirection: 'column' }}
           isDivergence={true}
+          t={t}
         />
       )}
     </div>
@@ -156,7 +165,8 @@ export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
  * Inline Accordion Help Drawer Component
  */
 export function EduTooltipDrawer({ paramId, onClose }) {
-  const data = TOOLTIP_DATA[paramId];
+  const { lang, t } = useLanguage();
+  const data = getLocalizedTooltip(paramId, lang);
   const containerRef = useRef(null);
 
   useClickOutside(containerRef, () => {
@@ -164,6 +174,11 @@ export function EduTooltipDrawer({ paramId, onClose }) {
   }, true, '.edu-tooltip-trigger');
 
   if (!data) return null;
+
+  const isDivergence = paramId === 'filterDivergence';
+  const secTitle1 = isDivergence ? t('tooltipDrawer.explanationDivergence') : t('tooltipDrawer.explanation');
+  const secTitle2 = isDivergence ? t('tooltipDrawer.formulaDivergence') : t('tooltipDrawer.formula');
+  const secTitle3 = isDivergence ? t('tooltipDrawer.guidelineDivergence') : t('tooltipDrawer.guideline');
 
   return (
     <div ref={containerRef} className="edu-help-inline animate-expand" onClick={(e) => e.stopPropagation()}>
@@ -177,23 +192,25 @@ export function EduTooltipDrawer({ paramId, onClose }) {
             e.stopPropagation();
             if (onClose) onClose(e);
           }}
-          aria-label="閉じる"
+          aria-label={t('tooltipDrawer.close')}
         >
           <span className="material-symbols-outlined">close</span>
         </button>
       </div>
       <div className="edu-help-inline-body">
         <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">📖 直感的な解説</span>
+          <span className="edu-help-inline-sec-title">{secTitle1}</span>
           <p className="edu-help-inline-text">{data.description}</p>
         </div>
         <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">🧮 関連する数式表現</span>
+          <span className="edu-help-inline-sec-title">{secTitle2}</span>
           <pre className="edu-help-inline-formula">{data.formula}</pre>
         </div>
         <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">💡 設定の目安・推奨値</span>
-          <p className="edu-help-inline-text">{data.guideline}</p>
+          <span className="edu-help-inline-sec-title">{secTitle3}</span>
+          <p className="edu-help-inline-text" style={isDivergence ? { whiteSpace: 'pre-line' } : undefined}>
+            {data.guideline}
+          </p>
         </div>
       </div>
     </div>

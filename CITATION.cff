@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this educational software or concepts in your work, please cite it as below."
+title: "EduDA: Educational Data Assimilation Platform with Lorenz '96"
+authors:
+  - family-names: "Tomono"
+    given-names: "Tomoki"
+    alias: "fulltomo"
+abstract: "An interactive educational web platform for exploring, visualizing, and comparing data assimilation algorithms (EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, Particle Filter) on the chaotic Lorenz '96 atmospheric model."
+repository-code: "https://github.com/fulltomo/EduDA"
+url: "https://eduda.pages.dev/"
+license: "MIT"
+keywords:
+  - "data-assimilation"
+  - "kalman-filter"
+  - "ensemble-kalman-filter"
+  - "letkf"
+  - "variational-data-assimilation"
+  - "particle-filter"
+  - "lorenz-96"
+  - "interactive-simulation"
+  - "educational-tools"
+date-released: 2026-08-14

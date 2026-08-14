@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
 
 /**
  * Maps error value to RGB color in the colormap:
@@ -33,6 +34,7 @@ function getErrorColorRGB(error, maxErr) {
 }
 
 export default function HovmollerDiagram({ simulationResults, selectedMethodId }) {
+  const { t, lang } = useLanguage();
   const canvasRef = useRef(null);
   const [displayMaxError, setDisplayMaxError] = useState(4.0);
 
@@ -58,113 +60,106 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
 
     const N = truthHistory[0]?.length || 40;
     const HovSteps = timeSteps.length;
-    if (HovSteps === 0) return;
 
-    // Determine max error for colormap scale
-    let maxError = 0.1;
-    for (let t = 0; t < HovSteps; t++) {
-      const step = timeSteps[t];
-      const truth = truthHistory[step];
-      const analysis = analysisHistory[t];
-      if (truth && analysis) {
+    // 1. Calculate Absolute Error Grid: [stepIdx][gridIdx]
+    let maxErrorObserved = 0;
+    const errorGrid = [];
+
+    for (let i = 0; i < HovSteps; i++) {
+      const row = new Float32Array(N);
+      const analysis = analysisHistory[i];
+      const truth = truthHistory[i];
+      if (analysis && truth) {
         for (let j = 0; j < N; j++) {
           const err = Math.abs(analysis[j] - truth[j]);
-          if (err > maxError) maxError = err;
+          row[j] = err;
+          if (err > maxErrorObserved) {
+            maxErrorObserved = err;
+          }
         }
       }
+      errorGrid.push(row);
     }
-    const computedMaxError = Math.ceil(maxError * 2) / 2 || 4.0;
-    setDisplayMaxError(computedMaxError);
 
+    // Dynamic Max Error Cap (at least 2.0, rounded up to nice decimal)
+    const dynamicMax = Math.max(2.0, Math.min(10.0, Math.ceil(maxErrorObserved * 2) / 2));
+    setDisplayMaxError(dynamicMax);
+
+    // 2. Offscreen Canvas for Pixel-Perfect Fast Rendering
+    const offscreen = document.createElement('canvas');
+    offscreen.width = N;
+    offscreen.height = HovSteps;
+    const offCtx = offscreen.getContext('2d');
+    const imgData = offCtx.createImageData(N, HovSteps);
+    const data = imgData.data;
+
+    for (let i = 0; i < HovSteps; i++) {
+      const row = errorGrid[i];
+      for (let j = 0; j < N; j++) {
+        const err = row[j];
+        const { r: cr, g: cg, b: cb } = getErrorColorRGB(err, dynamicMax);
+        const pixelIdx = (i * N + j) * 4;
+        data[pixelIdx] = cr;
+        data[pixelIdx + 1] = cg;
+        data[pixelIdx + 2] = cb;
+        data[pixelIdx + 3] = 255;
+      }
+    }
+    offCtx.putImageData(imgData, 0, 0);
+
+    // 3. Render onto Main Display Canvas with Padding & Axes
     let animationFrameId;
 
     const render = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      const logicalWidth = rect.width;
-      const logicalHeight = rect.height;
+      const width = canvas.parentElement?.clientWidth || 800;
+      const height = canvas.parentElement?.clientHeight || 450;
 
-      if (canvas.width !== Math.floor(logicalWidth * dpr) || canvas.height !== Math.floor(logicalHeight * dpr)) {
-        canvas.width = Math.floor(logicalWidth * dpr);
-        canvas.height = Math.floor(logicalHeight * dpr);
-      }
+      // Handle HiDPI displays
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
 
       ctx.save();
       ctx.scale(dpr, dpr);
 
-      const width = logicalWidth;
-      const height = logicalHeight;
-
-      // Clear background
-      ctx.fillStyle = '#0b1326';
-      ctx.fillRect(0, 0, width, height);
-
-      // Margins / Paddings
+      // Margins
       const paddingLeft = 55;
-      const paddingRight = 15;
-      const paddingTop = 15;
-      const paddingBottom = 40;
+      const paddingRight = 20;
+      const paddingTop = 20;
+      const paddingBottom = 45;
 
       const graphWidth = width - paddingLeft - paddingRight;
       const graphHeight = height - paddingTop - paddingBottom;
 
-      if (graphWidth <= 0 || graphHeight <= 0) {
-        ctx.restore();
-        return;
-      }
+      // Clear Canvas Background
+      ctx.fillStyle = '#0b1326';
+      ctx.fillRect(0, 0, width, height);
 
-      // Render heatmap via offscreen ImageData buffer
-      const offCanvas = document.createElement('canvas');
-      offCanvas.width = N;
-      offCanvas.height = HovSteps;
-      const offCtx = offCanvas.getContext('2d');
-      if (offCtx) {
-        const imgData = offCtx.createImageData(N, HovSteps);
-        for (let t = 0; t < HovSteps; t++) {
-          const step = timeSteps[t];
-          const truth = truthHistory[step];
-          const analysis = analysisHistory[t];
-          if (!truth || !analysis) continue;
+      // Draw Heatmap (Scale Offscreen Canvas into Graph Box)
+      ctx.imageSmoothingEnabled = false; // Keep crisp pixel grid
+      ctx.drawImage(
+        offscreen,
+        0, 0, N, HovSteps,
+        paddingLeft, paddingTop, graphWidth, graphHeight
+      );
 
-          for (let j = 0; j < N; j++) {
-            const err = Math.abs(analysis[j] - truth[j]);
-            const rgb = getErrorColorRGB(err, computedMaxError);
-            const pixelIdx = (t * N + j) * 4;
-            imgData.data[pixelIdx] = rgb.r;
-            imgData.data[pixelIdx + 1] = rgb.g;
-            imgData.data[pixelIdx + 2] = rgb.b;
-            imgData.data[pixelIdx + 3] = 255;
-          }
-        }
-        offCtx.putImageData(imgData, 0, 0);
-
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(offCanvas, paddingLeft, paddingTop, graphWidth, graphHeight);
-      }
-
-      const cellWidth = graphWidth / N;
-      const cellHeight = graphHeight / HovSteps;
-
-      // Draw axes lines
+      // Draw Coordinate Frame & Ticks
       ctx.strokeStyle = '#3e484f';
       ctx.lineWidth = 1;
-      ctx.beginPath();
-      // Y-axis (left)
-      ctx.moveTo(paddingLeft, paddingTop);
-      ctx.lineTo(paddingLeft, paddingTop + graphHeight);
-      // X-axis (bottom)
-      ctx.moveTo(paddingLeft, paddingTop + graphHeight);
-      ctx.lineTo(paddingLeft + graphWidth, paddingTop + graphHeight);
-      ctx.stroke();
+      ctx.strokeRect(paddingLeft, paddingTop, graphWidth, graphHeight);
 
-      // Labels styling
+      // X-axis (Grid Points) Ticks & Labels
       ctx.fillStyle = '#87929a';
       ctx.font = '10px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
 
-      // X-axis (Grid Points) Ticks & Labels
-      const xLabelInterval = N <= 20 ? 2 : (N <= 40 ? 5 : 10);
+      const cellWidth = graphWidth / N;
+      const cellHeight = graphHeight / HovSteps;
+
+      const xLabelInterval = N >= 40 ? 5 : (N >= 20 ? 2 : 1);
       for (let j = 0; j < N; j++) {
         const gridNum = j + 1;
         if (gridNum === 1 || gridNum === N || gridNum % xLabelInterval === 0) {
@@ -179,7 +174,7 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
 
       // X-axis Title
       ctx.font = 'bold 11px Inter, sans-serif';
-      ctx.fillText('Grid Point (格子点)', paddingLeft + graphWidth / 2, paddingTop + graphHeight + 22);
+      ctx.fillText(t('visualization.hovmoller.gridAxis'), paddingLeft + graphWidth / 2, paddingTop + graphHeight + 22);
 
       // Y-axis (Time Steps) Ticks & Labels
       ctx.font = '10px Inter, sans-serif';
@@ -207,7 +202,7 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = '#87929a';
-      ctx.fillText('Time Step (タイムステップ)', 0, 0);
+      ctx.fillText(t('visualization.hovmoller.timeAxis'), 0, 0);
       ctx.restore();
 
       ctx.restore();
@@ -226,7 +221,7 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       resizeObserver.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
-  }, [selectedMethodId, simulationResults]);
+  }, [selectedMethodId, simulationResults, lang, t]);
 
   return (
     <div className="hovmoller-view-container">
@@ -234,9 +229,11 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
         <canvas ref={canvasRef} />
       </div>
       <div className="hovmoller-legend-container">
-        <span className="hovmoller-legend-text">低誤差 (0.0)</span>
+        <span className="hovmoller-legend-text">{t('visualization.hovmoller.lowError')}</span>
         <div className="hovmoller-gradient-bar" />
-        <span className="hovmoller-legend-text">高誤差 ({displayMaxError.toFixed(1)})</span>
+        <span className="hovmoller-legend-text">
+          {t('visualization.hovmoller.highError')} ({displayMaxError.toFixed(1)})
+        </span>
       </div>
     </div>
   );

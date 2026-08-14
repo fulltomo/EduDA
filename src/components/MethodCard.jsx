@@ -2,9 +2,11 @@ import { useState, useRef } from 'react';
 import { EduTooltipDrawer } from './EduTooltip';
 import { DIVERGENCE_THRESHOLD } from '../constants';
 import { useClickOutside } from '../hooks/useClickOutside';
+import { useLanguage } from '../context/LanguageContext';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
+  const { lang, t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
   const [openDrawers, setOpenDrawers] = useState({});
   const menuRef = useRef(null);
@@ -53,7 +55,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
           <button
             className="method-card-visibility-btn"
             onClick={() => onUpdate({ visible: method.visible !== false ? false : true })}
-            aria-label={method.visible !== false ? "非表示にする" : "表示する"}
+            aria-label={method.visible !== false ? t('methodCard.visibilityHide') : t('methodCard.visibilityShow')}
             style={{
               background: 'none',
               border: 'none',
@@ -73,7 +75,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             <button
               className="method-card-menu-btn"
               onClick={() => setShowMenu(!showMenu)}
-              aria-label="メニュー"
+              aria-label={t('methodCard.menu')}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>more_vert</span>
             </button>
@@ -81,7 +83,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="method-card-dropdown">
                 <button onClick={() => { onRemove(); setShowMenu(false); }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
-                  削除
+                  {t('methodCard.delete')}
                 </button>
               </div>
             )}
@@ -94,17 +96,18 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
         {method.paramDefs && method.paramDefs.map((p) => {
           const val = method.params?.[p.key] ?? p.default;
           const isDrawerOpen = !!openDrawers[p.key];
+          const paramLabel = lang === 'en' ? (p.labelEn || p.label) : p.label;
           return (
             <div className="slider-group" key={p.key}>
               <div className="slider-header">
                 <div className="slider-label-wrapper">
-                  <span className="slider-label">{p.label}</span>
+                  <span className="slider-label">{paramLabel}</span>
                   <button
                     type="button"
                     className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
                     onClick={(e) => toggleDrawer(p.key, e)}
-                    aria-label={`${p.label} の説明を表示`}
-                    title="解説を表示"
+                    aria-label={`${paramLabel} ${t('methodCard.showExplanation')}`}
+                    title={t('methodCard.showExplanation')}
                   >
                     <span className="material-symbols-outlined">info</span>
                   </button>
@@ -139,16 +142,16 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
           <div className="method-card-stats-wrapper">
             <div className="method-card-stats">
               <div className="stat-item">
-                <span className="stat-label typo-label-caps">RMSE:</span>
+                <span className="stat-label typo-label-caps">{t('methodCard.rmse')}:</span>
                 {!Number.isFinite(method.avgRmse) || method.avgRmse > DIVERGENCE_THRESHOLD ? (
                   <button
                     type="button"
                     className={`divergence-badge ${openDrawers['filterDivergence'] ? 'active' : ''}`}
                     onClick={(e) => toggleDrawer('filterDivergence', e)}
-                    aria-label="フィルター発散の説明を表示"
-                    title="解説を表示"
+                    aria-label={t('methodCard.divergedTooltip')}
+                    title={t('methodCard.showExplanation')}
                   >
-                    <span>⚠️ 発散 (Diverged)</span>
+                    <span>{t('methodCard.diverged')}</span>
                   </button>
                 ) : (
                   <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
@@ -156,13 +159,13 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               </div>
               <div className="stat-item">
                 <div className="stat-label-wrapper">
-                  <span className="stat-label typo-label-caps">Spread</span>
+                  <span className="stat-label typo-label-caps">{t('methodCard.spread')}</span>
                   <button
                     type="button"
                     className={`edu-tooltip-trigger ${openDrawers['spread'] ? 'active' : ''}`}
                     onClick={(e) => toggleDrawer('spread', e)}
-                    aria-label="Spread の説明を表示"
-                    title="解説を表示"
+                    aria-label={`${t('methodCard.spread')} ${t('methodCard.showExplanation')}`}
+                    title={t('methodCard.showExplanation')}
                   >
                     <span className="material-symbols-outlined">info</span>
                   </button>

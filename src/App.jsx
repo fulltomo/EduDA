@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import TopNav from './components/TopNav';
 import ObsTabs from './components/ObsTabs';
 import ControlPanel from './components/ControlPanel';
@@ -9,11 +9,14 @@ import {
   OBS_MODES,
   CHART_COLORS,
   DEFAULT_ADVANCED,
+  PRESETS,
+  getLocalizedPreset,
   createMethodInstance,
   createPresetMethodInstance,
 } from './constants';
 import { exportSimulationCsv } from './utils/csvExport';
 import { useSimulationWorker } from './hooks/useSimulationWorker';
+import { useLanguage } from './context/LanguageContext';
 
 export default function App() {
   // --- State ---
@@ -29,6 +32,7 @@ export default function App() {
   const [showSpread, setShowSpread] = useState(true);
   const [activePreset, setActivePreset] = useState(null);
   const [needsRecalc, setNeedsRecalc] = useState(false);
+  const initialMountRef = useRef(false);
 
   const handleSimulationSuccess = useCallback((payload) => {
     setMethods(prev =>
@@ -129,8 +133,11 @@ export default function App() {
     runSimulation(methods, obsMode, advancedOptions, customObsIndices);
   }, [runSimulation, methods, obsMode, advancedOptions, customObsIndices]);
 
+  const { lang, t } = useLanguage();
+
   const handleSelectPreset = useCallback((preset) => {
-    const instantiatedMethods = preset.methods.map(m =>
+    const locPreset = getLocalizedPreset(preset, lang);
+    const instantiatedMethods = locPreset.methods.map(m =>
       createPresetMethodInstance(m.type, m.label, m.params)
     );
     const targetAdvanced = { ...DEFAULT_ADVANCED, ...preset.advancedOptions };
@@ -142,13 +149,50 @@ export default function App() {
     setNeedsRecalc(false);
 
     runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, customObsIndices);
-  }, [runSimulation, customObsIndices]);
+  }, [lang, runSimulation, customObsIndices]);
+
+  // --- URL Search Params Deep-Linking Sync ---
+  useEffect(() => {
+    if (initialMountRef.current) return;
+    initialMountRef.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const presetParam = params.get('preset');
+    if (presetParam) {
+      const lower = presetParam.toLowerCase();
+      const found = PRESETS.find(
+        p =>
+          p.id.toLowerCase() === lower ||
+          (lower === 'inflation' && p.id === 'preset1') ||
+          (lower === 'localization' && p.id === 'preset2') ||
+          ((lower === 'flow-dependent' || lower === '3dvar-letkf') && p.id === 'preset3') ||
+          ((lower === 'pf' || lower === 'weight-collapse') && p.id === 'preset4')
+      );
+      if (found) {
+        handleSelectPreset(found);
+      }
+    }
+  }, [handleSelectPreset]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (activePreset) {
+      url.searchParams.set('preset', activePreset.id);
+    } else {
+      url.searchParams.delete('preset');
+    }
+    const newSearch = url.searchParams.toString();
+    const newUrl = url.pathname + (newSearch ? `?${newSearch}` : '');
+    window.history.replaceState(null, '', newUrl);
+  }, [activePreset]);
 
   const handleCsvExport = useCallback(() => {
     exportSimulationCsv(simulationResults, advancedOptions.N);
   }, [simulationResults, advancedOptions.N]);
 
   const currentObsMode = OBS_MODES.find(m => m.id === obsMode);
+  const currentObsModeDesc = t(`obsModes.${obsMode}.desc`, currentObsMode?.desc);
 
   return (
     <div className="app-layout">
@@ -163,7 +207,7 @@ export default function App() {
         modes={OBS_MODES}
         activeMode={obsMode}
         onChangeMode={handleObsModeChange}
-        description={currentObsMode?.desc}
+        description={currentObsModeDesc}
         advancedOptions={advancedOptions}
         customObsIndices={customObsIndices}
         onToggleCustomObsIndex={handleToggleCustomObsIndex}

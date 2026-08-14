@@ -1,0 +1,19 @@
+{
+  "name": "EduDA - Educational Data Assimilation",
+  "short_name": "EduDA",
+  "description": "Lorenz '96 カオスモデルを用いたデータ同化学習・シミュレーションプラットフォーム",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "categories": ["education", "science", "utilities"],
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { getLocalizedPreset } from '../../data/presets';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function PresetBanner({ activePreset }) {
+  const { lang, t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
@@ -10,6 +13,8 @@ export default function PresetBanner({ activePreset }) {
   }, [activePreset]);
 
   if (!activePreset) return null;
+
+  const locPreset = getLocalizedPreset(activePreset, lang);
 
   return (
     <div
@@ -40,7 +45,7 @@ export default function PresetBanner({ activePreset }) {
             school
           </span>
           <span className="typo-headline-md" style={{ color: 'var(--primary)', fontSize: '15px', fontWeight: '600' }}>
-            {activePreset.title}
+            {locPreset.title}
           </span>
         </div>
         <button
@@ -63,16 +68,16 @@ export default function PresetBanner({ activePreset }) {
           <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
             {isExpanded ? 'expand_less' : 'expand_more'}
           </span>
-          {isExpanded ? '説明を隠す' : '説明を表示'}
+          {isExpanded ? t('visualization.presetBanner.hideDetails') : t('visualization.presetBanner.showDetails')}
         </button>
       </div>
       {isExpanded && (
         <div className="card-body" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <p className="typo-body-sm" style={{ fontWeight: '600', color: 'var(--secondary)' }}>
-            テーマ: {activePreset.theme}
+            {t('visualization.presetBanner.theme')} {locPreset.theme}
           </p>
           <p className="typo-body-sm" style={{ color: 'var(--on-surface-variant)', lineHeight: '1.5', fontSize: '13px' }}>
-            {activePreset.description}
+            {locPreset.description}
           </p>
         </div>
       )}
