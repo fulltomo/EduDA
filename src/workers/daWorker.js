@@ -368,7 +368,7 @@ function runSimulation(payload) {
       }
       
       if (m.type === '4DVar') {
-        state.windowBuffer = [];
+        state.windowBuffer = [{ step: 0, x_bg: state.x.slice(), y: obsHistory[0] }];
       }
       
       return state;
@@ -446,77 +446,81 @@ function runSimulation(payload) {
 
           // C. 4DVar
           } else if (state.type === '4DVar') {
-            if (state.windowBuffer.length > 0) {
-              let window = state.windowBuffer;
-              let x0_b = window[0].x_bg.slice();
-              let x0 = x0_b.slice();
-              
-              function cost4DVar(x0_eval) {
-                let dx0 = vecSub(x0_eval, x0_b);
-                let J = 0.5 * dotProduct(dx0, matVecMul(state.B_inv, dx0));
-                let x_curr = x0_eval.slice();
+            let targetWindow = p.windowSize || 5;
+            if (state.windowBuffer.length >= targetWindow || step === numSteps) {
+              if (state.windowBuffer.length > 0) {
+                let window = state.windowBuffer;
+                let x0_b = window[0].x_bg.slice();
+                let x0 = x0_b.slice();
+                
+                function cost4DVar(x0_eval) {
+                  let dx0 = vecSub(x0_eval, x0_b);
+                  let J = 0.5 * dotProduct(dx0, matVecMul(state.B_inv, dx0));
+                  let x_curr = x0_eval.slice();
+                  for (let k = 0; k < window.length; k++) {
+                    if (k > 0) x_curr = rk4_step(x_curr, dt, F);
+                    let wy = window[k].y;
+                    if (wy !== null) {
+                      let dy = vecSub(applyH(x_curr), wy);
+                      J += 0.5 * dotProduct(dy, matVecMul(R_inv, dy));
+                    }
+                  }
+                  return J;
+                }
+
+                function dotProduct(u, v) {
+                  let s = 0;
+                  for (let i = 0; i < u.length; i++) s += u[i] * v[i];
+                  return s;
+                }
+
+                for (let iter = 0; iter < 25; iter++) {
+                  let traj = [x0];
+                  let M_list = [];
+                  let x_curr = x0;
+                  for (let k = 0; k < window.length - 1; k++) {
+                    M_list.push(linearize_l96(x_curr, F, dt));
+                    x_curr = rk4_step(x_curr, dt, F);
+                    traj.push(x_curr);
+                  }
+                  
+                  let grad = matVecMul(state.B_inv, vecSub(x0, x0_b));
+                  let adj = Array(N).fill(0);
+                  for (let k = window.length - 1; k >= 0; k--) {
+                    let wy = window[k].y;
+                    if (wy !== null) {
+                      let Hx = applyH(traj[k]);
+                      let diff = vecSub(Hx, wy);
+                      let forcing = matVecMul(H_T, matVecMul(R_inv, diff));
+                      adj = vecAdd(adj, forcing);
+                    }
+                    if (k > 0) {
+                      let M_T = matTranspose(M_list[k-1]);
+                      adj = matVecMul(M_T, adj);
+                    }
+                  }
+                  grad = vecAdd(grad, adj);
+                  
+                  let stepSize = 0.05;
+                  let currentCost = cost4DVar(x0);
+                  for (let ls = 0; ls < 10; ls++) {
+                    let x0_next = vecSub(x0, vecScale(grad, stepSize));
+                    if (cost4DVar(x0_next) < currentCost) {
+                      x0 = x0_next;
+                      break;
+                    }
+                    stepSize *= 0.5;
+                  }
+                }
+                
+                let x_curr = x0;
                 for (let k = 0; k < window.length; k++) {
                   if (k > 0) x_curr = rk4_step(x_curr, dt, F);
-                  let wy = window[k].y;
-                  if (wy !== null) {
-                    let dy = vecSub(applyH(x_curr), wy);
-                    J += 0.5 * dotProduct(dy, matVecMul(R_inv, dy));
-                  }
                 }
-                return J;
+                state.x = x_curr;
+                // Re-initialize windowBuffer with the latest state for the next window
+                state.windowBuffer = [{ step, x_bg: state.x.slice(), y }];
               }
-
-              function dotProduct(u, v) {
-                let s = 0;
-                for (let i = 0; i < u.length; i++) s += u[i] * v[i];
-                return s;
-              }
-
-              for (let iter = 0; iter < 25; iter++) {
-                let traj = [x0];
-                let M_list = [];
-                let x_curr = x0;
-                for (let k = 0; k < window.length - 1; k++) {
-                  M_list.push(linearize_l96(x_curr, F, dt));
-                  x_curr = rk4_step(x_curr, dt, F);
-                  traj.push(x_curr);
-                }
-                
-                let grad = matVecMul(state.B_inv, vecSub(x0, x0_b));
-                let adj = Array(N).fill(0);
-                for (let k = window.length - 1; k >= 0; k--) {
-                  let wy = window[k].y;
-                  if (wy !== null) {
-                    let Hx = applyH(traj[k]);
-                    let diff = vecSub(Hx, wy);
-                    let forcing = matVecMul(H_T, matVecMul(R_inv, diff));
-                    adj = vecAdd(adj, forcing);
-                  }
-                  if (k > 0) {
-                    let M_T = matTranspose(M_list[k-1]);
-                    adj = matVecMul(M_T, adj);
-                  }
-                }
-                grad = vecAdd(grad, adj);
-                
-                let stepSize = 0.05;
-                let currentCost = cost4DVar(x0);
-                for (let ls = 0; ls < 10; ls++) {
-                  let x0_next = vecSub(x0, vecScale(grad, stepSize));
-                  if (cost4DVar(x0_next) < currentCost) {
-                    x0 = x0_next;
-                    break;
-                  }
-                  stepSize *= 0.5;
-                }
-              }
-              
-              let x_curr = x0;
-              for (let k = 0; k < window.length; k++) {
-                if (k > 0) x_curr = rk4_step(x_curr, dt, F);
-              }
-              state.x = x_curr;
-              state.windowBuffer = [];
             }
 
           // D. Ensemble Methods (EnKF, EnSRF, LETKF)
