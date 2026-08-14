@@ -5,7 +5,7 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
   if (!results || results.length === 0) return null;
 
   return (
-    <div className="viz-summary-bar no-scrollbar">
+    <div className="viz-summary-bar custom-scroll">
       {results.map((r, idx) => {
         const color = colors[idx % colors.length];
         const method = methods.find(m => m.instanceId === r.methodId);
@@ -43,20 +43,20 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
                 </span>
               </button>
               <div className="color-dot-sm" style={{ backgroundColor: color }} />
-              <span className="viz-summary-name">{label}</span>
+              <span className="viz-summary-name" title={label}>{label}</span>
             </div>
             <div className="viz-summary-metrics">
               <div className="viz-summary-metric">
-                <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg RMSE</span>
+                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>Avg RMSE</span>
                 {!Number.isFinite(r.avgRmse) || r.avgRmse > DIVERGENCE_THRESHOLD ? (
                   <DivergenceBadge align="center" position="bottom" />
                 ) : (
-                  <span className="typo-data" style={{ color }}>{r.avgRmse.toFixed(3)}</span>
+                  <span className="typo-data" style={{ color, fontSize: '13px' }}>{r.avgRmse.toFixed(3)}</span>
                 )}
               </div>
               <div className="viz-summary-metric">
-                <span className="typo-label-caps" style={{ color: 'var(--outline)' }}>Avg Spread</span>
-                <span className="typo-data">{Number.isFinite(r.avgSpread) ? r.avgSpread.toFixed(3) : '—'}</span>
+                <span className="typo-label-caps" style={{ color: 'var(--outline)', fontSize: '10px' }}>Avg Spread</span>
+                <span className="typo-data" style={{ fontSize: '13px' }}>{Number.isFinite(r.avgSpread) ? r.avgSpread.toFixed(3) : '—'}</span>
               </div>
             </div>
           </div>

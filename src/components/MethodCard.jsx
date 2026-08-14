@@ -1,11 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { EduTooltipDrawer } from './EduTooltip';
 import { DIVERGENCE_THRESHOLD } from '../constants';
+import { useClickOutside } from '../hooks/useClickOutside';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
   const [showMenu, setShowMenu] = useState(false);
   const [openDrawers, setOpenDrawers] = useState({});
+  const menuRef = useRef(null);
+
+  useClickOutside(menuRef, () => setShowMenu(false), showMenu);
 
   const glowColor = color + '99'; // ~60% opacity
 
@@ -65,21 +69,23 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               {method.visible !== false ? 'visibility' : 'visibility_off'}
             </span>
           </button>
-          <button
-            className="method-card-menu-btn"
-            onClick={() => setShowMenu(!showMenu)}
-            aria-label="メニュー"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>more_vert</span>
-          </button>
-          {showMenu && (
-            <div className="method-card-dropdown">
-              <button onClick={() => { onRemove(); setShowMenu(false); }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
-                削除
-              </button>
-            </div>
-          )}
+          <div className="method-card-menu-wrapper" ref={menuRef} style={{ position: 'relative' }}>
+            <button
+              className="method-card-menu-btn"
+              onClick={() => setShowMenu(!showMenu)}
+              aria-label="メニュー"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>more_vert</span>
+            </button>
+            {showMenu && (
+              <div className="method-card-dropdown">
+                <button onClick={() => { onRemove(); setShowMenu(false); }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
+                  削除
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
