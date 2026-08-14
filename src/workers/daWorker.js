@@ -11,15 +11,13 @@ function runSimulation(payload) {
       N = 40,
       F = 8.0,
       obsErrorVar = 1.0,
-      obsInterval = 4,
+      obsInterval = 1,
       numSteps = 500,
       dt = 0.05,
       sparseInterval = 4,
       sparseRegionStart = 0,
       sparseRegionEnd = 39,
       thinInterval = 2,
-      pfResampleThreshold = 0.5,
-      varWindow = 5
     } = advancedOptions || {};
 
     const R_diag = obsErrorVar;
@@ -418,9 +416,6 @@ function runSimulation(payload) {
         if (hasObs) {
           // A. EKF
           if (state.type === 'EKF') {
-            // Apply covariance inflation for EKF if requested
-            let inf = p.inflation || 1.0;
-            state.P = matScale(state.P, inf);
             for(let r=0; r<N; r++) {
               for(let c=0; c<N; c++) {
                 if (isNaN(state.P[r][c])) state.P[r][c] = r === c ? 1.0 : 0;
@@ -823,18 +818,27 @@ function runSimulation(payload) {
     }
 
     // 6. Format and Send Results
-    let results = methodStates.map(state => ({
-      methodId: state.id,
-      methodType: state.type,
-      rmseTimeSeries: state.rmseTimeSeries,
-      spreadTimeSeries: state.spreadTimeSeries,
-      avgRmse: mean(state.rmseTimeSeries),
-      avgSpread: mean(state.spreadTimeSeries),
-      timeSteps: state.timeSteps,
-      truthHistory: truthHistory,
-      obsHistory: obsHistory,
-      analysisHistory: state.analysisHistory,
-    }));
+    let results = methodStates.map(state => {
+      // Exclude initial burn-in / spin-up period (first 20% of observation steps, max 50 steps)
+      // from average performance metrics so transient initial errors do not distort avgRmse / avgSpread
+      let totalSteps = state.rmseTimeSeries.length;
+      let burnInCutoff = Math.min(Math.floor(totalSteps * 0.2), 50);
+      let evalRmseSeries = state.rmseTimeSeries.slice(burnInCutoff);
+      let evalSpreadSeries = state.spreadTimeSeries.slice(burnInCutoff);
+
+      return {
+        methodId: state.id,
+        methodType: state.type,
+        rmseTimeSeries: state.rmseTimeSeries,
+        spreadTimeSeries: state.spreadTimeSeries,
+        avgRmse: mean(evalRmseSeries.length > 0 ? evalRmseSeries : state.rmseTimeSeries),
+        avgSpread: mean(evalSpreadSeries.length > 0 ? evalSpreadSeries : state.spreadTimeSeries),
+        timeSteps: state.timeSteps,
+        truthHistory: truthHistory,
+        obsHistory: obsHistory,
+        analysisHistory: state.analysisHistory,
+      };
+    });
 
     self.postMessage({
       type: 'RESULT',
