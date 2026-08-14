@@ -46,13 +46,14 @@ export default function PlaybackControls({
         </button>
       </div>
 
-      <div className="viz-speed-group">
+      <div className="viz-speed-group" role="group" aria-label={t('visualization.playbackSpeed')}>
         {[1, 2, 5].map((speed) => (
           <button
             key={speed}
             type="button"
             className={`viz-speed-btn ${playbackSpeed === speed ? 'viz-speed-btn--active' : ''}`}
             onClick={() => onSpeedChange(speed)}
+            aria-pressed={playbackSpeed === speed}
             title={`${t('visualization.playbackSpeed')} ${speed}x`}
             aria-label={`${t('visualization.playbackSpeed')} ${speed}x`}
           >
