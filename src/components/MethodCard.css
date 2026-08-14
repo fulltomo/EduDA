@@ -1,0 +1,124 @@
+.method-card {
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+
+.method-card:hover {
+  border-color: var(--outline);
+}
+
+.method-card-header {
+  padding: 12px;
+}
+
+.method-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.method-card-name {
+  color: var(--on-surface);
+}
+
+.method-card-actions {
+  position: relative;
+}
+
+.method-card-menu-btn {
+  background: none;
+  border: none;
+  color: var(--outline);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--rounded);
+  transition: color 0.2s ease;
+}
+
+.method-card-menu-btn:hover {
+  color: var(--on-surface);
+}
+
+.method-card-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--surface-container-high);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--rounded-lg);
+  padding: 4px;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  min-width: 120px;
+}
+
+.method-card-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: var(--rounded);
+  transition: background 0.15s ease;
+}
+
+.method-card-dropdown button:hover {
+  background: var(--surface-container-highest);
+}
+
+.method-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slider-group input[type="range"] {
+  touch-action: pan-y;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-label {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.slider-value {
+  font-weight: 500;
+}
+
+.method-card-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(62, 72, 79, 0.5);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-label {
+  color: var(--outline);
+}
+
+.stat-value {
+  color: var(--on-surface);
+}

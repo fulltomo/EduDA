@@ -1,0 +1,136 @@
+.viz-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Summary Bar */
+.viz-summary-bar {
+  flex-shrink: 0;
+  padding: var(--gutter);
+  border-bottom: 1px solid var(--outline-variant);
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+}
+
+.viz-summary-card {
+  min-width: 270px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.viz-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.viz-summary-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-surface);
+  white-space: nowrap;
+}
+
+.viz-summary-metrics {
+  display: flex;
+  gap: 16px;
+}
+
+.viz-summary-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Chart Wrapper */
+.viz-chart-wrapper {
+  flex: 1;
+  padding: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.viz-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.viz-chart-canvas-wrapper {
+  flex: 1;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--rounded-xl);
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+  padding: 8px;
+}
+
+.viz-chart-canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.viz-chart-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Legend */
+.viz-legend {
+  flex-shrink: 0;
+  padding: var(--gutter);
+  border-top: 1px solid var(--outline-variant);
+  background: var(--surface);
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
+.viz-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  transition: color 0.2s ease;
+}
+
+.viz-legend-item:hover {
+  color: var(--on-surface);
+}
+
+.viz-legend-line {
+  width: 12px;
+  height: 0;
+  flex-shrink: 0;
+}
+
+.viz-legend-solid {
+  border-top: 3px solid var(--primary);
+  border-radius: var(--rounded-full);
+}
+
+.viz-legend-dashed {
+  border-top: 2px dashed var(--outline);
+  border-radius: var(--rounded-full);
+}

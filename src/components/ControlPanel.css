@@ -1,0 +1,77 @@
+.control-panel {
+  width: 360px;
+  background: var(--surface-container-lowest);
+  border-right: 1px solid var(--outline-variant);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.cp-header {
+  padding: var(--container-padding);
+  border-bottom: 1px solid var(--outline-variant);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cp-add-btn {
+  font-size: 14px;
+}
+
+.cp-cards {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: scroll;
+  padding: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter);
+}
+
+.cp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.cp-footer {
+  padding: var(--gutter);
+  border-top: 1px solid var(--outline-variant);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cp-run-btn {
+  width: 100%;
+}
+
+.cp-csv-btn {
+  width: 100%;
+}
+
+.cp-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--surface-container-highest);
+  border-radius: var(--rounded-full);
+  overflow: hidden;
+}
+
+.cp-progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: var(--rounded-full);
+  transition: width 0.3s ease;
+}
