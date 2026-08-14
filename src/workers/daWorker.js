@@ -730,8 +730,6 @@ function runSimulation(payload) {
                 }
 
                 // Compute W_a = sqrt(M-1) * L^-T
-                // Solving L * y_k = e_k gives y_k = k-th column of L^-1.
-                // Then (W_a)_{k, j} = sqrt(M-1) * (L^-1)_{j, k} = sqrt(M-1) * y_k[j].
                 let L_inv_T = Array(M).fill().map(() => new Float64Array(M));
                 for (let k = 0; k < M; k++) {
                   let e = new Float64Array(M); e[k] = 1.0;
@@ -746,25 +744,46 @@ function runSimulation(payload) {
                   }
                 }
 
-                // Construct analysis ensemble members
-                let target_mean = x_mean[i];
-                for (let k = 0; k < M; k++) target_mean += Xb[i][k] * wa_mean[k];
+                // Apply Orthogonal Householder Matrix Q to preserve exact ensemble mean without altering Wa * Wa^T
+                let ones = new Float64Array(M).fill(1.0 / Math.sqrt(M));
+                let v_vec = new Float64Array(M);
+                for (let r = 0; r < M; r++) {
+                  let sum = 0;
+                  for (let c = 0; c < M; c++) sum += L_inv_T[c][r] * ones[c];
+                  v_vec[r] = sum;
+                }
+                let norm_v = Math.hypot(...v_vec);
+                let u = new Float64Array(M);
+                for (let idx = 0; idx < M; idx++) u[idx] = v_vec[idx] - norm_v * ones[idx];
+                let norm_u = Math.hypot(...u);
 
-                for (let j = 0; j < M; j++) {
-                  let pert_sum = 0;
-                  for (let k = 0; k < M; k++) {
-                    pert_sum += Xb[i][k] * L_inv_T[k][j];
+                let Wa_final = Array(M).fill().map(() => new Float64Array(M));
+                if (norm_u > 1e-12) {
+                  for (let idx = 0; idx < M; idx++) u[idx] /= norm_u;
+                  for (let r = 0; r < M; r++) {
+                    for (let c = 0; c < M; c++) {
+                      let sum = 0;
+                      for (let k = 0; k < M; k++) {
+                        let Q_kc = (k === c ? 1.0 : 0.0) - 2.0 * u[k] * u[c];
+                        sum += L_inv_T[r][k] * Q_kc;
+                      }
+                      Wa_final[r][c] = sum;
+                    }
                   }
-                  ens_new[j][i] = target_mean + pert_sum;
+                } else {
+                  for (let r = 0; r < M; r++) {
+                    for (let c = 0; c < M; c++) Wa_final[r][c] = L_inv_T[r][c];
+                  }
                 }
 
-                // Recenter perturbations to ensure exact zero-mean
-                let actual_sum = 0;
-                for (let j = 0; j < M; j++) actual_sum += ens_new[j][i];
-                let actual_mean = actual_sum / M;
-                let mean_shift = target_mean - actual_mean;
+                // Construct analysis ensemble members: x_a^(j) = x_mean + Xb * (wa_mean + Wa_final[:, j])
                 for (let j = 0; j < M; j++) {
-                  ens_new[j][i] += mean_shift;
+                  let sum = 0;
+                  for (let k = 0; k < M; k++) {
+                    let w_jk = wa_mean[k] + Wa_final[k][j];
+                    sum += Xb[i][k] * w_jk;
+                  }
+                  ens_new[j][i] = x_mean[i] + sum;
                 }
               }
               state.ensemble = ens_new;
