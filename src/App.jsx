@@ -148,17 +148,22 @@ export default function App() {
     exportSimulationCsv(simulationResults, advancedOptions.N);
   }, [simulationResults, advancedOptions.N]);
 
+  const currentObsMode = OBS_MODES.find(m => m.id === obsMode);
+
   return (
     <div className="app-layout">
       {/* Top Navigation */}
-      <TopNav onSelectPreset={handleSelectPreset} />
+      <TopNav
+        onSelectPreset={handleSelectPreset}
+        onOpenAdvanced={() => setShowAdvanced(true)}
+      />
 
       {/* Observation Mode Tabs */}
       <ObsTabs
         modes={OBS_MODES}
         activeMode={obsMode}
         onChangeMode={handleObsModeChange}
-        description={OBS_MODES.find(m => m.id === obsMode)?.desc}
+        description={currentObsMode?.desc}
         advancedOptions={advancedOptions}
         customObsIndices={customObsIndices}
         onToggleCustomObsIndex={handleToggleCustomObsIndex}
@@ -168,14 +173,13 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="main-content">
+      <main className="app-main" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <ControlPanel
           methods={methods}
           colors={CHART_COLORS}
           onUpdateMethod={handleUpdateMethod}
           onRemoveMethod={handleRemoveMethod}
-          onOpenAddMethod={() => setShowAddMethod(true)}
-          onOpenAdvanced={() => setShowAdvanced(true)}
+          onAddMethod={() => setShowAddMethod(true)}
           onRun={handleRun}
           isRunning={isRunning}
           progress={progress}
@@ -209,7 +213,7 @@ export default function App() {
 
       {showAddMethod && (
         <AddMethodModal
-          onSelectMethod={handleAddMethod}
+          onSelect={handleAddMethod}
           onClose={() => setShowAddMethod(false)}
         />
       )}
