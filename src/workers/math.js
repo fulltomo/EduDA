@@ -48,89 +48,122 @@ export function gaspariCohn(r, c) {
 
 // Matrix & Vector operations
 export function matMul(A, B) {
-  let m = A.length, n = B[0].length, p = B.length;
-  let C = Array(m).fill().map(() => Array(n).fill(0));
+  const m = A.length, n = B[0].length, p = B.length;
+  const C = new Array(m);
   for (let i = 0; i < m; i++) {
+    const row = new Float64Array(n);
+    const Ai = A[i];
     for (let j = 0; j < n; j++) {
       let sum = 0;
-      for (let k = 0; k < p; k++) {
-        sum += A[i][k] * B[k][j];
-      }
-      C[i][j] = sum;
+      for (let k = 0; k < p; k++) sum += Ai[k] * B[k][j];
+      row[j] = sum;
     }
+    C[i] = row;
   }
   return C;
 }
 
 export function matVecMul(A, x) {
-  let m = A.length, n = x.length;
-  let y = Array(m).fill(0);
+  const m = A.length, n = x.length;
+  const y = new Float64Array(m);
   for (let i = 0; i < m; i++) {
     let sum = 0;
-    for (let j = 0; j < n; j++) sum += A[i][j] * x[j];
+    const Ai = A[i];
+    for (let j = 0; j < n; j++) sum += Ai[j] * x[j];
     y[i] = sum;
   }
   return y;
 }
 
 export function matTranspose(A) {
-  let m = A.length, n = A[0].length;
-  let B = Array(n).fill().map(() => Array(m).fill(0));
+  const m = A.length, n = A[0].length;
+  const B = new Array(n);
+  for (let j = 0; j < n; j++) {
+    B[j] = new Float64Array(m);
+  }
   for (let i = 0; i < m; i++) {
-    for (let j = 0; j < n; j++) B[j][i] = A[i][j];
+    const Ai = A[i];
+    for (let j = 0; j < n; j++) B[j][i] = Ai[j];
   }
   return B;
 }
 
 export function matAdd(A, B) {
-  let m = A.length, n = A[0].length;
-  let C = Array(m).fill().map(() => Array(n).fill(0));
+  const m = A.length, n = A[0].length;
+  const C = new Array(m);
   for (let i = 0; i < m; i++) {
-    for (let j = 0; j < n; j++) C[i][j] = A[i][j] + B[i][j];
+    const row = new Float64Array(n);
+    const Ai = A[i], Bi = B[i];
+    for (let j = 0; j < n; j++) row[j] = Ai[j] + Bi[j];
+    C[i] = row;
   }
   return C;
 }
 
 export function matSub(A, B) {
-  let m = A.length, n = A[0].length;
-  let C = Array(m).fill().map(() => Array(n).fill(0));
+  const m = A.length, n = A[0].length;
+  const C = new Array(m);
   for (let i = 0; i < m; i++) {
-    for (let j = 0; j < n; j++) C[i][j] = A[i][j] - B[i][j];
+    const row = new Float64Array(n);
+    const Ai = A[i], Bi = B[i];
+    for (let j = 0; j < n; j++) row[j] = Ai[j] - Bi[j];
+    C[i] = row;
   }
   return C;
 }
 
 export function matScale(A, s) {
-  let m = A.length, n = A[0].length;
-  let C = Array(m).fill().map(() => Array(n).fill(0));
+  const m = A.length, n = A[0].length;
+  const C = new Array(m);
   for (let i = 0; i < m; i++) {
-    for (let j = 0; j < n; j++) C[i][j] = A[i][j] * s;
+    const row = new Float64Array(n);
+    const Ai = A[i];
+    for (let j = 0; j < n; j++) row[j] = Ai[j] * s;
+    C[i] = row;
   }
   return C;
 }
 
 export function vecAdd(a, b) {
-  return a.map((val, i) => val + b[i]);
+  const n = a.length;
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = a[i] + b[i];
+  return out;
 }
 
 export function vecSub(a, b) {
-  return a.map((val, i) => val - b[i]);
+  const n = a.length;
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = a[i] - b[i];
+  return out;
 }
 
 export function vecScale(a, s) {
-  return a.map(val => val * s);
+  const n = a.length;
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = a[i] * s;
+  return out;
 }
 
 export function identity(n) {
-  let I = Array(n).fill().map(() => Array(n).fill(0));
-  for (let i = 0; i < n; i++) I[i][i] = 1.0;
+  const I = new Array(n);
+  for (let i = 0; i < n; i++) {
+    I[i] = new Float64Array(n);
+    I[i][i] = 1.0;
+  }
   return I;
 }
 
 export function matInverse(A) {
-  let n = A.length;
-  let M = A.map(row => row.slice());
-  let I = identity(n);
+  const n = A.length;
+  const M = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const row = new Float64Array(n);
+    const Ai = A[i];
+    for (let j = 0; j < n; j++) row[j] = Ai[j];
+    M[i] = row;
+  }
+  const I = identity(n);
 
   for (let i = 0; i < n; i++) {
     let maxRow = i;
@@ -160,4 +193,19 @@ export function matInverse(A) {
     }
   }
   return I;
+}
+
+/**
+ * Pre-compute Gaspari-Cohn localization values for all grid point pairs.
+ * Returns a Float64Array of size N*nobs with gc[i*nobs+j] = gaspariCohn(periodicDist(i, obsIndices[j], N), locRadius)
+ */
+export function buildGCTable(N, obsIndices, locRadius) {
+  const nobs = obsIndices.length;
+  const table = new Float64Array(N * nobs);
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < nobs; j++) {
+      table[i * nobs + j] = gaspariCohn(periodicDist(i, obsIndices[j], N), locRadius);
+    }
+  }
+  return table;
 }

@@ -1,5 +1,3 @@
-import { vecAdd, vecScale } from './math';
-
 /**
  * Lorenz '96 Model Right-Hand Side (dx/dt)
  */
@@ -19,17 +17,27 @@ export function l96_rhs(x, F) {
  * Runge-Kutta 4th order numerical integration step for Lorenz '96
  */
 export function rk4_step(x, dt, F) {
+  const n = x.length;
+  const dt2 = dt / 2;
+  const dt6 = dt / 6;
+  
   const k1 = l96_rhs(x, F);
-  const x2 = vecAdd(x, vecScale(k1, dt / 2));
+  
+  const x2 = new Array(n);
+  for (let i = 0; i < n; i++) x2[i] = x[i] + k1[i] * dt2;
   const k2 = l96_rhs(x2, F);
-  const x3 = vecAdd(x, vecScale(k2, dt / 2));
+  
+  const x3 = new Array(n);
+  for (let i = 0; i < n; i++) x3[i] = x[i] + k2[i] * dt2;
   const k3 = l96_rhs(x3, F);
-  const x4 = vecAdd(x, vecScale(k3, dt));
+  
+  const x4 = new Array(n);
+  for (let i = 0; i < n; i++) x4[i] = x[i] + k3[i] * dt;
   const k4 = l96_rhs(x4, F);
-
-  const res = new Array(x.length);
-  for (let i = 0; i < x.length; i++) {
-    res[i] = x[i] + (dt / 6) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+  
+  const res = new Array(n);
+  for (let i = 0; i < n; i++) {
+    res[i] = x[i] + dt6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
   }
   return res;
 }
@@ -42,11 +50,14 @@ export function linearize_l96(x, F, dt) {
   const M = Array(n).fill().map(() => new Float64Array(n));
 
   const k1_x = l96_rhs(x, F);
-  const x2 = vecAdd(x, vecScale(k1_x, dt / 2));
+  const x2 = new Array(n);
+  for (let i = 0; i < n; i++) x2[i] = x[i] + k1_x[i] * (dt / 2);
   const k2_x = l96_rhs(x2, F);
-  const x3 = vecAdd(x, vecScale(k2_x, dt / 2));
+  const x3 = new Array(n);
+  for (let i = 0; i < n; i++) x3[i] = x[i] + k2_x[i] * (dt / 2);
   const k3_x = l96_rhs(x3, F);
-  const x4 = vecAdd(x, vecScale(k3_x, dt));
+  const x4 = new Array(n);
+  for (let i = 0; i < n; i++) x4[i] = x[i] + k3_x[i] * dt;
 
   function applyJ(curr_x, v, out) {
     for (let i = 0; i < n; i++) {

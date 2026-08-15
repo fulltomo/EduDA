@@ -9,9 +9,6 @@ import {
   matAdd,
   matSub,
   matScale,
-  vecAdd,
-  vecSub,
-  vecScale,
   identity,
   matInverse,
 } from './math';
@@ -230,7 +227,7 @@ function runSimulation(payload) {
         // --- 4.2 Analysis Step ---
         if (hasObs) {
           if (state.type === 'EKF') {
-            updateEKF(state, y, H, H_T, R, N, applyH);
+            updateEKF(state, y, H, H_T, R, N, applyH, obsIndices);
           } else if (state.type === '3DVar') {
             update3DVar(state, y, applyH);
           } else if (state.type === '4DVar') {
@@ -241,19 +238,24 @@ function runSimulation(payload) {
             const inflation = p.inflation || 1.05;
             const localization = p.localization || 5;
 
-            // Inflation
-            let x_mean = Array(N).fill(0);
-            for (let i = 0; i < M; i++) x_mean = vecAdd(x_mean, ens[i]);
-            x_mean = vecScale(x_mean, 1 / M);
+            // Inflation (zero-allocation)
+            const x_mean = new Float64Array(N);
+            for (let i = 0; i < M; i++) {
+              for (let j = 0; j < N; j++) x_mean[j] += ens[i][j];
+            }
+            for (let j = 0; j < N; j++) x_mean[j] /= M;
 
             for (let i = 0; i < M; i++) {
-              const dev = vecSub(ens[i], x_mean);
-              ens[i] = vecAdd(x_mean, vecScale(dev, inflation));
+              for (let j = 0; j < N; j++) {
+                ens[i][j] = x_mean[j] + (ens[i][j] - x_mean[j]) * inflation;
+              }
             }
 
-            x_mean = Array(N).fill(0);
-            for (let i = 0; i < M; i++) x_mean = vecAdd(x_mean, ens[i]);
-            x_mean = vecScale(x_mean, 1 / M);
+            x_mean.fill(0);
+            for (let i = 0; i < M; i++) {
+              for (let j = 0; j < N; j++) x_mean[j] += ens[i][j];
+            }
+            for (let j = 0; j < N; j++) x_mean[j] /= M;
             state.x_mean = x_mean;
 
             if (state.type === 'POEnKF' || state.type === 'EnKF') {
@@ -270,7 +272,7 @@ function runSimulation(payload) {
 
         // --- 4.3 Record Stats at Observation Steps ---
         if (isObsStep) {
-          let analysisMean = Array(N).fill(0);
+          let analysisMean = new Float64Array(N);
           let analysisSpread = 0;
 
           if (state.type === 'EKF') {
@@ -301,17 +303,17 @@ function runSimulation(payload) {
             analysisSpread = Math.sqrt(varSum / N);
           } else {
             const M = state.ensembleSize;
+            const amean = new Float64Array(N);
             for (let i = 0; i < M; i++) {
-              for (let j = 0; j < N; j++) {
-                analysisMean[j] += state.ensemble[i][j];
-              }
+              for (let j = 0; j < N; j++) amean[j] += state.ensemble[i][j];
             }
-            for (let j = 0; j < N; j++) analysisMean[j] /= M;
+            for (let j = 0; j < N; j++) amean[j] /= M;
+            analysisMean = amean;
 
             let varSum = 0;
             for (let i = 0; i < M; i++) {
               for (let j = 0; j < N; j++) {
-                const diff = state.ensemble[i][j] - analysisMean[j];
+                const diff = state.ensemble[i][j] - amean[j];
                 varSum += diff * diff;
               }
             }
