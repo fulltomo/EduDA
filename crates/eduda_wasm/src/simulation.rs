@@ -124,6 +124,7 @@ struct MethodState {
     k_3dvar: Vec<f64>,
     process_noise: f64,
     resample_thresh: f64,
+    is_lpf: bool,
     window_size: usize,
     window_x_bg: Vec<Vec<f64>>,
     window_y: Vec<Option<Vec<f64>>>,
@@ -230,6 +231,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             k_3dvar: vec![0.0; n * nobs],
             process_noise: 0.01,
             resample_thresh: 0.5,
+            is_lpf: true,
             window_size: 5,
             window_x_bg: Vec::new(),
             window_y: Vec::new(),
@@ -248,8 +250,13 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             let ens_size = p.get("ensembleSize").and_then(|v| v.as_u64()).unwrap_or(30) as usize;
             state.ensemble_size = ens_size;
             state.inflation = p.get("inflation").and_then(|v| v.as_f64()).unwrap_or(1.05);
-            state.localization = p.get("localization").and_then(|v| v.as_f64()).unwrap_or(5.0);
+            state.localization = p.get("localization").and_then(|v| v.as_f64()).unwrap_or(if state.method_type == "PF" { 3.0 } else { 5.0 });
             state.resample_thresh = p.get("resampleThreshold").and_then(|v| v.as_f64()).unwrap_or(0.5);
+
+            if state.method_type == "PF" {
+                let filter_type = p.get("filterType").and_then(|v| v.as_str()).unwrap_or("LPF");
+                state.is_lpf = filter_type == "LPF";
+            }
 
             state.ensemble = vec![0.0; ens_size * n];
             for i in 0..ens_size {
@@ -484,6 +491,8 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                         &obs_indices,
                         r_diag,
                         state.resample_thresh,
+                        state.localization,
+                        state.is_lpf,
                         state.ensemble_size,
                         n,
                         &mut rng,

@@ -349,7 +349,7 @@ function runSimulationJs(payload) {
               updateLETKF(state, y, nobs, N, obsIndices, R_diag, localization);
             }
           } else if (state.type === 'PF') {
-            updatePF(state, y, nobs, N, R_diag, applyH);
+            updatePF(state, y, nobs, N, R_diag, applyH, obsIndices);
           }
         }
 

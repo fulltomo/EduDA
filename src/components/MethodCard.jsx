@@ -94,9 +94,65 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
       {/* Card Body: Sliders for method-specific parameters */}
       <div className="card-body method-card-body">
         {method.paramDefs && method.paramDefs.map((p) => {
+          // If PF and filterType is SIR, hide localization radius slider
+          if (p.key === 'localization' && method.type === 'PF' && method.params?.filterType === 'SIR') {
+            return null;
+          }
+
           const val = method.params?.[p.key] ?? p.default;
           const isDrawerOpen = !!openDrawers[p.key];
           const paramLabel = lang === 'en' ? (p.labelEn || p.label) : p.label;
+
+          if (p.type === 'select') {
+            return (
+              <div className="slider-group" key={p.key}>
+                <div className="slider-header">
+                  <div className="slider-label-wrapper">
+                    <span className="slider-label">{paramLabel}</span>
+                    <button
+                      type="button"
+                      className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
+                      onClick={(e) => toggleDrawer(p.key, e)}
+                      aria-label={`${paramLabel} ${t('methodCard.showExplanation')}`}
+                      title={t('methodCard.showExplanation')}
+                    >
+                      <span className="material-symbols-outlined">info</span>
+                    </button>
+                  </div>
+                </div>
+
+                <select
+                  className="input-select method-param-select"
+                  value={val}
+                  onChange={(e) => handleParamChange(p.key, e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '6px 10px',
+                    borderRadius: 'var(--rounded)',
+                    background: 'var(--surface-container-high)',
+                    color: 'var(--on-surface)',
+                    border: '1px solid var(--outline-variant)',
+                    fontSize: '13px',
+                    marginTop: '4px',
+                  }}
+                >
+                  {p.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {lang === 'en' ? (opt.labelEn || opt.label) : opt.label}
+                    </option>
+                  ))}
+                </select>
+
+                {isDrawerOpen && (
+                  <EduTooltipDrawer
+                    paramId={p.key}
+                    onClose={() => closeDrawer(p.key)}
+                  />
+                )}
+              </div>
+            );
+          }
+
           return (
             <div className="slider-group" key={p.key}>
               <div className="slider-header">
