@@ -39,6 +39,16 @@ export const TOOLTIP_DATA = {
     guideline: '通常 0.5 〜 2.0。観測誤差分散（デフォルト 1.0）との相対比率によって、予測（背景）と観測のどちらをどれだけ信じるかのバランスが決まります。',
     guidelineEn: 'Typically 0.5 – 2.0. Balances the relative weight between prior state and new observations.'
   },
+  filterType: {
+    title: 'Algorithm Type (アルゴリズム方式: LPF / SIR)',
+    titleEn: 'Algorithm Type (LPF vs SIR)',
+    description: '粒子フィルタ（PF）における同化アルゴリズムの方式を選択します。「局所粒子フィルタ (LPF)」は、空間局所化と観測方向への引き寄せ（Proposal）により高次元カオスでも30粒子程度で安定収束（RMSE ≈ 0.27）します。「標準SIR (Bootstrap)」は、全状態変数を一括尤度評価する古典的手法で、高次元（N=40）では次元の呪いにより重みが1粒子に集中・縮退（RMSE ≈ 4.5〜5.0）する現象を観察・比較できます。',
+    descriptionEn: 'Selects the assimilation algorithm for the Particle Filter. Local Particle Filter (LPF) applies spatial localization and observation-guided proposals, achieving stable convergence (RMSE ≈ 0.27) with only 30 particles in high-dimensional chaos. Standard SIR (Bootstrap) is the classical global likelihood filter, illustrating the curse of dimensionality where weights collapse in 40D (RMSE ≈ 4.5–5.0).',
+    formula: '・LPF: 各格子点で局所観測ゲイン・重みを適用して更新 (次元の呪いを克服)\n・SIR: 全域同時尤度 w_i ∝ ∏_j p(y_j | x_i,j) による古典的リサンプリング',
+    formulaEn: '• LPF: Localized observation gain and importance weights per grid point\n• SIR: Classical global joint likelihood w_i ∝ ∏_j p(y_j | x_i,j)',
+    guideline: 'Lorenz \'96（N=40）の通常の同化実験には「LPF（推奨）」を選択します。「標準SIR」は、低次元環境や「なぜ古典的粒子フィルタが高次元で破綻するのか」という教育的比較・実験を行いたい場合に選択してください。',
+    guidelineEn: 'Choose LPF (Recommended) for standard assimilation in Lorenz \'96 (N=40). Choose Standard SIR for educational demonstrations of the curse of dimensionality.'
+  },
   resampleThreshold: {
     title: 'Resample Threshold (リサンプリング閾値)',
     titleEn: 'Resample Threshold (SIR)',
