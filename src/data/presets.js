@@ -77,7 +77,7 @@ export const PRESETS = [
         type: '3DVar',
         label: '3DVar (固定共分散 B)',
         labelEn: '3DVar (Static B)',
-        params: { bgErrorVar: 1.0, corrLength: 5 }
+        params: { bgErrorVar: 0.2, corrLength: 2 }
       },
       {
         type: 'LETKF',
@@ -100,25 +100,25 @@ export const PRESETS = [
   },
   {
     id: 'preset4',
-    title: '実験4: 高次元空間での粒子フィルタ (PF) の限界',
-    titleEn: 'Exp 4: Particle Filter in High Dimensions (Curse of Dimensionality)',
-    theme: '次元の呪い（Weight Collapse）と粒子数の関係を体験。',
-    themeEn: 'Experience weight collapse and the limits of sampling in high-dimensional state spaces.',
-    description: '粒子フィルタ（PF）は非線形・非ガウス分布を表現できますが、システム次元（状態空間の大きさ N=40）が大きくなると、特定の1つの粒子に極端に重みが集中する「重みの崩壊（Weight Collapse）」が発生します。粒子数が少ない場合（PF 50）はすぐに発散し、粒子数を増やしても（PF 500）高次元の呪いにより精度維持には膨大な数の粒子が必要となる限界を体感します。',
-    descriptionEn: 'While Particle Filters (PF) handle nonlinear and non-Gaussian distributions without approximations, state spaces with N=40 cause severe weight collapse where probability mass concentrates on a single particle. M=50 diverges immediately, and even M=500 illustrates the severe structural sampling barrier in high dimensions.',
+    title: '実験4: 次元の呪い（標準SIR）vs 局所粒子フィルタ（LPF）',
+    titleEn: 'Exp 4: Curse of Dimensionality (Standard SIR) vs Local Particle Filter (LPF)',
+    theme: '高次元空間における重み縮退の崩壊と、局所化による次元の呪いの克服を体験。',
+    themeEn: 'Experience weight collapse in high dimensions and its solution via localization.',
+    description: '粒子フィルタ（PF）は非線形・非ガウス分布を表現できますが、システム次元（状態空間の大きさ N=40）が大きくなると、標準的なSIR型では特定の1つの粒子に極端に重みが集中する「重みの縮退（Weight Collapse）」が発生し、粒子数によらずRMSEが約4.9へと発散します。一方、空間局所化と観測引き寄せを導入した「局所粒子フィルタ (LPF)」を用いると、わずか30粒子でも次元の呪いを克服し、RMSE約0.27の安定した同化が可能になります。',
+    descriptionEn: 'While Particle Filters (PF) handle nonlinear distributions, standard SIR suffers from severe weight collapse in N=40 dimensions, causing filter divergence (RMSE ~4.9). In contrast, the Local Particle Filter (LPF) applies spatial localization and observation guidance, overcoming the curse of dimensionality to achieve accurate assimilation (RMSE ~0.27) with only 30 particles.',
     obsMode: 'full',
     methods: [
       {
         type: 'PF',
-        label: 'PF (Particle Size 50)',
-        labelEn: 'PF (Particle Size 50)',
-        params: { ensembleSize: 50, resampleThreshold: 0.5 }
+        label: 'PF (標準SIR: 次元の呪い)',
+        labelEn: 'PF (Standard SIR: Weight Collapse)',
+        params: { filterType: 'SIR', ensembleSize: 50, resampleThreshold: 0.5 }
       },
       {
         type: 'PF',
-        label: 'PF (Particle Size 500)',
-        labelEn: 'PF (Particle Size 500)',
-        params: { ensembleSize: 500, resampleThreshold: 0.5 }
+        label: 'PF (局所型LPF: 呪いを克服)',
+        labelEn: 'PF (Local LPF: Overcomes Curse)',
+        params: { filterType: 'LPF', ensembleSize: 30, localization: 3, resampleThreshold: 0.5 }
       }
     ],
     advancedOptions: {
