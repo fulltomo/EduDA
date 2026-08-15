@@ -72,12 +72,12 @@ export const TOOLTIP_DATA = {
   corrLength: {
     title: 'Correlation Length L (相関距離)',
     titleEn: 'Correlation Length L',
-    description: '3DVarにおいて、第一推定値（背景状態）の誤差が空間的にどの程度の距離まで相関しているかを定義します。値が大きいほど、1つの観測データからの修正情報が周囲の格子点に滑らかに広く伝播します。',
-    descriptionEn: 'Spatial scale governing background error correlations in 3DVar. Larger values spread observation increments smoothly across broader spatial regions.',
-    formula: 'C_ij = ρ(d_ij / L)\n(C_ij: 格子点i-j間の相関, d_ij: 距離, L: 相関距離, ρ: 相関関数)',
-    formulaEn: 'C_ij = ρ(d_ij / L)\n(C_ij: Spatial correlation between grid points i-j, L: Correlation length)',
-    guideline: '通常 3 〜 10。現象の空間スケールや観測点の間隔に合わせて調整します。大きすぎると不要な遠方まで修正が及び、不自然な平滑化が起きます。',
-    guidelineEn: 'Typically 3 – 10. Tune to match the characteristic physical wave scale and observation network spacing.'
+    description: '3DVar / 4DVarにおいて、第一推定値（背景状態）の誤差が空間的にどの程度の距離まで相関しているかを定義します。値が大きいほど、1つの観測データからの修正情報が周囲の格子点に滑らかに広く伝播します。0に設定すると空間相関が完全にゼロとなり、背景誤差共分散行列 B は分散 σb² を乗じた対角行列（単位行列ベース）と一致します。',
+    descriptionEn: 'Spatial scale governing background error correlations in 3DVar and 4DVar. Larger values spread observation increments smoothly across broader spatial regions. Setting L=0 eliminates spatial correlations, making the background error covariance matrix B a diagonal matrix proportional to the identity matrix (σb² I).',
+    formula: 'C_ij = ρ(d_ij / L)\n(C_ij: 格子点i-j間の相関, d_ij: 距離, L: 相関距離, ρ: 相関関数。L=0 のときは C_ij = δ_ij)',
+    formulaEn: 'C_ij = ρ(d_ij / L)\n(C_ij: Spatial correlation between grid points i-j, L: Correlation length. When L=0, C_ij = δ_ij)',
+    guideline: '通常 1 〜 5（全観測時は 0 〜 2、間引き・疎密観測時は 2 〜 5 が効果的）。0にすると単位行列ベースの対角行列（相関なし）となります。大きすぎると不要な遠方まで修正が及び、過剰な平滑化が起きます。',
+    guidelineEn: 'Typically 1 – 5 (0 – 2 for full observation, 2 – 5 for sparse/thinned observation). Setting L=0 yields an uncorrelated diagonal matrix based on the identity matrix. Excessively large values cause over-smoothing.'
   },
   windowSize: {
     title: 'Assimilation Window (同化ウィンドウ)',
