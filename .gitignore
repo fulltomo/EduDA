@@ -32,5 +32,5 @@ dist-ssr
 # Documentation and design specs
 docs/
 
-
-
+# Rust target
+target/

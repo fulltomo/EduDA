@@ -22,13 +22,96 @@ import { updateEnSRF } from './methods/ensrf';
 import { updateLETKF } from './methods/letkf';
 import { updatePF } from './methods/pf';
 
-self.onmessage = function(e) {
+let wasmInstancePromise = null;
+
+async function getWasmInstance() {
+  if (!wasmInstancePromise) {
+    wasmInstancePromise = (async () => {
+      try {
+        let response = null;
+        // Try various URL paths (works in dev and production bundle)
+        const candidateUrls = [
+          '/wasm/eduda_wasm.wasm',
+          './wasm/eduda_wasm.wasm',
+          new URL('../../public/wasm/eduda_wasm.wasm', import.meta.url).href,
+        ];
+        for (const url of candidateUrls) {
+          try {
+            const res = await fetch(url);
+            if (res && res.ok) {
+              response = res;
+              break;
+            }
+          } catch {
+            // continue
+          }
+        }
+
+        if (!response || !response.ok) {
+          console.warn('[daWorker] Wasm file not accessible, using JS fallback.');
+          return null;
+        }
+
+        const bytes = await response.arrayBuffer();
+        const wasmModule = await WebAssembly.instantiate(bytes, {});
+        return wasmModule.instance.exports;
+      } catch (err) {
+        console.warn('[daWorker] Failed to load Wasm, falling back to JS:', err);
+        return null;
+      }
+    })();
+  }
+  return wasmInstancePromise;
+}
+
+function runWasmSimulation(exports, payload) {
+  const { alloc, dealloc, run_simulation_wasm, memory } = exports;
+  const jsonStr = JSON.stringify(payload);
+  const jsonBytes = new TextEncoder().encode(jsonStr);
+
+  const ptr = alloc(jsonBytes.length);
+  const memView = new Uint8Array(memory.buffer, ptr, jsonBytes.length);
+  memView.set(jsonBytes);
+
+  const resPtr = run_simulation_wasm(ptr, jsonBytes.length);
+  dealloc(ptr, jsonBytes.length);
+
+  const lenView = new DataView(memory.buffer, resPtr, 4);
+  const respLen = lenView.getUint32(0, true);
+
+  const respBytes = new Uint8Array(memory.buffer, resPtr + 4, respLen);
+  const respStr = new TextDecoder().decode(respBytes);
+  const result = JSON.parse(respStr);
+
+  if (result.error) {
+    throw new Error(result.error);
+  }
+
+  return result;
+}
+
+self.onmessage = async function(e) {
   if (e.data.type === 'RUN_SIMULATION') {
-    runSimulation(e.data.payload);
+    const payload = e.data.payload;
+    try {
+      const wasmExports = await getWasmInstance();
+      if (wasmExports && wasmExports.run_simulation_wasm) {
+        const wasmResult = runWasmSimulation(wasmExports, payload);
+        self.postMessage({
+          type: 'RESULT',
+          payload: wasmResult,
+        });
+        return;
+      }
+    } catch (err) {
+      console.warn('[daWorker] Wasm execution failed, falling back to JS:', err);
+    }
+    // Fallback to JS implementation
+    runSimulationJs(payload);
   }
 };
 
-function runSimulation(payload) {
+function runSimulationJs(payload) {
   try {
     const { methods, observationMode, advancedOptions } = payload;
     const {
