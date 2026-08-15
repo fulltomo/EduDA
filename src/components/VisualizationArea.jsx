@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import EduTooltip from './EduTooltip';
 import PresetBanner from './visualization/PresetBanner';
-import SummaryBar from './visualization/SummaryBar';
 import VisualizationChart from './visualization/VisualizationChart';
 import HovmollerDiagram from './visualization/HovmollerDiagram';
 import PlaybackControls from './visualization/PlaybackControls';
@@ -16,8 +15,8 @@ export default function VisualizationArea({
   showSpread,
   onToggleRmse,
   onToggleSpread,
-  onUpdateMethod,
   activePreset,
+  isRunning,
 }) {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState('timeseries');
@@ -96,14 +95,6 @@ export default function VisualizationArea({
       {/* Active Preset Banner */}
       <PresetBanner activePreset={activePreset} />
 
-      {/* Summary Bar */}
-      <SummaryBar
-        results={results}
-        methods={methods}
-        colors={colors}
-        onUpdateMethod={onUpdateMethod}
-      />
-
       {/* Chart Area */}
       <div className="viz-chart-wrapper">
         <div className="viz-chart-header">
@@ -134,7 +125,7 @@ export default function VisualizationArea({
           {/* Hovmöller Method Selector */}
           {viewMode === 'hovmoller' && results && results.length > 0 && (
             <div className="hov-method-selector-container">
-              <span className="typo-body-sm" style={{ color: 'var(--on-surface-variant)' }}>
+              <span className="hov-method-label typo-body-sm">
                 {t('visualization.methodLabel')}
               </span>
               <select
@@ -158,16 +149,23 @@ export default function VisualizationArea({
         </div>
 
         <div className="viz-chart-canvas-wrapper chart-dot-grid">
-          {(!results || results.length === 0) && (
+          {isRunning && (!results || results.length === 0) ? (
+            <div className="viz-chart-placeholder">
+              <div className="spinner" style={{ width: 44, height: 44, borderWidth: 3 }} />
+              <p style={{ color: 'var(--primary)', marginTop: 14, fontWeight: 600, fontSize: 14 }}>
+                {t('controlPanel.calculating')}
+              </p>
+            </div>
+          ) : (!results || results.length === 0) ? (
             <div className="viz-chart-placeholder">
               <span className="material-symbols-outlined" style={{ fontSize: 64, color: 'var(--outline-variant)' }}>
-                show_chart
+                science
               </span>
               <p style={{ color: 'var(--outline)', marginTop: 12 }}>
                 {t('visualization.placeholder')}
               </p>
             </div>
-          )}
+          ) : null}
 
           {/* Chart.js Line Chart (Timeseries & 1D State) */}
           <VisualizationChart

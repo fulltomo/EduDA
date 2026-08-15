@@ -33,15 +33,18 @@
 .topnav-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .topnav-settings-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 8px 12px;
   border-radius: var(--rounded-lg);
+  min-width: 128px;
+  transition: all 0.2s ease;
 }
 
 .topnav-settings-label {
@@ -51,12 +54,14 @@
 .topnav-lang-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 8px 12px;
   border-radius: var(--rounded-lg);
   font-size: 14px;
   font-weight: 500;
   color: var(--on-surface-variant);
+  min-width: 98px;
   transition: all 0.2s ease;
 }
 
@@ -72,11 +77,13 @@
 .topnav-share-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 8px 12px;
   border-radius: var(--rounded-lg);
   font-size: 14px;
   color: var(--on-surface-variant);
+  min-width: 80px;
   transition: all 0.2s ease;
 }
 
@@ -94,6 +101,33 @@
   font-size: 14px;
 }
 
+.topnav-csv-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--rounded-lg);
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  min-width: 78px;
+  transition: all 0.2s ease;
+}
+
+.topnav-csv-btn:hover:not(:disabled) {
+  color: var(--primary);
+  background: var(--surface-container);
+}
+
+.topnav-csv-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.topnav-csv-label {
+  font-size: 14px;
+}
+
 .preset-dropdown-container {
   position: relative;
   display: inline-block;
@@ -102,11 +136,13 @@
 .topnav-preset-btn {
   font-size: 14px !important;
   font-weight: 500 !important;
-  padding: 8px 12px !important;
+  padding: 8px 14px !important;
   border-radius: var(--rounded-lg) !important;
   background: var(--surface-container) !important;
   color: var(--primary) !important;
   border: 1px solid var(--primary) !important;
+  min-width: 175px;
+  justify-content: center;
 }
 
 .topnav-preset-btn:hover {

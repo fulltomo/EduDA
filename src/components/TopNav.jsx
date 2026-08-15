@@ -3,7 +3,7 @@ import { PRESETS, getLocalizedPreset } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
 import './TopNav.css';
 
-export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
+export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, hasResults }) {
   const { lang, setLang, t } = useLanguage();
   const [showPresets, setShowPresets] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -109,6 +109,19 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced }) {
           <span className="topnav-share-label">
             {copied ? t('shareCopied') : t('shareBtn')}
           </span>
+        </button>
+
+        {/* 📥 CSV エクスポートボタン */}
+        <button
+          className="btn-ghost topnav-csv-btn"
+          onClick={onCsvExport}
+          disabled={!hasResults}
+          id="btn-topnav-csv"
+          title={t('csvTooltip')}
+          aria-label={t('csvTooltip')}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
+          <span className="topnav-csv-label">{t('csvBtn')}</span>
         </button>
 
         <button

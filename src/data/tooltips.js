@@ -120,14 +120,24 @@ export const TOOLTIP_DATA = {
     guidelineEn: 'Standard benchmark value is 40. Increasing N exponentially escalates state space volume and the curse of dimensionality.'
   },
   F: {
-    title: 'F (強制項)',
-    titleEn: 'F (External Forcing)',
-    description: 'システムに外部から加わるエネルギー入力を表す強制パラメータです。この値の大きさによって、システムの力学的な挙動が大きく変化します。',
-    descriptionEn: 'External constant forcing parameter driving the energy input into the Lorenz \'96 atmospheric system.',
+    title: 'F (強制項 / 真値)',
+    titleEn: 'F (Nature Run Forcing)',
+    description: '自然（真値）システムに外部から加わるエネルギー入力を表す強制パラメータです。この値の大きさによって、システムの力学的な挙動が大きく変化します。',
+    descriptionEn: 'External constant forcing parameter driving the energy input into the true Lorenz \'96 atmospheric system (Nature Run).',
     formula: 'dx_i/dt = (x_{i+1} - x_{i-2})x_{i-1} - x_i + F',
     formulaEn: 'dx_i/dt = (x_{i+1} - x_{i-2})x_{i-1} - x_i + F',
     guideline: '標準値は 8.0。F=8.0 のときは非線形性が強くカオス的な挙動を示し、データ同化のベンチマークとして広く使われます。F=4.0 などの小さい値では周期解や減衰解に落ち着くため、同化は容易になります。',
     guidelineEn: 'Standard value is 8.0 (strong chaotic behavior). Lower values like F=4.0 produce periodic or decaying waves where assimilation is straightforward.'
+  },
+  modelF: {
+    title: 'モデル誤差 (予報モデル強制項 F_model)',
+    titleEn: 'Model Error (Forecast Forcing F_model)',
+    description: 'データ同化の予報（予測）モデル側で使用する強制項パラメータです。真値の強制項（F）と同じ値に設定すると「パーフェクトモデル（モデル誤差なし）」となり、真値と異なる値（例: F=8に対してF_model=7や9）に設定すると「モデル誤差（不完全なモデル・系統バイアス）」が存在する現実的な環境を再現・検証できます。',
+    descriptionEn: 'External forcing parameter used by the forecast model in data assimilation. Setting it equal to F models a "perfect model" (no model error), while setting a different value (e.g. F=8 vs F_model=7 or 9) simulates parametric model error and forecast bias.',
+    formula: 'dx_i^f/dt = (x_{i+1}^f - x_{i-2}^f)x_{i-1}^f - x_i^f + F_{model}',
+    formulaEn: 'dx_i^f/dt = (x_{i+1}^f - x_{i-2}^f)x_{i-1}^f - x_i^f + F_{model}',
+    guideline: '標準値は 8.0（モデル誤差ゼロ）。モデル誤差がある環境では、インフレーションや局所化による調整の重要性がより顕著になります。',
+    guidelineEn: 'Default is 8.0 (zero model error). In the presence of model error, tuning covariance inflation and process noise becomes crucial to prevent filter divergence.'
   },
   obsErrorVar: {
     title: 'σ² (観測誤差分散)',

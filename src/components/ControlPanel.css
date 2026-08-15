@@ -29,6 +29,8 @@
 .cp-add-btn {
   font-size: 13px;
   padding: 4px 8px;
+  min-width: 108px;
+  justify-content: center;
 }
 
 .cp-collapse-btn,

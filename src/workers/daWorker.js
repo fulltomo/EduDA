@@ -117,6 +117,7 @@ function runSimulationJs(payload) {
     const {
       N = 40,
       F = 8.0,
+      modelF = 8.0,
       obsErrorVar = 1.0,
       obsInterval = 1,
       numSteps = 500,
@@ -126,6 +127,7 @@ function runSimulationJs(payload) {
       thinNumObs = 20,
     } = advancedOptions || {};
 
+    const model_F = modelF !== undefined ? modelF : F;
     const R_diag = obsErrorVar;
 
     // 1. Setup observation operator and indices
@@ -292,8 +294,8 @@ function runSimulationJs(payload) {
         // --- 4.1 Forecast Step ---
         if (step > 0) {
           if (state.type === 'EKF' || state.type === '3DVar') {
-            const M_lin = linearize_l96(state.x, F, dt);
-            state.x = rk4_step(state.x, dt, F);
+            const M_lin = linearize_l96(state.x, model_F, dt);
+            state.x = rk4_step(state.x, dt, model_F);
             if (state.type === 'EKF') {
               const Q_val = p.processNoise !== undefined ? p.processNoise : 0.01;
               const Q = matScale(identity(N), Q_val);
@@ -301,7 +303,7 @@ function runSimulationJs(payload) {
             }
           } else if (['POEnKF', 'EnKF', 'EnSRF', 'LETKF', 'PF'].includes(state.type)) {
             for (let i = 0; i < state.ensembleSize; i++) {
-              state.ensemble[i] = rk4_step(state.ensemble[i], dt, F);
+              state.ensemble[i] = rk4_step(state.ensemble[i], dt, model_F);
               if (state.type === 'PF') {
                 for (let j = 0; j < N; j++) {
                   state.ensemble[i][j] += randomNormal() * 0.05;
@@ -309,7 +311,7 @@ function runSimulationJs(payload) {
               }
             }
           } else if (state.type === '4DVar') {
-            state.x = rk4_step(state.x, dt, F);
+            state.x = rk4_step(state.x, dt, model_F);
             state.windowBuffer.push({ step, x_bg: state.x.slice(), y });
           }
         }
@@ -321,7 +323,7 @@ function runSimulationJs(payload) {
           } else if (state.type === '3DVar') {
             update3DVar(state, y, applyH);
           } else if (state.type === '4DVar') {
-            const traj = update4DVar(state, step, numSteps, dt, F, N, H_T, R_inv, applyH);
+            const traj = update4DVar(state, step, numSteps, dt, model_F, N, H_T, R_inv, applyH);
             if (traj) {
               for (let k = 0; k < traj.length; k++) {
                 const curStep = state.windowStartStep + k;

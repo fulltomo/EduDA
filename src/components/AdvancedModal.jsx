@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import EduTooltip from './EduTooltip';
+import { DEFAULT_ADVANCED } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   const { t } = useLanguage();
   const [local, setLocal] = useState({ ...options });
+  // Local string representation for forgiving number typing
+  const [inputStrings, setInputStrings] = useState({});
 
-  const handleChange = (key, value) => {
+  const handleChange = useCallback((key, value) => {
     setLocal(prev => {
       const next = { ...prev, [key]: value };
       if (key === 'N') {
@@ -23,6 +26,41 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
       }
       return next;
     });
+    // Clear custom string override so formatted number shows
+    setInputStrings(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
+  }, []);
+
+  const handleInputChange = (key, rawStr, min, max, isFloat = false) => {
+    setInputStrings(prev => ({ ...prev, [key]: rawStr }));
+    if (rawStr.trim() === '' || rawStr === '-' || rawStr === '.') {
+      return;
+    }
+    const val = Number(rawStr);
+    if (Number.isFinite(val)) {
+      handleChange(key, isFloat ? val : Math.round(val));
+    }
+  };
+
+  const handleInputBlur = (key, min, max, isFloat = false) => {
+    const raw = inputStrings[key];
+    if (raw !== undefined) {
+      const num = Number(raw);
+      if (!Number.isFinite(num) || raw.trim() === '') {
+        handleChange(key, DEFAULT_ADVANCED[key] ?? min);
+      } else {
+        const clamped = Math.max(min, Math.min(max, isFloat ? num : Math.round(num)));
+        handleChange(key, clamped);
+      }
+    }
+  };
+
+  const handleResetDefaults = () => {
+    setLocal({ ...DEFAULT_ADVANCED });
+    setInputStrings({});
   };
 
   const handleSave = () => {
@@ -43,23 +81,76 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   };
 
   const fields = [
-    { key: 'N', type: 'number', min: 4, max: 100, step: 1 },
-    { key: 'F', type: 'number', min: 1, max: 20, step: 0.5 },
-    { key: 'obsErrorVar', type: 'number', min: 0.01, max: 10, step: 0.1 },
-    { key: 'obsInterval', type: 'number', min: 1, max: 20, step: 1 },
-    { key: 'numSteps', type: 'number', min: 50, max: 2000, step: 50 },
-    { key: 'dt', type: 'number', min: 0.005, max: 0.2, step: 0.005 },
+    { key: 'N', min: 4, max: 100, step: 1, defaultVal: 40, isFloat: false },
+    { key: 'F', min: 1, max: 20, step: 0.5, defaultVal: 8.0, isFloat: true },
+    { key: 'modelF', min: 1, max: 20, step: 0.5, defaultVal: 8.0, isFloat: true },
+    { key: 'obsErrorVar', min: 0.01, max: 10, step: 0.1, defaultVal: 1.0, isFloat: true },
+    { key: 'obsInterval', min: 1, max: 20, step: 1, defaultVal: 1, isFloat: false },
+    { key: 'numSteps', min: 50, max: 2000, step: 50, defaultVal: 500, isFloat: false },
+    { key: 'dt', min: 0.005, max: 0.2, step: 0.005, defaultVal: 0.05, isFloat: true },
   ];
 
   const sparseFields = [
-    { key: 'sparseInterval', type: 'number', min: 2, max: 20, step: 1 },
-    { key: 'sparseRegionStart', type: 'number', min: 1, max: local.N, step: 1 },
-    { key: 'sparseRegionEnd', type: 'number', min: 1, max: local.N, step: 1 },
+    { key: 'sparseRegionStart', min: 1, max: local.N, step: 1, defaultVal: 1, isFloat: false, offset: 1 },
+    { key: 'sparseRegionEnd', min: 1, max: local.N, step: 1, defaultVal: 20, isFloat: false, offset: 1 },
+    { key: 'sparseInterval', min: 2, max: 20, step: 1, defaultVal: 4, isFloat: false },
   ];
 
   const thinnedFields = [
-    { key: 'thinNumObs', type: 'number', min: 1, max: local.N, step: 1 },
+    { key: 'thinNumObs', min: 1, max: local.N, step: 1, defaultVal: 20, isFloat: false },
   ];
+
+  const renderFieldRow = (f) => {
+    const label = t(`advancedModal.fields.${f.key}`, f.key);
+    const offset = f.offset || 0;
+    const currentVal = (local[f.key] ?? f.defaultVal) + offset;
+    const displayStr = inputStrings[f.key] !== undefined ? inputStrings[f.key] : currentVal;
+
+    return (
+      <div className="advanced-field-group" key={f.key}>
+        <div className="advanced-field-header">
+          <div className="advanced-field-label-wrap">
+            <label className="field-label" style={{ margin: 0, fontWeight: 500 }}>{label}</label>
+            <EduTooltip paramId={f.key} align="left" position="top" />
+          </div>
+          <button
+            type="button"
+            className="advanced-default-btn"
+            onClick={() => handleChange(f.key, f.defaultVal - offset)}
+            title={`${t('advancedModal.defaultHint')}: ${f.defaultVal}`}
+          >
+            {t('advancedModal.defaultHint')}: {f.defaultVal}
+          </button>
+        </div>
+
+        <div className="advanced-field-controls">
+          <input
+            type="range"
+            className="advanced-slider"
+            min={f.min}
+            max={f.max}
+            step={f.step}
+            value={currentVal}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              handleChange(f.key, val - offset);
+            }}
+          />
+          <input
+            type="number"
+            className="advanced-number-input"
+            min={f.min}
+            max={f.max}
+            step={f.step}
+            value={displayStr}
+            onFocus={(e) => e.target.select()}
+            onChange={(e) => handleInputChange(f.key, e.target.value, f.min, f.max, f.isFloat)}
+            onBlur={() => handleInputBlur(f.key, f.min, f.max, f.isFloat)}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -74,115 +165,54 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             <span className="material-symbols-outlined" style={{ fontSize: 24 }}>close</span>
           </button>
         </div>
+
         <div className="modal-body">
           {/* Common fields */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--primary)' }}>
-              {t('advancedModal.generalSection')}
-            </h3>
-            {fields.map(f => {
-              const label = t(`advancedModal.fields.${f.key}`, f.key);
-              return (
-                <div className="field-group" key={f.key}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <label className="field-label" style={{ margin: 0 }}>{label}</label>
-                    <EduTooltip paramId={f.key} align="left" position="top" />
-                  </div>
-                  <input
-                    className="field-input"
-                    type={f.type}
-                    min={f.min}
-                    max={f.max}
-                    step={f.step}
-                    value={local[f.key]}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === '') return;
-                      const val = Number(raw);
-                      if (!Number.isFinite(val)) return;
-                      handleChange(f.key, val);
-                    }}
-                  />
-                </div>
-              );
-            })}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--primary)' }}>
+                {t('advancedModal.generalSection')}
+              </h3>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={handleResetDefaults}
+                style={{ fontSize: '12px', padding: '4px 8px', color: 'var(--outline)' }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                {t('advancedModal.resetDefaults')}
+              </button>
+            </div>
+
+            {fields.map(renderFieldRow)}
           </div>
 
           {/* Sparse-specific */}
           {obsMode === 'sparse' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--outline-variant)', paddingTop: 16 }}>
               <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--secondary)' }}>
                 {t('advancedModal.sparseSection')}
               </h3>
-              {sparseFields.map(f => {
-                const label = t(`advancedModal.fields.${f.key}`, f.key);
-                return (
-                  <div className="field-group" key={f.key}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label className="field-label" style={{ margin: 0 }}>{label}</label>
-                      <EduTooltip paramId={f.key} align="left" position="top" />
-                    </div>
-                    <input
-                      className="field-input"
-                      type={f.type}
-                      min={f.min}
-                      max={f.max}
-                      step={f.step}
-                      value={f.key.startsWith('sparseRegion') ? local[f.key] + 1 : local[f.key]}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === '') return;
-                        const val = Number(raw);
-                        if (!Number.isFinite(val)) return;
-                        handleChange(f.key, f.key.startsWith('sparseRegion') ? val - 1 : val);
-                      }}
-                    />
-                  </div>
-                );
-              })}
+              {sparseFields.map(renderFieldRow)}
             </div>
           )}
 
           {/* Thinned-specific */}
           {obsMode === 'thinned' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--outline-variant)', paddingTop: 16 }}>
               <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--secondary)' }}>
                 {t('advancedModal.thinnedSection')}
               </h3>
-              {thinnedFields.map(f => {
-                const label = t(`advancedModal.fields.${f.key}`, f.key);
-                return (
-                  <div className="field-group" key={f.key}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label className="field-label" style={{ margin: 0 }}>{label}</label>
-                      <EduTooltip paramId={f.key} align="left" position="top" />
-                    </div>
-                    <input
-                      className="field-input"
-                      type={f.type}
-                      min={f.min}
-                      max={f.max}
-                      step={f.step}
-                      value={local[f.key]}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        if (raw === '') return;
-                        const val = Number(raw);
-                        if (!Number.isFinite(val)) return;
-                        handleChange(f.key, val);
-                      }}
-                    />
-                  </div>
-                );
-              })}
+              {thinnedFields.map(renderFieldRow)}
             </div>
           )}
         </div>
+
         <div className="modal-footer">
           <button className="btn btn-ghost" onClick={onClose}>
             {t('advancedModal.cancel')}
           </button>
-          <button className="btn btn-primary" style={{ fontSize: 16, padding: '8px 24px' }} onClick={handleSave}>
+          <button className="btn btn-primary" style={{ fontSize: 15, padding: '8px 24px' }} onClick={handleSave}>
             {t('advancedModal.save')}
           </button>
         </div>
