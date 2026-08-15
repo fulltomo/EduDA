@@ -43,7 +43,11 @@ function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
   useEffect(() => {
     if (!triggerRect) return;
 
-    const tooltipWidth = 300;
+    const tooltipWidth = (typeof style?.width === 'number')
+      ? style.width
+      : (typeof style?.width === 'string' && parseInt(style.width, 10))
+        ? parseInt(style.width, 10)
+        : 300;
     const tooltipMaxHeight = 360;
     const margin = 8;
 

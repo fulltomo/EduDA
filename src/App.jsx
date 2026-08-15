@@ -55,11 +55,21 @@ export default function App() {
   // --- Auto-Run Simulation with Debounce (60ms) ---
   const autoRunTimerRef = useRef(null);
 
+  useEffect(() => {
+    return () => {
+      if (autoRunTimerRef.current) {
+        clearTimeout(autoRunTimerRef.current);
+        autoRunTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const triggerAutoRun = useCallback((newMethods, newObsMode, newAdvanced) => {
     if (autoRunTimerRef.current) {
       clearTimeout(autoRunTimerRef.current);
     }
     autoRunTimerRef.current = setTimeout(() => {
+      autoRunTimerRef.current = null;
       runSimulation(newMethods || [], newObsMode, newAdvanced, []);
     }, 60);
   }, [runSimulation]);
@@ -107,12 +117,20 @@ export default function App() {
   }, [obsMode, advancedOptions, triggerAutoRun]);
 
   const handleRun = useCallback(() => {
+    if (autoRunTimerRef.current) {
+      clearTimeout(autoRunTimerRef.current);
+      autoRunTimerRef.current = null;
+    }
     runSimulation(methods, obsMode, advancedOptions, []);
   }, [runSimulation, methods, obsMode, advancedOptions]);
 
   const { lang, t } = useLanguage();
 
   const handleSelectPreset = useCallback((preset) => {
+    if (autoRunTimerRef.current) {
+      clearTimeout(autoRunTimerRef.current);
+      autoRunTimerRef.current = null;
+    }
     const locPreset = getLocalizedPreset(preset, lang);
     const instantiatedMethods = locPreset.methods.map(m =>
       createPresetMethodInstance(m.type, m.label, m.params)

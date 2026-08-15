@@ -5,14 +5,14 @@ export const PRESETS = [
     titleEn: 'Exp 1: Effects of Inflation',
     theme: 'アンサンブル過信（フィルター発散）の防止',
     themeEn: 'Prevent ensemble overconfidence and filter divergence',
-    description: 'インフレーション（λ）がないと少アンサンブルは誤差を過小評価して発散（青線：RMSE急増）しますが、適正値（λ=1.15）を入れると安定して高精度（紫線：低RMSE）を保ちます。',
+    description: 'インフレーション（λ）がないと小規模アンサンブルは誤差を過小評価して発散（青線：RMSE急増）しますが、適正値（λ=1.15）を入れると安定して高精度（紫線：低RMSE）を保ちます。',
     descriptionEn: 'Without inflation (λ=1.00), small ensembles become overconfident and diverge (Blue: high RMSE). Tuning inflation (λ=1.15) stabilizes tracking (Purple: low RMSE).',
     obsMode: 'full',
     methods: [
       {
         type: 'POEnKF',
         label: 'POEnKF (λ=1.0 膨張なし)',
-        labelEn: 'POEnKF (λ=1.0 None)',
+        labelEn: 'POEnKF (λ=1.0 No inflation)',
         params: { ensembleSize: 20, inflation: 1.00, localization: 10 }
       },
       {
@@ -35,7 +35,7 @@ export const PRESETS = [
     id: 'preset2',
     title: '実験2: 局所化 (Localization) の効果',
     titleEn: 'Exp 2: Effects of Localization',
-    theme: '少アンサンブルにおける疑似相関ノイズの除去',
+    theme: '小規模アンサンブルにおける疑似相関ノイズの除去',
     themeEn: 'Cut distant spurious correlation noise in small ensembles',
     description: 'アンサンブル数が少ないと遠く離れた地点間で偶然の相関（疑似相関）が発生します。局所化半径を絞る（L=5）ことで不要なノイズをカットし、精度が劇的に改善します。',
     descriptionEn: 'Small ensembles create fake correlations between distant points. Tight localization (L=5) filters out this noise, outperforming loose localization (L=20).',

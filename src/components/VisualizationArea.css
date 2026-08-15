@@ -465,11 +465,13 @@
 
   .hov-method-selector-container {
     width: 100%;
+    max-width: none;
     justify-content: space-between;
   }
 
   .hov-method-select {
-    width: 70%;
+    flex: 1;
+    max-width: none;
   }
 
   .viz-tab-row {

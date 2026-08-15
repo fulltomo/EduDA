@@ -128,3 +128,23 @@
   border: 1px solid var(--outline-variant);
   opacity: 0.5;
 }
+
+@media (max-width: 768px) {
+  .obs-tabs-container {
+    overflow-x: auto;
+  }
+
+  .obs-tabs-inner {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .obs-section-title {
+    min-width: auto;
+  }
+
+  .obs-tab {
+    min-width: auto;
+    padding: 4px 8px;
+  }
+}

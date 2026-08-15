@@ -143,7 +143,7 @@ export default function ControlPanel({
               style={{ width: '100%' }}
             >
               <span className="material-symbols-outlined">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
-              <span>{isRunning ? t('controlPanel.calculating') : '再計算'}</span>
+              <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.recalculate')}</span>
               {isRunning && <div className="spinner" />}
             </button>
 

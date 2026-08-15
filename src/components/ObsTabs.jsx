@@ -73,7 +73,7 @@ export default function ObsTabs({
                 <span
                   key={pt.index}
                   className={`obs-mini-dot ${pt.isObserved ? 'obs-mini-dot--on' : 'obs-mini-dot--off'}`}
-                  title={`格子点 ${pt.index + 1}: ${pt.isObserved ? '観測あり' : '未観測'}`}
+                  title={`${t('obsActions.gridPoint')} ${pt.index + 1}: ${pt.isObserved ? t('obsActions.observed') : t('obsActions.unobserved')}`}
                 />
               ))}
             </div>

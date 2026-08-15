@@ -9,7 +9,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   // Local string representation for forgiving number typing
   const [inputStrings, setInputStrings] = useState({});
 
-  const handleChange = useCallback((key, value) => {
+  const updateLocalValue = useCallback((key, value) => {
     setLocal(prev => {
       const next = { ...prev, [key]: value };
       if (key === 'N') {
@@ -26,13 +26,16 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
       }
       return next;
     });
-    // Clear custom string override so formatted number shows
+  }, []);
+
+  const handleSliderChange = (key, value) => {
+    updateLocalValue(key, value);
     setInputStrings(prev => {
       const copy = { ...prev };
       delete copy[key];
       return copy;
     });
-  }, []);
+  };
 
   const handleInputChange = (key, rawStr, min, max, isFloat = false) => {
     setInputStrings(prev => ({ ...prev, [key]: rawStr }));
@@ -41,7 +44,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     }
     const val = Number(rawStr);
     if (Number.isFinite(val)) {
-      handleChange(key, isFloat ? val : Math.round(val));
+      updateLocalValue(key, isFloat ? val : Math.round(val));
     }
   };
 
@@ -50,12 +53,26 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     if (raw !== undefined) {
       const num = Number(raw);
       if (!Number.isFinite(num) || raw.trim() === '') {
-        handleChange(key, DEFAULT_ADVANCED[key] ?? min);
+        updateLocalValue(key, DEFAULT_ADVANCED[key] ?? min);
       } else {
         const clamped = Math.max(min, Math.min(max, isFloat ? num : Math.round(num)));
-        handleChange(key, clamped);
+        updateLocalValue(key, clamped);
       }
+      setInputStrings(prev => {
+        const copy = { ...prev };
+        delete copy[key];
+        return copy;
+      });
     }
+  };
+
+  const handlePerFieldReset = (key, defaultVal) => {
+    updateLocalValue(key, defaultVal);
+    setInputStrings(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
   };
 
   const handleResetDefaults = () => {
@@ -116,7 +133,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
           <button
             type="button"
             className="advanced-default-btn"
-            onClick={() => handleChange(f.key, f.defaultVal - offset)}
+            onClick={() => handlePerFieldReset(f.key, f.defaultVal - offset)}
             title={`${t('advancedModal.defaultHint')}: ${f.defaultVal}`}
           >
             {t('advancedModal.defaultHint')}: {f.defaultVal}
@@ -133,7 +150,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             value={currentVal}
             onChange={(e) => {
               const val = Number(e.target.value);
-              handleChange(f.key, val - offset);
+              handleSliderChange(f.key, val - offset);
             }}
           />
           <input

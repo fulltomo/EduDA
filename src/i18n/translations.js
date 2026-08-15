@@ -20,15 +20,15 @@ export const TRANSLATIONS = {
     obsSectionTitle: '観測設定:',
     obsModes: {
       full: { label: '全観測', desc: '全40格子点を毎ステップ観測' },
-      sparse: { label: '疎密観測', desc: '前半領域（格子点1〜20）のみを集中観測' },
+      sparse: { label: '疎密観測', desc: '指定された連続領域（開始〜終了格子点）のみを集中観測' },
       thinned: { label: '間引き観測', desc: '全格子点を等間隔でサンプリング観測' },
     },
     obsActions: {
       pointsCount: '観測点',
       gridUnits: '格子点',
       gridPoint: '格子点',
-      observed: '観測点',
-      unobserved: '未観測点',
+      observed: '観測あり',
+      unobserved: '未観測',
     },
 
     // ControlPanel
@@ -39,6 +39,7 @@ export const TRANSLATIONS = {
       sidebarExpand: 'サイドバーを展開',
       emptyHint: '「比較手法を追加」から手法を選択してください',
       runAssimilation: '同化を実行',
+      recalculate: '再計算',
       calculating: '計算中...',
       exportCsv: 'CSVダウンロード',
       visibleTooltip: '表示中 - クリックで非表示',
@@ -172,15 +173,15 @@ export const TRANSLATIONS = {
     obsSectionTitle: 'Obs Settings:',
     obsModes: {
       full: { label: 'Full Obs', desc: 'Observe all 40 grid points at every assimilation step' },
-      sparse: { label: 'Sparse Obs', desc: 'Concentrate observations on first half (grid points 1–20)' },
+      sparse: { label: 'Sparse Obs', desc: 'Concentrate observations on configured contiguous grid region' },
       thinned: { label: 'Thinned Obs', desc: 'Sample grid points with equal spatial intervals' },
     },
     obsActions: {
       pointsCount: 'Obs Points',
       gridUnits: 'grid points',
       gridPoint: 'Grid',
-      observed: 'Observed point',
-      unobserved: 'Unobserved point',
+      observed: 'Observed',
+      unobserved: 'Unobserved',
     },
 
     // ControlPanel
@@ -191,6 +192,7 @@ export const TRANSLATIONS = {
       sidebarExpand: 'Expand sidebar',
       emptyHint: 'Click "Add Method" to select and compare algorithms',
       runAssimilation: 'Run Assimilation',
+      recalculate: 'Recalculate',
       calculating: 'Computing...',
       exportCsv: 'Export CSV',
       visibleTooltip: 'Visible - Click to hide',

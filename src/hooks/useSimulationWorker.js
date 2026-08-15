@@ -11,6 +11,10 @@ export function useSimulationWorker(onSuccess) {
 
   const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced, targetCustomObsIndices) => {
     if (!targetMethods || targetMethods.length === 0) {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
       setSimulationResults(null);
       setIsRunning(false);
       return;

@@ -44,6 +44,7 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
       <div className="topnav-left">
         <span className="topnav-brand">{t('appName')}</span>
         <span className="topnav-subtitle">{t('appSubtitle')}</span>
+        <span className="topnav-model-badge">Lorenz &apos;96</span>
       </div>
       <div className="topnav-right">
         {/* 🎓 プリセット実験ラボ Dropdown */}

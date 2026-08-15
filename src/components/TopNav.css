@@ -198,24 +198,42 @@
   line-height: 1.4;
 }
 
+.topnav-model-badge {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--primary);
+  background: rgba(142, 213, 255, 0.1);
+  border: 1px solid rgba(142, 213, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--rounded-full);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .topnav-subtitle {
     display: none;
   }
 
-  .topnav-settings-label {
+  .topnav-settings-label,
+  .topnav-preset-label,
+  .topnav-lang-label,
+  .topnav-share-label,
+  .topnav-csv-label {
     display: none;
   }
 
-  .topnav-preset-label {
-    display: none;
+  .topnav-settings-btn,
+  .topnav-lang-btn,
+  .topnav-share-btn,
+  .topnav-csv-btn {
+    min-width: auto !important;
+    padding: 6px 8px !important;
   }
 
-  .topnav-lang-label {
-    display: none;
-  }
-
-  .topnav-share-label {
-    display: none;
+  .topnav-preset-btn {
+    min-width: auto !important;
+    padding: 6px 10px !important;
   }
 }
