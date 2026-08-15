@@ -196,12 +196,15 @@ export function update4DVar(state, step, numSteps, dt, F, N, H_T, R_inv, applyH)
         g = g_next;
       }
 
+      const traj = [x0.slice()];
       let x_curr = x0;
-      for (let k = 0; k < window.length; k++) {
-        if (k > 0) x_curr = rk4_step(x_curr, dt, F);
+      for (let k = 1; k < window.length; k++) {
+        x_curr = rk4_step(x_curr, dt, F);
+        traj.push(x_curr.slice());
       }
       state.x = x_curr;
-      state.windowBuffer = [{ step, x_bg: state.x.slice(), y: null }];
+      return traj;
     }
   }
+  return null;
 }

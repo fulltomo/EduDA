@@ -262,6 +262,7 @@ function runSimulationJs(payload) {
       }
 
       if (m.type === '4DVar') {
+        state.windowStartStep = 0;
         state.windowBuffer = [{ step: 0, x_bg: state.x.slice(), y: obsHistory[0] }];
       }
 
@@ -314,7 +315,21 @@ function runSimulationJs(payload) {
           } else if (state.type === '3DVar') {
             update3DVar(state, y, applyH);
           } else if (state.type === '4DVar') {
-            update4DVar(state, step, numSteps, dt, F, N, H_T, R_inv, applyH);
+            const traj = update4DVar(state, step, numSteps, dt, F, N, H_T, R_inv, applyH);
+            if (traj) {
+              for (let k = 0; k < traj.length; k++) {
+                const curStep = state.windowStartStep + k;
+                if (curStep > 0 && curStep <= numSteps) {
+                  const idx = curStep - 1;
+                  if (idx < state.rmseTimeSeries.length) {
+                    state.analysisHistory[idx] = traj[k].slice();
+                    state.rmseTimeSeries[idx] = rmse(traj[k], truthHistory[curStep]);
+                  }
+                }
+              }
+              state.windowBuffer = [{ step, x_bg: state.x.slice(), y: null }];
+              state.windowStartStep = step;
+            }
           } else if (['POEnKF', 'EnKF', 'EnSRF', 'LETKF'].includes(state.type)) {
             const M = state.ensembleSize;
             const ens = state.ensemble;

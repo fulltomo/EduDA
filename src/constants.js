@@ -185,10 +185,10 @@ export const DA_METHODS = [
         key: 'bgErrorVar',
         label: '背景誤差分散 (σb²)',
         labelEn: 'Background Error Var (σb²)',
-        min: 0.05,
+        min: 0.02,
         max: 2.0,
-        step: 0.05,
-        default: 0.1,
+        step: 0.02,
+        default: 0.05,
       },
       {
         key: 'windowSize',
@@ -197,7 +197,7 @@ export const DA_METHODS = [
         min: 1,
         max: 15,
         step: 1,
-        default: 5,
+        default: 6,
       }
     ]
   },

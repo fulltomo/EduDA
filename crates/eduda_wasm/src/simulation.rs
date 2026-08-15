@@ -126,6 +126,7 @@ struct MethodState {
     resample_thresh: f64,
     is_lpf: bool,
     window_size: usize,
+    window_start_step: usize,
     window_x_bg: Vec<Vec<f64>>,
     window_y: Vec<Option<Vec<f64>>>,
     rmse_series: Vec<f64>,
@@ -233,6 +234,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             resample_thresh: 0.5,
             is_lpf: true,
             window_size: 5,
+            window_start_step: 0,
             window_x_bg: Vec::new(),
             window_y: Vec::new(),
             rmse_series: Vec::with_capacity(num_steps + 1),
@@ -402,7 +404,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                     update_3dvar(&mut state.x, y, &obs_indices, &state.k_3dvar, n);
                 } else if state.method_type == "4DVar" {
                     if state.window_x_bg.len() >= state.window_size || step == num_steps {
-                        update_4dvar(
+                        let traj = update_4dvar(
                             &mut state.x,
                             &state.window_x_bg,
                             &state.window_y,
@@ -413,10 +415,21 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                             f,
                             n,
                         );
+                        for (k, state_k) in traj.into_iter().enumerate() {
+                            let cur_step = state.window_start_step + k;
+                            if cur_step > 0 && cur_step <= num_steps {
+                                let idx = cur_step - 1;
+                                if idx < state.rmse_series.len() {
+                                    state.analysis_history[idx] = state_k.clone();
+                                    state.rmse_series[idx] = rmse(&state_k, &truth_history[cur_step]);
+                                }
+                            }
+                        }
                         state.window_x_bg.clear();
                         state.window_y.clear();
                         state.window_x_bg.push(state.x.clone());
                         state.window_y.push(None);
+                        state.window_start_step = step;
                     }
                 } else if ["POEnKF", "EnKF", "EnSRF", "LETKF"].contains(&state.method_type.as_str()) {
                     let m = state.ensemble_size;

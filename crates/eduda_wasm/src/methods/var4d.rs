@@ -11,9 +11,9 @@ pub fn update_4dvar(
     dt: f64,
     f: f64,
     n: usize,
-) {
+) -> Vec<Vec<f64>> {
     let window_len = window_x_bg.len();
-    if window_len == 0 { return; }
+    if window_len == 0 { return Vec::new(); }
 
     let x0_b = &window_x_bg[0];
     let mut x0 = x0_b.clone();
@@ -197,13 +197,15 @@ pub fn update_4dvar(
         g = g_next;
     }
 
+    let mut traj_out = Vec::with_capacity(window_len);
     let mut x_curr = x0;
+    traj_out.push(x_curr.clone());
     let mut x_next = vec![0.0; n];
-    for k in 0..window_len {
-        if k > 0 {
-            rk4_step(&x_curr, dt, f, &mut x_next);
-            x_curr.copy_from_slice(&x_next);
-        }
+    for _k in 1..window_len {
+        rk4_step(&x_curr, dt, f, &mut x_next);
+        x_curr.copy_from_slice(&x_next);
+        traj_out.push(x_curr.clone());
     }
     x.copy_from_slice(&x_curr);
+    traj_out
 }
