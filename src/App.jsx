@@ -91,8 +91,11 @@ export default function App() {
     setActivePreset(null);
     setMethods(prev => {
       const next = prev.map(m => (m.instanceId === instanceId ? { ...m, ...updates } : m));
-      triggerAutoRun(next, obsMode, advancedOptions);
       return next;
+    });
+    setMethods(current => {
+      triggerAutoRun(current, obsMode, advancedOptions);
+      return current;
     });
   }, [obsMode, advancedOptions, triggerAutoRun]);
 
@@ -110,11 +113,11 @@ export default function App() {
     const instance = createMethodInstance(methodType);
     setMethods(prev => {
       const next = [...prev, instance];
-      triggerAutoRun(next, obsMode, advancedOptions);
       return next;
     });
+    triggerAutoRun([...methods, instance], obsMode, advancedOptions);
     setShowAddMethod(false);
-  }, [obsMode, advancedOptions, triggerAutoRun]);
+  }, [methods, obsMode, advancedOptions, triggerAutoRun]);
 
   const handleRun = useCallback(() => {
     if (autoRunTimerRef.current) {

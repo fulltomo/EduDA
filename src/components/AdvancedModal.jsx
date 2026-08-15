@@ -37,26 +37,27 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     });
   };
 
-  const handleInputChange = (key, rawStr, min, max, isFloat = false) => {
+  const handleInputChange = (key, rawStr, min, max, isFloat = false, offset = 0) => {
     setInputStrings(prev => ({ ...prev, [key]: rawStr }));
     if (rawStr.trim() === '' || rawStr === '-' || rawStr === '.') {
       return;
     }
     const val = Number(rawStr);
     if (Number.isFinite(val)) {
-      updateLocalValue(key, isFloat ? val : Math.round(val));
+      const parsed = isFloat ? val : Math.round(val);
+      updateLocalValue(key, parsed - offset);
     }
   };
 
-  const handleInputBlur = (key, min, max, isFloat = false) => {
+  const handleInputBlur = (key, min, max, isFloat = false, offset = 0) => {
     const raw = inputStrings[key];
     if (raw !== undefined) {
       const num = Number(raw);
       if (!Number.isFinite(num) || raw.trim() === '') {
-        updateLocalValue(key, DEFAULT_ADVANCED[key] ?? min);
+        updateLocalValue(key, DEFAULT_ADVANCED[key] ?? (min - offset));
       } else {
         const clamped = Math.max(min, Math.min(max, isFloat ? num : Math.round(num)));
-        updateLocalValue(key, clamped);
+        updateLocalValue(key, clamped - offset);
       }
       setInputStrings(prev => {
         const copy = { ...prev };
@@ -84,6 +85,13 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     const sanitized = { ...local };
     const N = Math.max(4, Math.min(100, Math.round(sanitized.N || 40)));
     sanitized.N = N;
+    sanitized.F = Math.max(1, Math.min(20, sanitized.F || 8.0));
+    sanitized.modelF = Math.max(1, Math.min(20, sanitized.modelF ?? sanitized.F ?? 8.0));
+    sanitized.obsErrorVar = Math.max(0.01, Math.min(10.0, sanitized.obsErrorVar || 1.0));
+    sanitized.obsInterval = Math.max(1, Math.min(20, Math.round(sanitized.obsInterval || 1)));
+    sanitized.numSteps = Math.max(50, Math.min(2000, Math.round(sanitized.numSteps || 500)));
+    sanitized.dt = Math.max(0.005, Math.min(0.2, sanitized.dt || 0.05));
+
     if (sanitized.sparseRegionStart != null) {
       sanitized.sparseRegionStart = Math.max(0, Math.min(N - 1, Math.round(sanitized.sparseRegionStart)));
     }
@@ -161,8 +169,8 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             step={f.step}
             value={displayStr}
             onFocus={(e) => e.target.select()}
-            onChange={(e) => handleInputChange(f.key, e.target.value, f.min, f.max, f.isFloat)}
-            onBlur={() => handleInputBlur(f.key, f.min, f.max, f.isFloat)}
+            onChange={(e) => handleInputChange(f.key, e.target.value, f.min, f.max, f.isFloat, offset)}
+            onBlur={() => handleInputBlur(f.key, f.min, f.max, f.isFloat, offset)}
           />
         </div>
       </div>
