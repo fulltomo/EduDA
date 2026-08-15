@@ -11,6 +11,10 @@ export function useClickOutside(ref, callback, active = true, ignoreSelector = n
       if (ignoreSelector && e.target.closest && e.target.closest(ignoreSelector)) {
         return;
       }
+      // If clicking inside a portal-rendered tooltip box, don't trigger outside click
+      if (e.target.closest && e.target.closest('.edu-tooltip-box')) {
+        return;
+      }
       if (ref.current && !ref.current.contains(e.target)) {
         callback(e);
       }

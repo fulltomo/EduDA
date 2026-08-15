@@ -1,17 +1,10 @@
-import { useState, useRef } from 'react';
-import { EduTooltipDrawer } from './EduTooltip';
+import EduTooltip from './EduTooltip';
 import { DIVERGENCE_THRESHOLD } from '../constants';
-import { useClickOutside } from '../hooks/useClickOutside';
 import { useLanguage } from '../context/LanguageContext';
 import './MethodCard.css';
 
 export default function MethodCard({ method, color, onUpdate, onRemove }) {
   const { lang, t } = useLanguage();
-  const [showMenu, setShowMenu] = useState(false);
-  const [openDrawers, setOpenDrawers] = useState({});
-  const menuRef = useRef(null);
-
-  useClickOutside(menuRef, () => setShowMenu(false), showMenu);
 
   const glowColor = color + '99'; // ~60% opacity
 
@@ -19,24 +12,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
     const newParams = { ...method.params, [key]: val };
     onUpdate({ params: newParams });
   };
-
-  const toggleDrawer = (key, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpenDrawers((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const closeDrawer = (key) => {
-    setOpenDrawers((prev) => ({
-      ...prev,
-      [key]: false,
-    }));
-  };
-
-  const ensembleSize = method.params?.ensembleSize;
 
   return (
     <div className={`method-card card ${method.visible === false ? 'is-hidden' : ''}`} id={`card-${method.instanceId}`}>
@@ -48,13 +23,14 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             style={{ backgroundColor: color, boxShadow: `0 0 8px ${glowColor}` }}
           />
           <span className="method-card-name typo-body-md" style={{ fontWeight: 600 }}>
-            {method.label} {ensembleSize ? `(M=${ensembleSize})` : ''}
+            {method.label}
           </span>
         </div>
         <div className="method-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <button
             className="method-card-visibility-btn"
             onClick={() => onUpdate({ visible: method.visible !== false ? false : true })}
+            title={method.visible !== false ? t('methodCard.visibilityHide') : t('methodCard.visibilityShow')}
             aria-label={method.visible !== false ? t('methodCard.visibilityHide') : t('methodCard.visibilityShow')}
             style={{
               background: 'none',
@@ -71,23 +47,14 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               {method.visible !== false ? 'visibility' : 'visibility_off'}
             </span>
           </button>
-          <div className="method-card-menu-wrapper" ref={menuRef} style={{ position: 'relative' }}>
-            <button
-              className="method-card-menu-btn"
-              onClick={() => setShowMenu(!showMenu)}
-              aria-label={t('methodCard.menu')}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>more_vert</span>
-            </button>
-            {showMenu && (
-              <div className="method-card-dropdown">
-                <button onClick={() => { onRemove(); setShowMenu(false); }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
-                  {t('methodCard.delete')}
-                </button>
-              </div>
-            )}
-          </div>
+          <button
+            className="method-card-delete-btn"
+            onClick={onRemove}
+            title={t('methodCard.delete')}
+            aria-label={t('methodCard.delete')}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
+          </button>
         </div>
       </div>
 
@@ -100,7 +67,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
           }
 
           const val = method.params?.[p.key] ?? p.default;
-          const isDrawerOpen = !!openDrawers[p.key];
           const paramLabel = lang === 'en' ? (p.labelEn || p.label) : p.label;
 
           if (p.type === 'select') {
@@ -109,15 +75,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 <div className="slider-header">
                   <div className="slider-label-wrapper">
                     <span className="slider-label">{paramLabel}</span>
-                    <button
-                      type="button"
-                      className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
-                      onClick={(e) => toggleDrawer(p.key, e)}
-                      aria-label={`${paramLabel} ${t('methodCard.showExplanation')}`}
-                      title={t('methodCard.showExplanation')}
-                    >
-                      <span className="material-symbols-outlined">info</span>
-                    </button>
+                    <EduTooltip paramId={p.key} align="left" position="bottom" />
                   </div>
                 </div>
 
@@ -142,13 +100,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                     </option>
                   ))}
                 </select>
-
-                {isDrawerOpen && (
-                  <EduTooltipDrawer
-                    paramId={p.key}
-                    onClose={() => closeDrawer(p.key)}
-                  />
-                )}
               </div>
             );
           }
@@ -158,15 +109,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="slider-header">
                 <div className="slider-label-wrapper">
                   <span className="slider-label">{paramLabel}</span>
-                  <button
-                    type="button"
-                    className={`edu-tooltip-trigger ${isDrawerOpen ? 'active' : ''}`}
-                    onClick={(e) => toggleDrawer(p.key, e)}
-                    aria-label={`${paramLabel} ${t('methodCard.showExplanation')}`}
-                    title={t('methodCard.showExplanation')}
-                  >
-                    <span className="material-symbols-outlined">info</span>
-                  </button>
+                  <EduTooltip paramId={p.key} align="left" position="bottom" />
                 </div>
                 <span className="slider-value typo-data" style={{ color }}>
                   {typeof val === 'number' && !Number.isInteger(val) ? val.toFixed(2) : val}
@@ -182,13 +125,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 onChange={(e) => handleParamChange(p.key, Number(e.target.value))}
                 style={{ accentColor: color }}
               />
-
-              {isDrawerOpen && (
-                <EduTooltipDrawer
-                  paramId={p.key}
-                  onClose={() => closeDrawer(p.key)}
-                />
-              )}
             </div>
           );
         })}
@@ -200,15 +136,9 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="stat-item">
                 <span className="stat-label typo-label-caps">{t('methodCard.rmse')}:</span>
                 {!Number.isFinite(method.avgRmse) || method.avgRmse > DIVERGENCE_THRESHOLD ? (
-                  <button
-                    type="button"
-                    className={`divergence-badge ${openDrawers['filterDivergence'] ? 'active' : ''}`}
-                    onClick={(e) => toggleDrawer('filterDivergence', e)}
-                    aria-label={t('methodCard.divergedTooltip')}
-                    title={t('methodCard.showExplanation')}
-                  >
-                    <span>{t('methodCard.diverged')}</span>
-                  </button>
+                  <span className="stat-value typo-data" style={{ color: 'var(--error)', fontWeight: 600 }}>
+                    —
+                  </span>
                 ) : (
                   <span className="stat-value typo-data">{method.avgRmse.toFixed(3)}</span>
                 )}
@@ -216,15 +146,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="stat-item">
                 <div className="stat-label-wrapper">
                   <span className="stat-label typo-label-caps">{t('methodCard.spread')}</span>
-                  <button
-                    type="button"
-                    className={`edu-tooltip-trigger ${openDrawers['spread'] ? 'active' : ''}`}
-                    onClick={(e) => toggleDrawer('spread', e)}
-                    aria-label={`${t('methodCard.spread')} ${t('methodCard.showExplanation')}`}
-                    title={t('methodCard.showExplanation')}
-                  >
-                    <span className="material-symbols-outlined">info</span>
-                  </button>
+                  <EduTooltip paramId="spread" align="left" position="top" />
                   <span className="stat-label typo-label-caps">:</span>
                 </div>
                 <span className="stat-value typo-data">
@@ -232,20 +154,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 </span>
               </div>
             </div>
-
-            {openDrawers['spread'] && (
-              <EduTooltipDrawer
-                paramId="spread"
-                onClose={() => closeDrawer('spread')}
-              />
-            )}
-
-            {openDrawers['filterDivergence'] && (
-              <EduTooltipDrawer
-                paramId="filterDivergence"
-                onClose={() => closeDrawer('filterDivergence')}
-              />
-            )}
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:wasm": "cargo build --manifest-path crates/eduda_wasm/Cargo.toml --release --target wasm32-unknown-unknown && mkdir -p public/wasm && cp crates/eduda_wasm/target/wasm32-unknown-unknown/release/eduda_wasm.wasm public/wasm/",
+    "build:wasm": "if command -v cargo >/dev/null 2>&1; then cargo build --manifest-path crates/eduda_wasm/Cargo.toml --release --target wasm32-unknown-unknown && mkdir -p public/wasm && cp crates/eduda_wasm/target/wasm32-unknown-unknown/release/eduda_wasm.wasm public/wasm/; else echo 'Cargo not found; skipping WASM build'; fi",
     "build": "npm run build:wasm && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

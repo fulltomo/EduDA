@@ -26,6 +26,8 @@ pub struct AdvancedOptions {
     pub n: usize,
     #[serde(default = "default_f", rename = "F")]
     pub f: f64,
+    #[serde(default = "default_f", rename = "modelF")]
+    pub model_f: f64,
     #[serde(default = "default_obs_error_var", rename = "obsErrorVar")]
     pub obs_error_var: f64,
     #[serde(default = "default_obs_interval", rename = "obsInterval")]
@@ -56,6 +58,7 @@ impl Default for AdvancedOptions {
         Self {
             n: default_n(),
             f: default_f(),
+            model_f: default_f(),
             obs_error_var: default_obs_error_var(),
             obs_interval: default_obs_interval(),
             num_steps: default_num_steps(),
@@ -140,6 +143,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
     let adv = payload.advanced_options.unwrap_or_default();
     let n = adv.n;
     let f = adv.f;
+    let model_f = adv.model_f;
     let r_diag = adv.obs_error_var;
     let obs_interval = adv.obs_interval;
     let num_steps = adv.num_steps;
@@ -356,9 +360,9 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             if step > 0 {
                 if state.method_type == "EKF" || state.method_type == "3DVar" {
                     if state.method_type == "EKF" {
-                        linearize_l96(&state.x, f, dt, &mut m_lin);
+                        linearize_l96(&state.x, model_f, dt, &mut m_lin);
                     }
-                    rk4_step(&state.x, dt, f, &mut x_tmp);
+                    rk4_step(&state.x, dt, model_f, &mut x_tmp);
                     state.x.copy_from_slice(&x_tmp);
 
                     if state.method_type == "EKF" {
@@ -388,7 +392,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                     let mut ens_i = vec![0.0; n];
                     for i in 0..m {
                         ens_i.copy_from_slice(&state.ensemble[(i * n)..((i + 1) * n)]);
-                        rk4_step(&ens_i, dt, f, &mut x_tmp);
+                        rk4_step(&ens_i, dt, model_f, &mut x_tmp);
                         if state.method_type == "PF" {
                             for j in 0..n {
                                 x_tmp[j] += rng.normal() * 0.05;
@@ -397,7 +401,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                         state.ensemble[(i * n)..((i + 1) * n)].copy_from_slice(&x_tmp);
                     }
                 } else if state.method_type == "4DVar" {
-                    rk4_step(&state.x, dt, f, &mut x_tmp);
+                    rk4_step(&state.x, dt, model_f, &mut x_tmp);
                     state.x.copy_from_slice(&x_tmp);
                     state.window_x_bg.push(state.x.clone());
                     state.window_y.push(obs_history[step].clone());
@@ -421,7 +425,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                             &state.b_inv,
                             r_diag,
                             dt,
-                            f,
+                            model_f,
                             n,
                         );
                         for (k, state_k) in traj.into_iter().enumerate() {

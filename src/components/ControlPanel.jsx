@@ -10,11 +10,8 @@ export default function ControlPanel({
   onRemoveMethod,
   onAddMethod,
   onRun,
-  onCsvExport,
   isRunning,
   progress,
-  hasResults,
-  needsRecalc = false,
 }) {
   const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -139,63 +136,37 @@ export default function ControlPanel({
         {!isCollapsed ? (
           <>
             <button
-              className={`btn btn-primary cp-run-btn ${needsRecalc && !isRunning && methods.length > 0 ? 'cp-run-btn--pulse' : ''}`}
+              className="btn btn-primary cp-run-btn"
               onClick={onRun}
               disabled={isRunning || methods.length === 0}
               id="btn-run"
-              style={{ position: 'relative' }}
+              style={{ width: '100%' }}
             >
-              <span className="material-symbols-outlined">play_arrow</span>
-              <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.runAssimilation')}</span>
+              <span className="material-symbols-outlined">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
+              <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.recalculate')}</span>
               {isRunning && <div className="spinner" />}
-              {needsRecalc && !isRunning && methods.length > 0 && (
-                <span className="cp-run-badge" />
-              )}
             </button>
 
             {isRunning && (
-              <div className="cp-progress-bar">
+              <div className="cp-progress-bar" style={{ marginTop: '6px' }}>
                 <div
                   className="cp-progress-fill"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             )}
-
-            <button
-              className="btn btn-secondary cp-csv-btn"
-              onClick={onCsvExport}
-              disabled={!hasResults}
-              id="btn-csv"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>download</span>
-              {t('controlPanel.exportCsv')}
-            </button>
           </>
         ) : (
           <div className="cp-collapsed-footer">
             <button
-              className={`btn btn-primary cp-collapsed-action-btn ${needsRecalc && !isRunning && methods.length > 0 ? 'cp-run-btn--pulse' : ''}`}
+              className="btn btn-primary cp-collapsed-action-btn"
               onClick={onRun}
               disabled={isRunning || methods.length === 0}
               id="btn-run-collapsed"
               title={t('controlPanel.runAssimilation')}
               aria-label={t('controlPanel.runAssimilation')}
             >
-              <span className="material-symbols-outlined">play_arrow</span>
-              {needsRecalc && !isRunning && methods.length > 0 && (
-                <span className="cp-run-badge" />
-              )}
-            </button>
-            <button
-              className="btn btn-secondary cp-collapsed-action-btn"
-              onClick={onCsvExport}
-              disabled={!hasResults}
-              id="btn-csv-collapsed"
-              title={t('controlPanel.exportCsv')}
-              aria-label={t('controlPanel.exportCsv')}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
+              <span className="material-symbols-outlined">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
             </button>
           </div>
         )}

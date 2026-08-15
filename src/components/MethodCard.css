@@ -26,53 +26,31 @@
 }
 
 .method-card-actions {
-  position: relative;
-}
-
-.method-card-menu-btn {
-  background: none;
-  border: none;
-  color: var(--outline);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--rounded);
-  transition: color 0.2s ease;
-}
-
-.method-card-menu-btn:hover {
-  color: var(--on-surface);
-}
-
-.method-card-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background: var(--surface-container-high);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--rounded-lg);
-  padding: 4px;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  min-width: 120px;
-}
-
-.method-card-dropdown button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
+  gap: 4px;
+}
+
+.method-card-delete-btn {
   background: none;
   border: none;
   color: var(--error);
-  font-size: 14px;
   cursor: pointer;
+  padding: 4px;
   border-radius: var(--rounded);
-  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
 }
 
-.method-card-dropdown button:hover {
-  background: var(--surface-container-highest);
+.method-card-delete-btn:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.method-card-delete-btn:active {
+  transform: scale(0.95);
 }
 
 .method-card-body {

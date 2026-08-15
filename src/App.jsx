@@ -23,15 +23,11 @@ export default function App() {
   const [obsMode, setObsMode] = useState('full');
   const [methods, setMethods] = useState(() => [createMethodInstance('POEnKF')]);
   const [advancedOptions, setAdvancedOptions] = useState({ ...DEFAULT_ADVANCED });
-  const [customObsIndices, setCustomObsIndices] = useState(() =>
-    Array.from({ length: DEFAULT_ADVANCED.N }, (_, i) => i)
-  );
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showAddMethod, setShowAddMethod] = useState(false);
   const [showRmse, setShowRmse] = useState(true);
   const [showSpread, setShowSpread] = useState(true);
   const [activePreset, setActivePreset] = useState(null);
-  const [needsRecalc, setNeedsRecalc] = useState(false);
   const initialMountRef = useRef(false);
 
   const handleSimulationSuccess = useCallback((payload) => {
@@ -56,86 +52,88 @@ export default function App() {
   const { isRunning, progress, simulationResults, runSimulation } =
     useSimulationWorker(handleSimulationSuccess);
 
+  // --- Auto-Run Simulation with Debounce (60ms) ---
+  const autoRunTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (autoRunTimerRef.current) {
+        clearTimeout(autoRunTimerRef.current);
+        autoRunTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const triggerAutoRun = useCallback((newMethods, newObsMode, newAdvanced) => {
+    if (autoRunTimerRef.current) {
+      clearTimeout(autoRunTimerRef.current);
+    }
+    autoRunTimerRef.current = setTimeout(() => {
+      autoRunTimerRef.current = null;
+      runSimulation(newMethods || [], newObsMode, newAdvanced, []);
+    }, 60);
+  }, [runSimulation]);
+
   // --- Handlers ---
   const handleObsModeChange = useCallback((mode) => {
     setActivePreset(null);
     setObsMode(mode);
-    setNeedsRecalc(true);
-  }, []);
+    triggerAutoRun(methods, mode, advancedOptions);
+  }, [methods, advancedOptions, triggerAutoRun]);
 
   const handleUpdateAdvancedOptions = useCallback((options) => {
     setActivePreset(null);
     setAdvancedOptions(options);
-    setNeedsRecalc(true);
-    setCustomObsIndices(prev => prev.filter(idx => idx < options.N));
-  }, []);
-
-  const handleToggleCustomObsIndex = useCallback((index) => {
-    setActivePreset(null);
-    setCustomObsIndices(prev =>
-      prev.includes(index)
-        ? prev.filter(i => i !== index)
-        : [...prev, index].sort((a, b) => a - b)
-    );
-    setNeedsRecalc(true);
-  }, []);
-
-  const handleSelectAllCustomObs = useCallback(() => {
-    setActivePreset(null);
-    setCustomObsIndices(Array.from({ length: advancedOptions.N }, (_, i) => i));
-    setNeedsRecalc(true);
-  }, [advancedOptions.N]);
-
-  const handleClearAllCustomObs = useCallback(() => {
-    setActivePreset(null);
-    setCustomObsIndices([]);
-    setNeedsRecalc(true);
-  }, []);
-
-  const handleRandomCustomObs = useCallback((count = 10) => {
-    setActivePreset(null);
-    const N = advancedOptions.N;
-    const actualCount = Math.min(count, N);
-    const indices = Array.from({ length: N }, (_, i) => i);
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [indices[i], indices[j]] = [indices[j], indices[i]];
-    }
-    const selected = indices.slice(0, actualCount).sort((a, b) => a - b);
-    setCustomObsIndices(selected);
-    setNeedsRecalc(true);
-  }, [advancedOptions.N]);
+    triggerAutoRun(methods, obsMode, options);
+  }, [methods, obsMode, triggerAutoRun]);
 
   const handleUpdateMethod = useCallback((instanceId, updates) => {
     setActivePreset(null);
-    setMethods(prev =>
-      prev.map(m => (m.instanceId === instanceId ? { ...m, ...updates } : m))
-    );
-    setNeedsRecalc(true);
-  }, []);
+    setMethods(prev => {
+      const next = prev.map(m => (m.instanceId === instanceId ? { ...m, ...updates } : m));
+      return next;
+    });
+    setMethods(current => {
+      triggerAutoRun(current, obsMode, advancedOptions);
+      return current;
+    });
+  }, [obsMode, advancedOptions, triggerAutoRun]);
 
   const handleRemoveMethod = useCallback((instanceId) => {
     setActivePreset(null);
-    setMethods(prev => prev.filter(m => m.instanceId !== instanceId));
-    setNeedsRecalc(true);
-  }, []);
+    setMethods(prev => {
+      const next = prev.filter(m => m.instanceId !== instanceId);
+      triggerAutoRun(next, obsMode, advancedOptions);
+      return next;
+    });
+  }, [obsMode, advancedOptions, triggerAutoRun]);
 
   const handleAddMethod = useCallback((methodType) => {
     setActivePreset(null);
     const instance = createMethodInstance(methodType);
-    setMethods(prev => [...prev, instance]);
-    setNeedsRecalc(true);
+    setMethods(prev => {
+      const next = [...prev, instance];
+      return next;
+    });
+    triggerAutoRun([...methods, instance], obsMode, advancedOptions);
     setShowAddMethod(false);
-  }, []);
+  }, [methods, obsMode, advancedOptions, triggerAutoRun]);
 
   const handleRun = useCallback(() => {
-    setNeedsRecalc(false);
-    runSimulation(methods, obsMode, advancedOptions, customObsIndices);
-  }, [runSimulation, methods, obsMode, advancedOptions, customObsIndices]);
+    if (autoRunTimerRef.current) {
+      clearTimeout(autoRunTimerRef.current);
+      autoRunTimerRef.current = null;
+    }
+    runSimulation(methods, obsMode, advancedOptions, []);
+  }, [runSimulation, methods, obsMode, advancedOptions]);
 
   const { lang, t } = useLanguage();
 
   const handleSelectPreset = useCallback((preset) => {
+    if (autoRunTimerRef.current) {
+      clearTimeout(autoRunTimerRef.current);
+      autoRunTimerRef.current = null;
+    }
     const locPreset = getLocalizedPreset(preset, lang);
     const instantiatedMethods = locPreset.methods.map(m =>
       createPresetMethodInstance(m.type, m.label, m.params)
@@ -146,10 +144,9 @@ export default function App() {
     setObsMode(preset.obsMode);
     setMethods(instantiatedMethods);
     setAdvancedOptions(targetAdvanced);
-    setNeedsRecalc(false);
 
-    runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, customObsIndices);
-  }, [lang, runSimulation, customObsIndices]);
+    runSimulation(instantiatedMethods, preset.obsMode, targetAdvanced, []);
+  }, [lang, runSimulation]);
 
   // --- URL Search Params Deep-Linking Sync ---
   useEffect(() => {
@@ -196,10 +193,12 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Top Navigation */}
+      {/* Navigation Header */}
       <TopNav
         onSelectPreset={handleSelectPreset}
         onOpenAdvanced={() => setShowAdvanced(true)}
+        onCsvExport={handleCsvExport}
+        hasResults={!!simulationResults}
       />
 
       {/* Observation Mode Tabs */}
@@ -209,11 +208,6 @@ export default function App() {
         onChangeMode={handleObsModeChange}
         description={currentObsModeDesc}
         advancedOptions={advancedOptions}
-        customObsIndices={customObsIndices}
-        onToggleCustomObsIndex={handleToggleCustomObsIndex}
-        onSelectAllCustomObs={handleSelectAllCustomObs}
-        onClearAllCustomObs={handleClearAllCustomObs}
-        onRandomCustomObs={handleRandomCustomObs}
       />
 
       {/* Main Content Area */}
@@ -227,9 +221,6 @@ export default function App() {
           onRun={handleRun}
           isRunning={isRunning}
           progress={progress}
-          onCsvExport={handleCsvExport}
-          hasResults={!!simulationResults}
-          needsRecalc={needsRecalc}
         />
 
         <VisualizationArea
@@ -240,8 +231,8 @@ export default function App() {
           showSpread={showSpread}
           onToggleRmse={() => setShowRmse(prev => !prev)}
           onToggleSpread={() => setShowSpread(prev => !prev)}
-          onUpdateMethod={handleUpdateMethod}
           activePreset={activePreset}
+          isRunning={isRunning}
         />
       </main>
 
