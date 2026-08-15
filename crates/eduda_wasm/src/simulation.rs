@@ -272,17 +272,20 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
         }
 
         if state.method_type == "3DVar" || state.method_type == "4DVar" {
-            let corr_l = p.get("corrLength").and_then(|v| v.as_f64()).unwrap_or(5.0);
-            let sigma_b2 = p.get("bgErrorVar").and_then(|v| v.as_f64()).unwrap_or(1.0);
-            state.window_size = p.get("windowSize").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
+            let corr_l = p.get("corrLength").and_then(|v| v.as_f64()).unwrap_or(2.0);
+            let sigma_b2 = p.get("bgErrorVar").and_then(|v| v.as_f64()).unwrap_or(if state.method_type == "4DVar" { 0.05 } else { 0.2 });
+            state.window_size = p.get("windowSize").and_then(|v| v.as_u64()).unwrap_or(6) as usize;
 
             let mut b_mat = vec![0.0; n * n];
             for i in 0..n {
                 for j in 0..n {
-                    let dist = periodic_dist(i, j, n);
-                    b_mat[i * n + j] = gaspari_cohn(dist, corr_l) * sigma_b2;
+                    if i == j {
+                        b_mat[i * n + i] = sigma_b2 + 0.05;
+                    } else if corr_l > 0.0 {
+                        let dist = periodic_dist(i, j, n);
+                        b_mat[i * n + j] = gaspari_cohn(dist, corr_l) * sigma_b2;
+                    }
                 }
-                b_mat[i * n + i] += 0.05;
             }
             mat_inverse(&b_mat, n, &mut state.b_inv);
 

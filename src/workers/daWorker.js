@@ -223,17 +223,19 @@ function runSimulationJs(payload) {
         }
       }
 
-      // Static B for 3DVar / 4DVar using Gaspari-Cohn spatial correlation
       if (m.type === '3DVar' || m.type === '4DVar') {
         const B = Array(N).fill().map(() => Array(N).fill(0));
-        const corrL = p.corrLength || 5;
-        const sigma_b2 = p.bgErrorVar || 1.0;
+        const corrL = p.corrLength !== undefined ? p.corrLength : 2;
+        const sigma_b2 = p.bgErrorVar || (m.type === '4DVar' ? 0.05 : 0.2);
         for (let i = 0; i < N; i++) {
           for (let j = 0; j < N; j++) {
-            const dist = periodicDist(i, j, N);
-            B[i][j] = gaspariCohn(dist, corrL) * sigma_b2;
+            if (i === j) {
+              B[i][i] = sigma_b2 + 0.05;
+            } else if (corrL > 0) {
+              const dist = periodicDist(i, j, N);
+              B[i][j] = gaspariCohn(dist, corrL) * sigma_b2;
+            }
           }
-          B[i][i] += 0.05; // Ensure positive definite
         }
         state.B = B;
         state.B_inv = matInverse(B);
