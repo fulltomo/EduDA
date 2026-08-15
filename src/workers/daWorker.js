@@ -19,7 +19,7 @@ import { update3DVar } from './methods/var3d';
 import { update4DVar } from './methods/var4d';
 import { updateEnKF } from './methods/enkf';
 import { updateEnSRF } from './methods/ensrf';
-import { updateLETKF } from './methods/letkf';
+import { updateLETKF, buildLetkfPrecomputed } from './methods/letkf';
 import { updatePF } from './methods/pf';
 
 let wasmInstancePromise = null;
@@ -263,6 +263,10 @@ function runSimulationJs(payload) {
         }
       }
 
+      if (m.type === 'LETKF') {
+        state.letkfPrecomputed = buildLetkfPrecomputed(N, obsIndices, R_diag, p.localization || 5);
+      }
+
       if (m.type === '4DVar') {
         state.windowStartStep = 0;
         state.windowBuffer = [{ step: 0, x_bg: state.x.slice(), y: obsHistory[0] }];
@@ -363,7 +367,7 @@ function runSimulationJs(payload) {
             } else if (state.type === 'EnSRF') {
               updateEnSRF(state, y, nobs, N, obsIndices, R_diag, localization);
             } else if (state.type === 'LETKF') {
-              updateLETKF(state, y, nobs, N, obsIndices, R_diag, localization);
+              updateLETKF(state, y, nobs, N, obsIndices, R_diag, localization, state.letkfPrecomputed);
             }
           } else if (state.type === 'PF') {
             updatePF(state, y, nobs, N, R_diag, applyH, obsIndices);

@@ -5,7 +5,7 @@ use crate::methods::{
     ekf::update_ekf,
     enkf::update_enkf,
     ensrf::update_ensrf,
-    letkf::update_letkf,
+    letkf::{update_letkf_optimized, LetkfPrecomputed},
     var3d::update_3dvar,
     var4d::update_4dvar,
     pf::update_pf,
@@ -129,6 +129,7 @@ struct MethodState {
     window_start_step: usize,
     window_x_bg: Vec<Vec<f64>>,
     window_y: Vec<Option<Vec<f64>>>,
+    letkf_precomputed: Option<LetkfPrecomputed>,
     rmse_series: Vec<f64>,
     spread_series: Vec<f64>,
     time_steps: Vec<usize>,
@@ -237,6 +238,7 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             window_start_step: 0,
             window_x_bg: Vec::new(),
             window_y: Vec::new(),
+            letkf_precomputed: None,
             rmse_series: Vec::with_capacity(num_steps + 1),
             spread_series: Vec::with_capacity(num_steps + 1),
             time_steps: Vec::with_capacity(num_steps + 1),
@@ -254,6 +256,10 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
             state.inflation = p.get("inflation").and_then(|v| v.as_f64()).unwrap_or(1.05);
             state.localization = p.get("localization").and_then(|v| v.as_f64()).unwrap_or(if state.method_type == "PF" { 3.0 } else { 5.0 });
             state.resample_thresh = p.get("resampleThreshold").and_then(|v| v.as_f64()).unwrap_or(0.5);
+
+            if state.method_type == "LETKF" {
+                state.letkf_precomputed = Some(LetkfPrecomputed::new(n, &obs_indices, r_diag, state.localization));
+            }
 
             if state.method_type == "PF" {
                 let filter_type = p.get("filterType").and_then(|v| v.as_str()).unwrap_or("LPF");
@@ -488,16 +494,17 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                             n,
                         );
                     } else if state.method_type == "LETKF" {
-                        update_letkf(
-                            &mut state.ensemble,
-                            &x_mean,
-                            y,
-                            &obs_indices,
-                            r_diag,
-                            localization,
-                            m,
-                            n,
-                        );
+                        if let Some(ref precomputed) = state.letkf_precomputed {
+                            update_letkf_optimized(
+                                &mut state.ensemble,
+                                &x_mean,
+                                y,
+                                &obs_indices,
+                                precomputed,
+                                m,
+                                n,
+                            );
+                        }
                     }
                 } else if state.method_type == "PF" {
                     update_pf(
