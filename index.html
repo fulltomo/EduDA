@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduDA - データ同化学習・シミュレーションプラットフォーム (Educational Data Assimilation)</title>
-  <meta name="description" content="EduDA is an interactive educational web platform for exploring and comparing data assimilation algorithms (EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, Particle Filter) on the chaotic Lorenz '96 model. / Lorenz '96カオスモデルを用いてデータ同化の理論・挙動比較を学べる教育用シミュレーションWebアプリ。" />
+  <meta name="description" content="EduDA（エデュ・ディーエー）は、Lorenz '96カオスモデルを用いてデータ同化アルゴリズム（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）の挙動・理論をブラウザ上で視覚的にシミュレーション・比較学習できる教育用Webプラットフォームです。" />
   <meta name="keywords" content="データ同化, Data Assimilation, Lorenz 96, カルマンフィルタ, Kalman Filter, EKF, EnKF, LETKF, 3DVar, 4DVar, 粒子フィルタ, Particle Filter, 気象予測, Weather Forecasting, Ensemble, カオス力学系, インフレーション, 局所化, 教育用シミュレータ" />
   <meta name="author" content="Tomoki Tomono (fulltomo)" />
   <meta name="robots" content="index, follow" />
@@ -19,8 +19,8 @@
   <!-- Open Graph / Facebook / Discord -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://eduda.pages.dev/" />
-  <meta property="og:title" content="EduDA - Educational Data Assimilation Platform" />
-  <meta property="og:description" content="Explore, simulate, and compare 7 data assimilation algorithms (LETKF, 4DVar, EnSRF, PF, etc.) on the chaotic Lorenz '96 atmospheric model directly in your browser." />
+  <meta property="og:title" content="EduDA - データ同化学習・シミュレーションプラットフォーム" />
+  <meta property="og:description" content="Lorenz '96モデル上で7種類のデータ同化手法（LETKF, 4DVar, EnSRF, PF等）をリアルタイムに比較・学習できる教育用シミュレーションWebプラットフォーム。" />
   <meta property="og:image" content="https://eduda.pages.dev/og-image.svg" />
   <meta property="og:image:type" content="image/svg+xml" />
   <meta property="og:image:width" content="1200" />
@@ -31,14 +31,18 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="EduDA - Educational Data Assimilation Platform" />
-  <meta name="twitter:description" content="Simulate and compare data assimilation algorithms (LETKF, 4DVar, EnSRF, PF) on Lorenz '96 in real time." />
+  <meta name="twitter:title" content="EduDA - データ同化学習・シミュレーションプラットフォーム" />
+  <meta name="twitter:description" content="Lorenz '96モデル上でデータ同化アルゴリズム（LETKF, 4DVar, EnSRF, PF等）をリアルタイムにシミュレーション・比較学習。" />
   <meta name="twitter:image" content="https://eduda.pages.dev/og-image.svg" />
 
   <!-- Favicon & PWA Web App Manifest -->
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-  <link rel="apple-touch-icon" href="./favicon.svg" />
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -51,6 +55,24 @@
   {
     "@context": "https://schema.org",
     "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://eduda.pages.dev/#website",
+        "name": "EduDA",
+        "alternateName": [
+          "EduDA - Educational Data Assimilation",
+          "データ同化学習・シミュレーションプラットフォーム",
+          "EduDA プラットフォーム"
+        ],
+        "url": "https://eduda.pages.dev/",
+        "inLanguage": ["ja", "en"],
+        "description": "Lorenz '96モデルを用いたデータ同化（EKF, EnKF, LETKF, 3DVar, 4DVar等）のインタラクティブ学習・比較Webプラットフォーム",
+        "publisher": {
+          "@type": "Person",
+          "name": "Tomoki Tomono",
+          "url": "https://github.com/fulltomo"
+        }
+      },
       {
         "@type": "WebApplication",
         "@id": "https://eduda.pages.dev/#app",
@@ -133,11 +155,12 @@
   <!-- Fallback & Semantic Content for Search Engine Crawlers & Non-JS / LLM Scrapers -->
   <noscript>
     <main style="max-width: 900px; margin: 40px auto; padding: 20px; font-family: sans-serif; line-height: 1.6; color: #334155;">
-      <h1>EduDA - Educational Data Assimilation Platform / データ同化学習・シミュレーションプラットフォーム</h1>
-      <p><strong>EduDA (Educational Data Assimilation)</strong> is an open-source interactive web platform designed to facilitate intuitive understanding and empirical comparison of data assimilation algorithms (EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, Particle Filter) on the standard chaotic Lorenz '96 testbed.</p>
+      <h1>EduDA - データ同化学習・シミュレーションプラットフォーム (Educational Data Assimilation)</h1>
+      <p><strong>EduDA（エデュ・ディーエー）</strong>は、カオス力学系モデル（Lorenz '96）を用いて、データ同化アルゴリズム（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）の理論と挙動をブラウザ上で視覚的に比較・学習できるオープンソース教育用Webプラットフォームです。</p>
+      <p lang="en"><em>EduDA is an open-source interactive educational web platform designed to explore and compare data assimilation algorithms on the chaotic Lorenz '96 model.</em></p>
       
-      <h2>Governing Equations: Lorenz '96 Chaotic Dynamics</h2>
-      <p>dx_j / dt = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F &nbsp; (j = 1, ..., 40, F = 8.0, periodic boundary conditions)</p>
+      <h2>支配方程式: Lorenz '96 カオスモデル (Governing Equations)</h2>
+      <p>dx_j / dt = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F &nbsp; (j = 1, ..., 40, F = 8.0, 周期境界条件 / periodic boundary conditions)</p>
       
       <h2>Supported Data Assimilation Algorithms</h2>
       <ul>

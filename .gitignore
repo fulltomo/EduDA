@@ -34,3 +34,6 @@ docs/
 
 # Rust target
 target/
+
+# Root screenshot/temp images
+/*.png
