@@ -86,7 +86,7 @@ export default function AboutSection() {
     <footer className="app-about">
       <details className="about-details">
         <summary className="about-summary">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>info</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">info</span>
           {c.summary}
         </summary>
 
