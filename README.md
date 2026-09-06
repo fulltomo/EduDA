@@ -8,7 +8,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8.2-646cff.svg?style=flat-square&logo=vite)](https://vite.dev/)
 [![Rust](https://img.shields.io/badge/Rust-WASM-dea584.svg?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Chart.js](https://img.shields.io/badge/Chart.js-4.5-ff6384.svg?style=flat-square&logo=chartdotjs)](https://www.chartjs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
 ![EduDA のスクリーンショット: プリセット実験1「インフレーションの効果」を実行し、インフレーションなしの POEnKF がフィルタ発散していく様子と、適正なインフレーションを入れた POEnKF が安定している様子を RMSE 時系列で比較している](.github/screenshot.jpg)
 
@@ -220,4 +220,4 @@ https://github.com/fulltomo/EduDA
 
 ## ライセンス
 
-[MIT License](https://opensource.org/licenses/MIT) のもとで公開しています。教育・研究・商用を問わず自由にご利用いただけます。
+[MIT License](LICENSE) のもとで公開しています。教育・研究・商用を問わず自由にご利用いただけます。
