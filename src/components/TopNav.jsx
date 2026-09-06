@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { PRESETS, getLocalizedPreset } from '../constants';
+import { useClickOutside } from '../hooks/useClickOutside';
 import { useLanguage } from '../context/LanguageContext';
 import './TopNav.css';
 
@@ -9,17 +10,7 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowPresets(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(dropdownRef, () => setShowPresets(false), showPresets);
 
   const handleShare = useCallback(() => {
     if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {

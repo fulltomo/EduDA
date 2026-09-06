@@ -75,7 +75,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 <div className="slider-header">
                   <div className="slider-label-wrapper">
                     <span className="slider-label">{paramLabel}</span>
-                    <EduTooltip paramId={p.key} align="left" position="bottom" />
+                    <EduTooltip paramId={p.key} />
                   </div>
                 </div>
 
@@ -110,7 +110,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="slider-header">
                 <div className="slider-label-wrapper">
                   <span className="slider-label">{paramLabel}</span>
-                  <EduTooltip paramId={p.key} align="left" position="bottom" />
+                  <EduTooltip paramId={p.key} />
                 </div>
                 <span className="slider-value typo-data" style={{ color }}>
                   {typeof val === 'number' && !Number.isInteger(val) ? val.toFixed(2) : val}
@@ -148,7 +148,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               <div className="stat-item">
                 <div className="stat-label-wrapper">
                   <span className="stat-label typo-label-caps">{t('methodCard.spread')}</span>
-                  <EduTooltip paramId="spread" align="left" position="top" />
+                  <EduTooltip paramId="spread" />
                   <span className="stat-label typo-label-caps">:</span>
                 </div>
                 <span className="stat-value typo-data">

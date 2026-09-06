@@ -240,7 +240,7 @@ export default function VisualizationArea({
               <div className="viz-legend-line viz-legend-dashed" />
               <span>{t('visualization.spreadDashed')}</span>
             </label>
-            <EduTooltip paramId="spread" align="right" position="top" />
+            <EduTooltip paramId="spread" />
           </div>
         </div>
       )}

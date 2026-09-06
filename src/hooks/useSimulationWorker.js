@@ -9,7 +9,7 @@ export function useSimulationWorker(onSuccess) {
   const [simulationResults, setSimulationResults] = useState(null);
   const workerRef = useRef(null);
 
-  const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced, targetCustomObsIndices) => {
+  const runSimulation = useCallback((targetMethods, targetObsMode, targetAdvanced) => {
     if (!targetMethods || targetMethods.length === 0) {
       if (workerRef.current) {
         workerRef.current.terminate();
@@ -74,7 +74,6 @@ export function useSimulationWorker(onSuccess) {
         })),
         observationMode: targetObsMode,
         advancedOptions: targetAdvanced,
-        customObsIndices: targetCustomObsIndices,
       },
     });
   }, [onSuccess]);

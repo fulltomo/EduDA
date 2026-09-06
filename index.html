@@ -34,9 +34,6 @@
 
   <!-- Favicon & PWA Web App Manifest -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
@@ -150,39 +147,6 @@
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- Fallback & Semantic Content for Search Engine Crawlers & Non-JS / LLM Scrapers -->
-  <noscript>
-    <main style="max-width: 900px; margin: 40px auto; padding: 20px; font-family: sans-serif; line-height: 1.6; color: #334155;">
-      <h1>EduDA - データ同化学習・シミュレーションプラットフォーム (Educational Data Assimilation)</h1>
-      <p><strong>EduDA（エデュ・ディーエー）</strong>は、カオス力学系モデル（Lorenz '96）を用いて、データ同化アルゴリズム（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）の理論と挙動をブラウザ上で視覚的に比較・学習できるオープンソース教育用Webプラットフォームです。</p>
-      <p lang="en"><em>EduDA is an open-source interactive educational web platform designed to explore and compare data assimilation algorithms on the chaotic Lorenz '96 model.</em></p>
-      
-      <h2>支配方程式: Lorenz '96 カオスモデル (Governing Equations)</h2>
-      <p>dx_j / dt = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F &nbsp; (j = 1, ..., 40, F = 8.0, 周期境界条件 / periodic boundary conditions)</p>
-      
-      <h2>Supported Data Assimilation Algorithms</h2>
-      <ul>
-        <li><strong>EKF (Extended Kalman Filter)</strong>: Linearized tangent-linear covariance update with model process noise Q.</li>
-        <li><strong>POEnKF (Perturbed Observation EnKF)</strong>: Monte Carlo ensemble sampling with perturbed synthetic observations.</li>
-        <li><strong>EnSRF (Ensemble Square Root Filter)</strong>: Deterministic square root mean and perturbation update avoiding observation noise sampling error.</li>
-        <li><strong>LETKF (Local Ensemble Transform Kalman Filter)</strong>: Parallel local grid-space low-dimensional ensemble transforms.</li>
-        <li><strong>3DVar (3D Variational)</strong>: Static Gaspari-Cohn background error covariance matrix (B).</li>
-        <li><strong>4DVar (4D Variational)</strong>: Adjoint model gradient optimization over a time assimilation window.</li>
-        <li><strong>PF (Particle Filter / SIR)</strong>: Sequential Importance Resampling for non-Gaussian distributions.</li>
-      </ul>
-
-      <h2>Pre-Designed Educational Preset Labs</h2>
-      <ol>
-        <li><strong>Lab 1: Effects of Inflation</strong> - Preventing ensemble shrinkage and filter divergence under limited ensemble size.</li>
-        <li><strong>Lab 2: Effects of Localization</strong> - Cutting spurious distant correlations under small ensemble sizes.</li>
-        <li><strong>Lab 3: Static (3DVar) vs Flow-Dependent (LETKF) Covariance</strong> - Error propagation into unobserved domains under sparse observation.</li>
-        <li><strong>Lab 4: High-Dimensional Particle Filtering Limits</strong> - Experiencing weight collapse and the curse of dimensionality.</li>
-      </ol>
-      <p><em>Please enable JavaScript to run and visualize the simulations interactively.</em></p>
-    </main>
-  </noscript>
-
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
