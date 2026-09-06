@@ -1,6 +1,11 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 
 export const LanguageContext = createContext(null);
 
-export { LanguageProvider } from './LanguageProvider';
-export { useLanguage } from '../hooks/useLanguage';
+export function useLanguage() {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return ctx;
+}

@@ -8,10 +8,10 @@ import './EduTooltip.css';
 /**
  * Reusable Tooltip Content Sections
  */
-function TooltipBody({ data, isDivergence = false, t }) {
-  const secTitle1 = isDivergence ? t('tooltipDrawer.explanationDivergence') : t('tooltipDrawer.explanation');
-  const secTitle2 = isDivergence ? t('tooltipDrawer.formulaDivergence') : t('tooltipDrawer.formula');
-  const secTitle3 = isDivergence ? t('tooltipDrawer.guidelineDivergence') : t('tooltipDrawer.guideline');
+function TooltipBody({ data, t }) {
+  const secTitle1 = t('tooltipDrawer.explanation');
+  const secTitle2 = t('tooltipDrawer.formula');
+  const secTitle3 = t('tooltipDrawer.guideline');
 
   return (
     <div className="edu-tooltip-body">
@@ -25,9 +25,7 @@ function TooltipBody({ data, isDivergence = false, t }) {
       </div>
       <div className="edu-tooltip-section">
         <h4 className="edu-tooltip-sec-title">{secTitle3}</h4>
-        <p className="edu-tooltip-sec-text" style={isDivergence ? { fontSize: '11.5px', whiteSpace: 'pre-line' } : undefined}>
-          {data.guideline}
-        </p>
+        <p className="edu-tooltip-sec-text">{data.guideline}</p>
       </div>
     </div>
   );
@@ -36,18 +34,14 @@ function TooltipBody({ data, isDivergence = false, t }) {
 /**
  * Floating Popover Box with Portal
  */
-function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
+function TooltipBox({ data, triggerRect, onClose, t }) {
   // Compute optimal fixed screen position based on trigger element
   const [posStyle, setPosStyle] = useState({});
 
   useEffect(() => {
     if (!triggerRect) return;
 
-    const tooltipWidth = (typeof style?.width === 'number')
-      ? style.width
-      : (typeof style?.width === 'string' && parseInt(style.width, 10))
-        ? parseInt(style.width, 10)
-        : 300;
+    const tooltipWidth = 300;
     const tooltipMaxHeight = 360;
     const margin = 8;
 
@@ -77,9 +71,8 @@ function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
       width: `${tooltipWidth}px`,
       maxHeight: `${tooltipMaxHeight}px`,
       zIndex: 9999,
-      ...style,
     });
-  }, [triggerRect, style]);
+  }, [triggerRect]);
 
   return createPortal(
     <div
@@ -102,7 +95,7 @@ function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
           <span className="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </div>
-      <TooltipBody data={data} isDivergence={isDivergence} t={t} />
+      <TooltipBody data={data} t={t} />
     </div>,
     document.body
   );
@@ -111,7 +104,7 @@ function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
 /**
  * Default Floating Tooltip Component
  */
-export default function EduTooltip({ paramId, align = 'center', position = 'bottom' }) {
+export default function EduTooltip({ paramId }) {
   const { lang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [triggerRect, setTriggerRect] = useState(null);
@@ -165,139 +158,10 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
         <TooltipBox
           data={data}
           triggerRect={triggerRect}
-          align={align}
-          position={position}
           onClose={() => setIsOpen(false)}
           t={t}
         />
       )}
-    </div>
-  );
-}
-
-/**
- * Divergence Badge with Hover and Click Tooltip Support
- */
-export function DivergenceBadge({ align = 'center', position = 'bottom' }) {
-  const { lang, t } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
-  const [triggerRect, setTriggerRect] = useState(null);
-  const buttonRef = useRef(null);
-  const containerRef = useRef(null);
-  const tooltipInstanceIdRef = useRef(`divergence-${Math.random().toString(36).substring(2, 9)}`);
-  const data = getLocalizedTooltip('filterDivergence', lang);
-
-  useClickOutside(containerRef, () => setIsOpen(false), isOpen);
-
-  useEffect(() => {
-    const handleOtherTooltipOpen = (e) => {
-      if (e.detail !== tooltipInstanceIdRef.current) {
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener('eduda:tooltip-open', handleOtherTooltipOpen);
-    return () => window.removeEventListener('eduda:tooltip-open', handleOtherTooltipOpen);
-  }, []);
-
-  const toggleTooltip = (e) => {
-    e.preventDefault();
-    if (!isOpen) {
-      if (buttonRef.current) {
-        setTriggerRect(buttonRef.current.getBoundingClientRect());
-      }
-      setIsOpen(true);
-      window.dispatchEvent(new CustomEvent('eduda:tooltip-open', { detail: tooltipInstanceIdRef.current }));
-    } else {
-      setIsOpen(false);
-    }
-  };
-
-  if (!data) return null;
-
-  return (
-    <div
-      className="edu-tooltip-container mode-floating divergence-badge-container"
-      ref={containerRef}
-    >
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`divergence-badge ${isOpen ? 'active' : ''}`}
-        onClick={toggleTooltip}
-        aria-label={t('methodCard.divergedTooltip')}
-        title={t('methodCard.showExplanation')}
-      >
-        <span>{t('methodCard.diverged')}</span>
-      </button>
-
-      {isOpen && (
-        <TooltipBox
-          data={data}
-          triggerRect={triggerRect}
-          align={align}
-          position={position}
-          onClose={() => setIsOpen(false)}
-          style={{ width: '320px' }}
-          isDivergence={true}
-          t={t}
-        />
-      )}
-    </div>
-  );
-}
-
-/**
- * Inline Accordion Help Drawer Component
- */
-export function EduTooltipDrawer({ paramId, onClose }) {
-  const { lang, t } = useLanguage();
-  const data = getLocalizedTooltip(paramId, lang);
-  const containerRef = useRef(null);
-
-  useClickOutside(containerRef, () => {
-    if (onClose) onClose();
-  }, true, '.edu-tooltip-trigger');
-
-  if (!data) return null;
-
-  const isDivergence = paramId === 'filterDivergence';
-  const secTitle1 = isDivergence ? t('tooltipDrawer.explanationDivergence') : t('tooltipDrawer.explanation');
-  const secTitle2 = isDivergence ? t('tooltipDrawer.formulaDivergence') : t('tooltipDrawer.formula');
-  const secTitle3 = isDivergence ? t('tooltipDrawer.guidelineDivergence') : t('tooltipDrawer.guideline');
-
-  return (
-    <div ref={containerRef} className="edu-help-inline animate-expand" onClick={(e) => e.stopPropagation()}>
-      <div className="edu-help-inline-header">
-        <span className="edu-help-inline-title">{data.title}</span>
-        <button
-          type="button"
-          className="edu-help-inline-close"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (onClose) onClose(e);
-          }}
-          aria-label={t('tooltipDrawer.close')}
-        >
-          <span className="material-symbols-outlined" aria-hidden="true">close</span>
-        </button>
-      </div>
-      <div className="edu-help-inline-body">
-        <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">{secTitle1}</span>
-          <p className="edu-help-inline-text">{data.description}</p>
-        </div>
-        <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">{secTitle2}</span>
-          <pre className="edu-help-inline-formula">{data.formula}</pre>
-        </div>
-        <div className="edu-help-inline-section">
-          <span className="edu-help-inline-sec-title">{secTitle3}</span>
-          <p className="edu-help-inline-text" style={isDivergence ? { whiteSpace: 'pre-line' } : undefined}>
-            {data.guideline}
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

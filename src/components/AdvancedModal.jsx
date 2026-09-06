@@ -136,7 +136,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
         <div className="advanced-field-header">
           <div className="advanced-field-label-wrap">
             <label className="field-label" style={{ margin: 0, fontWeight: 500 }}>{label}</label>
-            <EduTooltip paramId={f.key} align="left" position="top" />
+            <EduTooltip paramId={f.key} />
           </div>
           <button
             type="button"

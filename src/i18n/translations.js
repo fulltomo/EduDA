@@ -46,7 +46,6 @@ export const TRANSLATIONS = {
       runAssimilation: '同化を実行',
       recalculate: '再計算',
       calculating: '計算中...',
-      exportCsv: 'CSVダウンロード',
       visibleTooltip: '表示中 - クリックで非表示',
       hiddenTooltip: '非表示 - クリックで表示',
       toggleVisibility: '表示切り替え',
@@ -56,11 +55,8 @@ export const TRANSLATIONS = {
     methodCard: {
       visibilityHide: '非表示にする',
       visibilityShow: '表示する',
-      menu: 'メニュー',
       delete: '削除',
       showExplanation: '解説を表示',
-      diverged: '⚠️ 発散 (Diverged)',
-      divergedTooltip: 'フィルター発散の説明を表示',
       rmse: 'RMSE',
       spread: 'Spread',
     },
@@ -136,27 +132,13 @@ export const TRANSLATIONS = {
         lowError: '低誤差 (0.0)',
         highError: '高誤差',
       },
-      // Preset Banner
-      presetBanner: {
-        theme: 'テーマ:',
-        hideDetails: '説明を隠す',
-        showDetails: '説明を表示',
-      },
-      // Summary Bar
-      summary: {
-        avgRmse: 'Avg RMSE',
-        avgSpread: 'Avg Spread',
-      },
     },
 
     // Tooltip Drawer Sections
     tooltipDrawer: {
       explanation: '📖 直感的な解説',
-      explanationDivergence: '📖 フィルター発散とは',
       formula: '🧮 関連する数式表現',
-      formulaDivergence: '🚨 主な発生理由',
       guideline: '💡 設定の目安・推奨値',
-      guidelineDivergence: '💡 回避策・対策',
       close: '閉じる',
     },
   },
@@ -204,7 +186,6 @@ export const TRANSLATIONS = {
       runAssimilation: 'Run Assimilation',
       recalculate: 'Recalculate',
       calculating: 'Computing...',
-      exportCsv: 'Export CSV',
       visibleTooltip: 'Visible - Click to hide',
       hiddenTooltip: 'Hidden - Click to show',
       toggleVisibility: 'Toggle visibility',
@@ -214,11 +195,8 @@ export const TRANSLATIONS = {
     methodCard: {
       visibilityHide: 'Hide method',
       visibilityShow: 'Show method',
-      menu: 'Menu',
       delete: 'Delete',
       showExplanation: 'Show explanation',
-      diverged: '⚠️ Diverged',
-      divergedTooltip: 'Show filter divergence explanation',
       rmse: 'RMSE',
       spread: 'Spread',
     },
@@ -294,27 +272,13 @@ export const TRANSLATIONS = {
         lowError: 'Low Error (0.0)',
         highError: 'High Error',
       },
-      // Preset Banner
-      presetBanner: {
-        theme: 'Theme:',
-        hideDetails: 'Hide Details',
-        showDetails: 'Show Details',
-      },
-      // Summary Bar
-      summary: {
-        avgRmse: 'Avg RMSE',
-        avgSpread: 'Avg Spread',
-      },
     },
 
     // Tooltip Drawer Sections
     tooltipDrawer: {
       explanation: '📖 Intuitive Explanation',
-      explanationDivergence: '📖 What is Filter Divergence?',
       formula: '🧮 Mathematical Formulation',
-      formulaDivergence: '🚨 Main Causes',
       guideline: '💡 Guidelines & Recommendations',
-      guidelineDivergence: '💡 Remedies & Prevention',
       close: 'Close',
     },
   },
