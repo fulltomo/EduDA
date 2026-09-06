@@ -152,6 +152,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
           <input
             type="range"
             className="advanced-slider"
+            aria-label={label}
             min={f.min}
             max={f.max}
             step={f.step}
@@ -164,6 +165,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
           <input
             type="number"
             className="advanced-number-input"
+            aria-label={label}
             min={f.min}
             max={f.max}
             step={f.step}

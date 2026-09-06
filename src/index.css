@@ -402,6 +402,11 @@ input[type="checkbox"]:checked::after {
 /* --- Material Icon Helper --- */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  /* アイコンフォント読み込み失敗時にリガチャ名（"delete" 等）が
+     素の単語として描画され、レイアウトを押し広げるのを防ぐ */
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
 }
 
 /* --- Modal Overlay --- */
