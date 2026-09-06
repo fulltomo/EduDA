@@ -5,6 +5,7 @@ import ControlPanel from './components/ControlPanel';
 import VisualizationArea from './components/VisualizationArea';
 import AdvancedModal from './components/AdvancedModal';
 import AddMethodModal from './components/AddMethodModal';
+import AboutSection from './components/AboutSection';
 import {
   OBS_MODES,
   CHART_COLORS,
@@ -235,6 +236,9 @@ export default function App() {
           isRunning={isRunning}
         />
       </main>
+
+      {/* 概要（クローラ向けの本文を実 DOM に置く / 既定は折りたたみ） */}
+      <AboutSection />
 
       {/* Modals */}
       {showAdvanced && (

@@ -17,6 +17,7 @@
 
 .topnav-brand {
   font-family: 'Inter', sans-serif;
+  margin: 0;
   font-size: 20px;
   font-weight: 700;
   background: linear-gradient(135deg, var(--primary), var(--secondary));

@@ -42,7 +42,7 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
   return (
     <nav className="topnav" id="topnav">
       <div className="topnav-left">
-        <span className="topnav-brand">{t('appName')}</span>
+        <h1 className="topnav-brand">{t('appName')}</h1>
         <span className="topnav-subtitle">{t('appSubtitle')}</span>
         <span className="topnav-model-badge">Lorenz &apos;96</span>
       </div>

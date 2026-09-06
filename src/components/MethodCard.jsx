@@ -81,6 +81,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
 
                 <select
                   className="input-select method-param-select"
+                  aria-label={`${method.label} - ${paramLabel}`}
                   value={val}
                   onChange={(e) => handleParamChange(p.key, e.target.value)}
                   style={{
@@ -118,6 +119,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
 
               <input
                 type="range"
+                aria-label={`${method.label} - ${paramLabel}`}
                 min={p.min}
                 max={p.max}
                 step={p.step}
