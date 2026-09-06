@@ -20,7 +20,7 @@ export default function PlaybackControls({
           title={t('visualization.stepBack')}
           aria-label={t('visualization.stepBack')}
         >
-          <span className="material-symbols-outlined">skip_previous</span>
+          <span className="material-symbols-outlined" aria-hidden="true">skip_previous</span>
         </button>
 
         <button
@@ -30,7 +30,7 @@ export default function PlaybackControls({
           title={isPlaying ? t('visualization.pause') : t('visualization.play')}
           aria-label={isPlaying ? t('visualization.pause') : t('visualization.play')}
         >
-          <span className="material-symbols-outlined">
+          <span className="material-symbols-outlined" aria-hidden="true">
             {isPlaying ? 'pause' : 'play_arrow'}
           </span>
         </button>
@@ -42,7 +42,7 @@ export default function PlaybackControls({
           title={t('visualization.stepForward')}
           aria-label={t('visualization.stepForward')}
         >
-          <span className="material-symbols-outlined">skip_next</span>
+          <span className="material-symbols-outlined" aria-hidden="true">skip_next</span>
         </button>
       </div>
 

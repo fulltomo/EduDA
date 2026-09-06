@@ -180,8 +180,7 @@ EduDA/
 │   └── workflows/
 │       └── ci.yml             # GitHub Actions CI ワークフロー
 ├── public/
-│   ├── favicon.svg            # アプリケーション SVG ファビコン
-│   └── icons.svg              # 共通 SVG アイコンシンボル
+│   └── favicon.svg            # アプリケーション SVG ファビコン
 ├── src/
 │   ├── assets/                # 画像・静的アセット
 │   ├── components/            # React UI コンポーネント

@@ -3,24 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduDA - データ同化学習・シミュレーションプラットフォーム (Educational Data Assimilation)</title>
-  <meta name="description" content="EduDA（エデュ・ディーエー）は、Lorenz '96カオスモデルを用いてデータ同化アルゴリズム（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）の挙動・理論をブラウザ上で視覚的にシミュレーション・比較学習できる教育用Webプラットフォームです。" />
+  <title>EduDA - データ同化シミュレータ | Lorenz '96で7手法を比較</title>
+  <meta name="description" content="Lorenz '96カオスモデル上で7種類のデータ同化手法（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）をリアルタイムに比較・可視化できる無料の教育用シミュレータ。インストール不要、ブラウザだけで動作します。" />
   <meta name="keywords" content="データ同化, Data Assimilation, Lorenz 96, カルマンフィルタ, Kalman Filter, EKF, EnKF, LETKF, 3DVar, 4DVar, 粒子フィルタ, Particle Filter, 気象予測, Weather Forecasting, Ensemble, カオス力学系, インフレーション, 局所化, 教育用シミュレータ" />
   <meta name="author" content="Tomoki Tomono (fulltomo)" />
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#1e293b" />
   <link rel="canonical" href="https://eduda.pages.dev/" />
 
-  <!-- Multi-language Alternate Links (hreflang) -->
-  <link rel="alternate" hreflang="ja" href="https://eduda.pages.dev/?lang=ja" />
-  <link rel="alternate" hreflang="en" href="https://eduda.pages.dev/?lang=en" />
-  <link rel="alternate" hreflang="x-default" href="https://eduda.pages.dev/" />
+
 
   <!-- Open Graph / Facebook / Discord -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://eduda.pages.dev/" />
-  <meta property="og:title" content="EduDA - データ同化学習・シミュレーションプラットフォーム" />
-  <meta property="og:description" content="Lorenz '96モデル上で7種類のデータ同化手法（LETKF, 4DVar, EnSRF, PF等）をリアルタイムに比較・学習できる教育用シミュレーションWebプラットフォーム。" />
+  <meta property="og:title" content="EduDA - データ同化シミュレータ | Lorenz '96で7手法を比較" />
+  <meta property="og:description" content="Lorenz '96モデル上で7種類のデータ同化手法をリアルタイムに比較・可視化できる無料の教育用シミュレータ。インストール不要、ブラウザだけで動作します。" />
   <meta property="og:image" content="https://eduda.pages.dev/og-image.svg" />
   <meta property="og:image:type" content="image/svg+xml" />
   <meta property="og:image:width" content="1200" />
@@ -31,8 +28,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="EduDA - データ同化学習・シミュレーションプラットフォーム" />
-  <meta name="twitter:description" content="Lorenz '96モデル上でデータ同化アルゴリズム（LETKF, 4DVar, EnSRF, PF等）をリアルタイムにシミュレーション・比較学習。" />
+  <meta name="twitter:title" content="EduDA - データ同化シミュレータ | Lorenz '96で7手法を比較" />
+  <meta name="twitter:description" content="Lorenz '96モデル上で7種類のデータ同化手法をリアルタイムに比較・可視化できる無料の教育用シミュレータ。インストール不要、ブラウザだけで動作します。" />
   <meta name="twitter:image" content="https://eduda.pages.dev/og-image.svg" />
 
   <!-- Favicon & PWA Web App Manifest -->
@@ -48,7 +45,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
+  <!-- アイコンは icon_names でサブセット化している。
+       新しいアイコンを使うときは必ずこのリストに追加すること（欠けると描画されない）。 -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&icon_names=add,add_circle,autorenew,check,chevron_right,close,delete,dock_to_left,download,hourglass_top,info,keyboard_arrow_down,keyboard_arrow_up,language,pause,play_arrow,restart_alt,school,science,settings,share,skip_next,skip_previous,visibility,visibility_off&display=block" rel="stylesheet" />
 
   <!-- Schema.org JSON-LD Structured Data for Search Engines & LLMs -->
   <script type="application/ld+json">

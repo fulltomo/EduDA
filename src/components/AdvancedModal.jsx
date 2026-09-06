@@ -189,7 +189,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             onClick={onClose}
             aria-label={t('advancedModal.close')}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>close</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }} aria-hidden="true">close</span>
           </button>
         </div>
 
@@ -206,7 +206,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
                 onClick={handleResetDefaults}
                 style={{ fontSize: '12px', padding: '4px 8px', color: 'var(--outline)' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>restart_alt</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }} aria-hidden="true">restart_alt</span>
                 {t('advancedModal.resetDefaults')}
               </button>
             </div>

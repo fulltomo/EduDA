@@ -14,6 +14,9 @@
   color: var(--outline);
   cursor: pointer;
   padding: 2px;
+  /* WCAG 2.5.8 (24x24) 最小タップ領域 */
+  min-width: 24px;
+  min-height: 24px;
   border-radius: var(--rounded-full);
   display: flex;
   align-items: center;

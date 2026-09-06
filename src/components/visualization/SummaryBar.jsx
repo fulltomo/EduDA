@@ -40,7 +40,7 @@ export default function SummaryBar({ results, methods, colors, onUpdateMethod })
                   marginRight: '4px',
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">
                   {isVisible ? 'visibility' : 'visibility_off'}
                 </span>
               </button>

@@ -213,8 +213,13 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
+  /* WCAG 2.5.8 (24x24) を満たすため、見た目の 4px トラックは content-box に残したまま
+     padding でタップ領域だけを 24px に広げ、negative margin で占有高さを元に戻す */
+  height: 24px;
+  padding: 10px 0;
+  margin: -10px 0;
   background: var(--surface-container-highest);
+  background-clip: content-box;
   border-radius: var(--rounded-full);
   outline: none;
   cursor: pointer;

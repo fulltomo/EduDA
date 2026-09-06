@@ -15,7 +15,7 @@ export default function AddMethodModal({ onSelect, onClose }) {
             onClick={onClose}
             aria-label={t('addMethodModal.close')}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>close</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }} aria-hidden="true">close</span>
           </button>
         </div>
         <div className="modal-body" style={{ gap: 8 }}>
@@ -43,7 +43,7 @@ export default function AddMethodModal({ onSelect, onClose }) {
                     {summary}
                   </div>
                 </div>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--outline)' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--outline)' }} aria-hidden="true">
                   add_circle
                 </span>
               </button>

@@ -53,11 +53,12 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
             className="btn btn-secondary topnav-preset-btn"
             onClick={() => setShowPresets(!showPresets)}
             id="btn-preset-lab"
+            aria-label={t('presetLabBtn')}
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>school</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">school</span>
             <span className="topnav-preset-label">{t('presetLabBtn')}</span>
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }} aria-hidden="true">
               {showPresets ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
             </span>
           </button>
@@ -93,7 +94,7 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
           title={lang === 'ja' ? 'Switch to English' : '日本語に切り替え'}
           aria-label={lang === 'ja' ? 'Switch to English' : '日本語に切り替え'}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>language</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">language</span>
           <span className="topnav-lang-label">{t('langToggle')}</span>
         </button>
 
@@ -103,8 +104,9 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
           onClick={handleShare}
           id="btn-share-url"
           title={t('shareTooltip')}
+          aria-label={copied ? t('shareCopied') : t('shareBtn')}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">
             {copied ? 'check' : 'share'}
           </span>
           <span className="topnav-share-label">
@@ -121,7 +123,7 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
           title={t('csvTooltip')}
           aria-label={t('csvTooltip')}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>download</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">download</span>
           <span className="topnav-csv-label">{t('csvBtn')}</span>
         </button>
 
@@ -129,8 +131,10 @@ export default function TopNav({ onSelectPreset, onOpenAdvanced, onCsvExport, ha
           className="btn-ghost topnav-settings-btn"
           onClick={onOpenAdvanced}
           id="btn-advanced-settings"
+          title={t('advancedSettingsBtn')}
+          aria-label={t('advancedSettingsBtn')}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>settings</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">settings</span>
           <span className="topnav-settings-label">{t('advancedSettingsBtn')}</span>
         </button>
       </div>
