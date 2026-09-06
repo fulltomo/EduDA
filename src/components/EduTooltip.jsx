@@ -99,7 +99,7 @@ function TooltipBox({ data, triggerRect, onClose, style, isDivergence, t }) {
           }}
           aria-label={t('tooltipDrawer.close')}
         >
-          <span className="material-symbols-outlined">close</span>
+          <span className="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </div>
       <TooltipBody data={data} isDivergence={isDivergence} t={t} />
@@ -158,7 +158,7 @@ export default function EduTooltip({ paramId, align = 'center', position = 'bott
         aria-label={`${data.title} ${t('methodCard.showExplanation')}`}
         title={t('methodCard.showExplanation')}
       >
-        <span className="material-symbols-outlined">info</span>
+        <span className="material-symbols-outlined" aria-hidden="true">info</span>
       </button>
 
       {isOpen && (
@@ -279,7 +279,7 @@ export function EduTooltipDrawer({ paramId, onClose }) {
           }}
           aria-label={t('tooltipDrawer.close')}
         >
-          <span className="material-symbols-outlined">close</span>
+          <span className="material-symbols-outlined" aria-hidden="true">close</span>
         </button>
       </div>
       <div className="edu-help-inline-body">

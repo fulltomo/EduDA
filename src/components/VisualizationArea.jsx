@@ -158,7 +158,7 @@ export default function VisualizationArea({
             </div>
           ) : (!results || results.length === 0) ? (
             <div className="viz-chart-placeholder">
-              <span className="material-symbols-outlined" style={{ fontSize: 64, color: 'var(--outline-variant)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 64, color: 'var(--outline-variant)' }} aria-hidden="true">
                 science
               </span>
               <p style={{ color: 'var(--outline)', marginTop: 12 }}>

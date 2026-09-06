@@ -43,7 +43,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
               alignItems: 'center',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">
               {method.visible !== false ? 'visibility' : 'visibility_off'}
             </span>
           </button>
@@ -53,7 +53,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             title={t('methodCard.delete')}
             aria-label={t('methodCard.delete')}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">delete</span>
           </button>
         </div>
       </div>

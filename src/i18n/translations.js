@@ -4,6 +4,11 @@
 
 export const TRANSLATIONS = {
   ja: {
+    // <head> (LanguageProvider が document.title / meta description に反映)
+    pageTitle: "EduDA - データ同化シミュレータ | Lorenz '96で7手法を比較",
+    pageDescription:
+      "Lorenz '96カオスモデル上で7種類のデータ同化手法（EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, 粒子フィルタ）をリアルタイムに比較・可視化できる無料の教育用シミュレータ。インストール不要、ブラウザだけで動作します。",
+
     // TopNav
     appName: 'EduDA',
     appSubtitle: 'Educational Data Assimilation',
@@ -157,6 +162,11 @@ export const TRANSLATIONS = {
   },
 
   en: {
+    // <head> (applied to document.title / meta description by LanguageProvider)
+    pageTitle: "EduDA - Data Assimilation Simulator | Compare 7 Methods on Lorenz '96",
+    pageDescription:
+      "A free educational simulator that compares and visualizes 7 data assimilation methods (EKF, POEnKF, EnSRF, LETKF, 3DVar, 4DVar, Particle Filter) in real time on the chaotic Lorenz '96 model. No installation - runs entirely in the browser.",
+
     // TopNav
     appName: 'EduDA',
     appSubtitle: 'Educational Data Assimilation',

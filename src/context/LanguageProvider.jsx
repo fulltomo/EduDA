@@ -57,6 +57,11 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang;
+
+    const meta = TRANSLATIONS[lang];
+    if (!meta) return;
+    document.title = meta.pageTitle;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', meta.pageDescription);
   }, [lang]);
 
   // Nested translation helper t('controlPanel.addMethod')

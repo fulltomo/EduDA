@@ -39,7 +39,7 @@ export default function ControlPanel({
                 id="btn-add-method"
                 title={t('controlPanel.addMethod')}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">add</span>
                 {t('controlPanel.addMethod')}
               </button>
               <button
@@ -48,7 +48,7 @@ export default function ControlPanel({
                 title={t('controlPanel.sidebarCollapse')}
                 aria-label={t('controlPanel.sidebarCollapse')}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>dock_to_left</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">dock_to_left</span>
               </button>
             </div>
           </>
@@ -60,7 +60,7 @@ export default function ControlPanel({
               title={t('controlPanel.sidebarExpand')}
               aria-label={t('controlPanel.sidebarExpand')}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>chevron_right</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">chevron_right</span>
             </button>
           </div>
         )}
@@ -71,7 +71,7 @@ export default function ControlPanel({
         <div className="cp-cards custom-scroll">
           {methods.length === 0 && (
             <div className="cp-empty">
-              <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--outline)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--outline)' }} aria-hidden="true">
                 science
               </span>
               <p style={{ color: 'var(--outline)', marginTop: 8 }}>
@@ -97,7 +97,7 @@ export default function ControlPanel({
             title={t('controlPanel.addMethod')}
             aria-label={t('controlPanel.addMethod')}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">add</span>
           </button>
 
           <div className="cp-collapsed-methods">
@@ -142,7 +142,7 @@ export default function ControlPanel({
               id="btn-run"
               style={{ width: '100%' }}
             >
-              <span className="material-symbols-outlined">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
+              <span className="material-symbols-outlined" aria-hidden="true">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
               <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.recalculate')}</span>
               {isRunning && <div className="spinner" />}
             </button>
@@ -166,7 +166,7 @@ export default function ControlPanel({
               title={t('controlPanel.runAssimilation')}
               aria-label={t('controlPanel.runAssimilation')}
             >
-              <span className="material-symbols-outlined">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
+              <span className="material-symbols-outlined" aria-hidden="true">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
             </button>
           </div>
         )}
