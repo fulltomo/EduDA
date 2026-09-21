@@ -2,7 +2,7 @@
  * EduDA Constants & Configuration
  */
 
-export { PRESETS, getLocalizedPreset } from './data/presets';
+export { PRESETS, getLocalizedPreset } from './data/presets.js'; // 拡張子は scripts/prerender.mjs が Node から直接 import するために必要
 
 /** Filter divergence threshold (RMSE above this or NaN is considered diverged) */
 export const DIVERGENCE_THRESHOLD = 10.0;
