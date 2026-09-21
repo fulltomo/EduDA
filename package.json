@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:wasm": "node scripts/build-wasm.mjs",
-    "build": "npm run build:wasm && vite build",
+    "build": "npm run build:wasm && vite build && node scripts/prerender.mjs && node scripts/check-prerender.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
