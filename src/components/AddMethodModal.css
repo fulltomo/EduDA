@@ -19,36 +19,14 @@
 .category-badge {
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--rounded-full);
-  display: inline-flex;
-  align-items: center;
+  letter-spacing: 0.04em;
   line-height: 1.2;
 }
 
-.category-kalman {
-  background-color: rgba(142, 213, 255, 0.15);
-  color: var(--primary);
-  border: 1px solid rgba(142, 213, 255, 0.3);
-}
-
-.category-ensemble {
-  background-color: rgba(69, 223, 164, 0.15);
-  color: var(--secondary);
-  border: 1px solid rgba(69, 223, 164, 0.3);
-}
-
-.category-variational {
-  background-color: rgba(225, 191, 255, 0.15);
-  color: var(--tertiary);
-  border: 1px solid rgba(225, 191, 255, 0.3);
-}
-
-.category-particle {
-  background-color: rgba(255, 180, 171, 0.15);
-  color: var(--error);
-  border: 1px solid rgba(255, 180, 171, 0.3);
-}
+.category-kalman { color: var(--primary); }
+.category-ensemble { color: var(--secondary); }
+.category-variational { color: var(--tertiary); }
+.category-particle { color: var(--error); }
 
 .add-method-option-summary {
   font-size: 12px;

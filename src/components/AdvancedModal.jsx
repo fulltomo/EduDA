@@ -3,7 +3,7 @@ import EduTooltip from './EduTooltip';
 import { DEFAULT_ADVANCED } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
 
-export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
+export default function AdvancedModal({ options, onUpdate, onClose }) {
   const { t } = useLanguage();
   const [local, setLocal] = useState({ ...options });
   // Local string representation for forgiving number typing
@@ -77,7 +77,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
   };
 
   const handleResetDefaults = () => {
-    setLocal({ ...DEFAULT_ADVANCED });
+    setLocal(prev => ({ ...prev, ...Object.fromEntries(fields.map(f => [f.key, DEFAULT_ADVANCED[f.key]])) }));
     setInputStrings({});
   };
 
@@ -109,20 +109,8 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
     { key: 'N', min: 4, max: 100, step: 1, defaultVal: 40, isFloat: false },
     { key: 'F', min: 1, max: 20, step: 0.5, defaultVal: 8.0, isFloat: true },
     { key: 'modelF', min: 1, max: 20, step: 0.5, defaultVal: 8.0, isFloat: true },
-    { key: 'obsErrorVar', min: 0.01, max: 10, step: 0.1, defaultVal: 1.0, isFloat: true },
-    { key: 'obsInterval', min: 1, max: 20, step: 1, defaultVal: 1, isFloat: false },
     { key: 'numSteps', min: 50, max: 2000, step: 50, defaultVal: 500, isFloat: false },
     { key: 'dt', min: 0.005, max: 0.2, step: 0.005, defaultVal: 0.05, isFloat: true },
-  ];
-
-  const sparseFields = [
-    { key: 'sparseRegionStart', min: 1, max: local.N, step: 1, defaultVal: 1, isFloat: false, offset: 1 },
-    { key: 'sparseRegionEnd', min: 1, max: local.N, step: 1, defaultVal: 20, isFloat: false, offset: 1 },
-    { key: 'sparseInterval', min: 2, max: 20, step: 1, defaultVal: 4, isFloat: false },
-  ];
-
-  const thinnedFields = [
-    { key: 'thinNumObs', min: 1, max: local.N, step: 1, defaultVal: 20, isFloat: false },
   ];
 
   const renderFieldRow = (f) => {
@@ -185,7 +173,7 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
         <div className="modal-header">
           <h2 className="typo-headline-md">{t('advancedModal.title')}</h2>
           <button
-            className="method-card-menu-btn"
+            className="btn-ghost"
             onClick={onClose}
             aria-label={t('advancedModal.close')}
           >
@@ -214,25 +202,6 @@ export default function AdvancedModal({ options, obsMode, onUpdate, onClose }) {
             {fields.map(renderFieldRow)}
           </div>
 
-          {/* Sparse-specific */}
-          {obsMode === 'sparse' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--outline-variant)', paddingTop: 16 }}>
-              <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--secondary)' }}>
-                {t('advancedModal.sparseSection')}
-              </h3>
-              {sparseFields.map(renderFieldRow)}
-            </div>
-          )}
-
-          {/* Thinned-specific */}
-          {obsMode === 'thinned' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid var(--outline-variant)', paddingTop: 16 }}>
-              <h3 className="typo-body-md" style={{ fontWeight: 600, color: 'var(--secondary)' }}>
-                {t('advancedModal.thinnedSection')}
-              </h3>
-              {thinnedFields.map(renderFieldRow)}
-            </div>
-          )}
         </div>
 
         <div className="modal-footer">

@@ -11,18 +11,19 @@ export const TRANSLATIONS = {
 
     // TopNav
     appName: 'EduDA',
-    appSubtitle: 'Educational Data Assimilation',
-    presetLabBtn: '🎓 プリセット実験ラボ',
-    shareBtn: '共有',
-    shareCopied: 'コピー完了!',
-    shareTooltip: '現在の実験・設定URLをクリップボードにコピー',
     csvBtn: 'CSV',
     csvTooltip: 'シミュレーション結果をCSV形式でダウンロード',
-    advancedSettingsBtn: '高度な設定',
-    langToggle: 'English',
+    advancedSettingsBtn: '詳細設定',
 
     // Observation Modes
-    obsSectionTitle: '観測設定:',
+    obsSectionTitle: '観測',
+    obsPanel: {
+      rangeStart: '観測範囲の始まり',
+      rangeEnd: '観測範囲の終わり',
+      count: '観測点の数',
+      error: '観測の誤差 σ²',
+      interval: '観測の間隔',
+    },
     obsModes: {
       full: { label: '全観測', desc: '全40格子点を毎ステップ観測' },
       sparse: { label: '疎密観測', desc: '指定された連続領域（開始〜終了格子点）のみを集中観測' },
@@ -30,21 +31,16 @@ export const TRANSLATIONS = {
     },
     obsActions: {
       pointsCount: '観測点',
-      gridUnits: '格子点',
       gridPoint: '格子点',
-      observed: '観測あり',
-      unobserved: '未観測',
     },
 
     // ControlPanel
     controlPanel: {
-      title: 'Methods',
+      title: '比較する手法',
       addMethod: '比較手法を追加',
       sidebarCollapse: 'サイドバーを縮小',
       sidebarExpand: 'サイドバーを展開',
       emptyHint: '「比較手法を追加」から手法を選択してください',
-      runAssimilation: '同化を実行',
-      recalculate: '再計算',
       calculating: '計算中...',
       visibleTooltip: '表示中 - クリックで非表示',
       hiddenTooltip: '非表示 - クリックで表示',
@@ -53,12 +49,13 @@ export const TRANSLATIONS = {
 
     // MethodCard
     methodCard: {
+      duplicate: '複製して比べる',
       visibilityHide: '非表示にする',
       visibilityShow: '表示する',
       delete: '削除',
       showExplanation: '解説を表示',
       rmse: 'RMSE',
-      spread: 'Spread',
+      spread: 'スプレッド',
     },
 
     // AddMethodModal
@@ -75,11 +72,9 @@ export const TRANSLATIONS = {
 
     // AdvancedModal
     advancedModal: {
-      title: '高度な設定',
+      title: '詳細設定',
       close: '閉じる',
       generalSection: '一般設定',
-      sparseSection: '疎密観測設定',
-      thinnedSection: '間引き観測設定',
       cancel: 'キャンセル',
       save: '保存',
       resetDefaults: '初期値にリセット',
@@ -101,34 +96,32 @@ export const TRANSLATIONS = {
 
     // VisualizationArea
     visualization: {
-      tabTimeseries: '時系列 (RMSE/Spread)',
-      tabState1d: '1D 状態プロット',
-      tabHovmoller: 'Hovmöller ダイヤグラム',
+      tabState1d: '真値と推定',
+      tabHovmoller: '時空間の誤差',
       methodLabel: '手法:',
-      placeholder: '左側の「＋ 比較手法を追加」から手法を選択してください',
-      stepSelect: 'タイムステップ選択:',
       step: 'Step',
       play: '再生',
       pause: '一時停止',
       stepBack: '1ステップ戻る',
       stepForward: '1ステップ進む',
       playbackSpeed: '再生速度',
-      rmseSolid: 'RMSE (実線)',
-      spreadDashed: 'Spread (破線)',
+      rmseSolid: 'RMSE',
+      spreadDashed: 'スプレッド',
       // Chart datasets & axis
       chart: {
-        truth: '真値 (Truth)',
-        obs: '観測値 (Obs)',
-        analysisSuffix: '解析値',
-        timeStepAxis: 'タイムステップ (Time Step)',
-        gridPointAxis: '空間格子点 (Grid Index: 1〜N)',
-        rmseAxis: '二乗平均平方根誤差 (RMSE)',
-        stateAxis: '状態変数値 (State Variable Value)',
+        truth: '真値',
+        obs: '観測',
+        timeStepAxis: 'タイムステップ',
+        gridPointAxis: '格子点',
+        rmseAxis: 'RMSE',
+        stateAxis: '状態変数 x',
+        obsErrorLine: '観測誤差 σo',
+        divergenceStart: '発散',
       },
       // Hovmoller
       hovmoller: {
-        gridAxis: 'Grid Point (格子点)',
-        timeAxis: 'Time Step (タイムステップ)',
+        gridAxis: '格子点',
+        timeAxis: 'タイムステップ',
         lowError: '低誤差 (0.0)',
         highError: '高誤差',
       },
@@ -151,18 +144,19 @@ export const TRANSLATIONS = {
 
     // TopNav
     appName: 'EduDA',
-    appSubtitle: 'Educational Data Assimilation',
-    presetLabBtn: '🎓 Preset Labs',
-    shareBtn: 'Share',
-    shareCopied: 'Copied!',
-    shareTooltip: 'Copy current experiment URL to clipboard',
     csvBtn: 'CSV',
     csvTooltip: 'Download simulation results as CSV',
-    advancedSettingsBtn: 'Advanced Settings',
-    langToggle: '日本語',
+    advancedSettingsBtn: 'Settings',
 
     // Observation Modes
-    obsSectionTitle: 'Obs Settings:',
+    obsSectionTitle: 'Observation',
+    obsPanel: {
+      rangeStart: 'Range start',
+      rangeEnd: 'Range end',
+      count: 'Observed points',
+      error: 'Obs. error σ²',
+      interval: 'Obs. interval',
+    },
     obsModes: {
       full: { label: 'Full Obs', desc: 'Observe all 40 grid points at every assimilation step' },
       sparse: { label: 'Sparse Obs', desc: 'Concentrate observations on configured contiguous grid region' },
@@ -170,10 +164,7 @@ export const TRANSLATIONS = {
     },
     obsActions: {
       pointsCount: 'Obs Points',
-      gridUnits: 'grid points',
       gridPoint: 'Grid',
-      observed: 'Observed',
-      unobserved: 'Unobserved',
     },
 
     // ControlPanel
@@ -183,8 +174,6 @@ export const TRANSLATIONS = {
       sidebarCollapse: 'Collapse sidebar',
       sidebarExpand: 'Expand sidebar',
       emptyHint: 'Click "Add Method" to select and compare algorithms',
-      runAssimilation: 'Run Assimilation',
-      recalculate: 'Recalculate',
       calculating: 'Computing...',
       visibleTooltip: 'Visible - Click to hide',
       hiddenTooltip: 'Hidden - Click to show',
@@ -193,6 +182,7 @@ export const TRANSLATIONS = {
 
     // MethodCard
     methodCard: {
+      duplicate: 'Duplicate to compare',
       visibilityHide: 'Hide method',
       visibilityShow: 'Show method',
       delete: 'Delete',
@@ -215,11 +205,9 @@ export const TRANSLATIONS = {
 
     // AdvancedModal
     advancedModal: {
-      title: 'Advanced Settings',
+      title: 'Settings',
       close: 'Close',
       generalSection: 'General Settings',
-      sparseSection: 'Sparse Observation Settings',
-      thinnedSection: 'Thinned Observation Settings',
       cancel: 'Cancel',
       save: 'Save',
       resetDefaults: 'Reset to Defaults',
@@ -241,29 +229,27 @@ export const TRANSLATIONS = {
 
     // VisualizationArea
     visualization: {
-      tabTimeseries: 'Time Series (RMSE/Spread)',
-      tabState1d: '1D State Profile',
-      tabHovmoller: 'Hovmöller Diagram',
+      tabState1d: 'Truth vs estimate',
+      tabHovmoller: 'Error in space & time',
       methodLabel: 'Method:',
-      placeholder: 'Select a method from "+ Add Method" in the sidebar to start',
-      stepSelect: 'Time Step Selection:',
       step: 'Step',
       play: 'Play',
       pause: 'Pause',
       stepBack: 'Step Back',
       stepForward: 'Step Forward',
       playbackSpeed: 'Playback Speed',
-      rmseSolid: 'RMSE (Solid)',
-      spreadDashed: 'Spread (Dashed)',
+      rmseSolid: 'RMSE',
+      spreadDashed: 'Spread',
       // Chart datasets & axis
       chart: {
         truth: 'Truth (x_true)',
         obs: 'Observation (y)',
-        analysisSuffix: 'Analysis',
         timeStepAxis: 'Time Step',
-        gridPointAxis: 'Spatial Grid Point (1..N)',
-        rmseAxis: 'Root Mean Square Error (RMSE)',
-        stateAxis: 'State Variable Value (x)',
+        gridPointAxis: 'Grid point',
+        rmseAxis: 'RMSE',
+        stateAxis: 'State x',
+        obsErrorLine: 'Obs. error σo',
+        divergenceStart: 'Diverges',
       },
       // Hovmoller
       hovmoller: {

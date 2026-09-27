@@ -28,7 +28,7 @@
 .edu-tooltip-trigger:hover,
 .edu-tooltip-trigger.active {
   color: var(--primary);
-  background: rgba(142, 213, 255, 0.1);
+  background: var(--surface-container);
 }
 
 .edu-tooltip-trigger .material-symbols-outlined {
@@ -41,16 +41,15 @@
   position: absolute;
   width: 280px;
   max-height: 320px;
-  background: var(--surface-container-highest);
-  border: 1px solid var(--primary);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
   border-radius: var(--rounded-lg);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 8px 24px rgba(28, 27, 25, 0.12);
   z-index: 1000;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   cursor: default;
-  font-family: 'Inter', sans-serif;
   text-align: left;
 }
 

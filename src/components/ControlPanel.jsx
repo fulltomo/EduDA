@@ -8,10 +8,8 @@ export default function ControlPanel({
   colors,
   onUpdateMethod,
   onRemoveMethod,
+  onDuplicateMethod,
   onAddMethod,
-  onRun,
-  isRunning,
-  progress,
 }) {
   const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -28,7 +26,7 @@ export default function ControlPanel({
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span className="typo-headline-md">{t('controlPanel.title')}</span>
-              <span className="badge" style={{ fontSize: '11px', background: 'var(--surface-container-high)', color: 'var(--outline)', padding: '2px 6px', borderRadius: 'var(--rounded-full)' }}>
+              <span className="badge" style={{ fontSize: '13px', color: 'var(--outline)', fontVariantNumeric: 'tabular-nums' }}>
                 {methods.length}
               </span>
             </div>
@@ -86,6 +84,7 @@ export default function ControlPanel({
               color={colors[index % colors.length]}
               onUpdate={(updates) => onUpdateMethod(method.instanceId, updates)}
               onRemove={() => onRemoveMethod(method.instanceId)}
+              onDuplicate={() => onDuplicateMethod(method.instanceId)}
             />
           ))}
         </div>
@@ -118,7 +117,6 @@ export default function ControlPanel({
                     style={{
                       backgroundColor: color,
                       opacity: isVisible ? 1 : 0.4,
-                      boxShadow: isVisible ? `0 0 8px ${color}99` : 'none',
                     }}
                   />
                   <span className="cp-collapsed-label typo-data" style={{ color: isVisible ? color : 'var(--outline)' }}>
@@ -131,46 +129,6 @@ export default function ControlPanel({
         </div>
       )}
 
-      {/* Footer Actions */}
-      <div className="cp-footer">
-        {!isCollapsed ? (
-          <>
-            <button
-              className="btn btn-primary cp-run-btn"
-              onClick={onRun}
-              disabled={isRunning || methods.length === 0}
-              id="btn-run"
-              style={{ width: '100%' }}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
-              <span>{isRunning ? t('controlPanel.calculating') : t('controlPanel.recalculate')}</span>
-              {isRunning && <div className="spinner" />}
-            </button>
-
-            {isRunning && (
-              <div className="cp-progress-bar" style={{ marginTop: '6px' }}>
-                <div
-                  className="cp-progress-fill"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="cp-collapsed-footer">
-            <button
-              className="btn btn-primary cp-collapsed-action-btn"
-              onClick={onRun}
-              disabled={isRunning || methods.length === 0}
-              id="btn-run-collapsed"
-              title={t('controlPanel.runAssimilation')}
-              aria-label={t('controlPanel.runAssimilation')}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">{isRunning ? 'hourglass_top' : 'autorenew'}</span>
-            </button>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }

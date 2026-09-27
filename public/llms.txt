@@ -20,24 +20,13 @@ EduDA (Educational Data Assimilation) は、気象学・海洋学・地球惑星
    - 時系列プロット (RMSE & Spread)
    - 1D 状態空間プロット (全40格子点の真値・観測・解析値)
    - Hovmöller (ホフメラー) ダイヤグラム (時間-空間の解析誤差ヒートマップ)
-4. **4つの事前設計プリセット実験ラボ**:
-   - 実験1: インフレーションの効果 (Filter Divergence の抑制)
-   - 実験2: 局所化 (Localization) の効果 (少アンサンブル時の疑似相関排除)
-   - 実験3: 固定共分散 (3DVar) vs 流れ依存共分散 (LETKF) (未観測領域への誤差共分散伝播)
-   - 実験4: 高次元空間での粒子フィルタ (PF) の限界 (次元の呪いと重みの崩壊)
-5. **ノンブロッキング並列計算**: Web Worker (daWorker.js) による高速バックグラウンド計算
-6. **CSVデータエクスポート**: シミュレーション結果（全タイムステップの真値、観測値、各手法の解析値、RMSE）をCSVダウンロード可能
+4. **ノンブロッキング並列計算**: Web Worker (daWorker.js) による高速バックグラウンド計算
+5. **CSVデータエクスポート**: シミュレーション結果（全タイムステップの真値、観測値、各手法の解析値、RMSE）をCSVダウンロード可能
 
 ## 支配方程式 (Governing Equations)
 Lorenz '96 40変数モデル:
 dx_j / dt = (x_{j+1} - x_{j-2}) x_{j-1} - x_j + F   (j = 1, ..., 40, F = 8.0, 周期境界条件)
 数値積分: 4次ルンゲ＝クッタ法 (RK4), dt = 0.05 (大気時間で約6時間に相当)
-
-## URLクエリによるプリセット共有 (Deep Links)
-- 実験1 (インフレーション): `https://eduda.pages.dev/?preset=preset1`
-- 実験2 (局所化): `https://eduda.pages.dev/?preset=preset2`
-- 実験3 (3DVar vs LETKF): `https://eduda.pages.dev/?preset=preset3`
-- 実験4 (粒子フィルタの限界): `https://eduda.pages.dev/?preset=preset4`
 
 ## 完全版仕様 (Full Documentation)
 より詳細な数理モデルの導出、アルゴリズムの擬似コード、Web Workerアーキテクチャについては `./llms-full.txt` を参照してください。

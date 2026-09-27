@@ -2,53 +2,45 @@
    EduDA Design System — CSS Custom Properties & Global Styles
    ============================================================ */
 
-/* --- Design Tokens --- */
+/* --- Design Tokens ---
+   「計器筐体」: 数値予報の現業端末のように、画面全体を濃い海色の計器パネルとして組む。
+   明るさは 3 段だけ: 最も暗い下地 (--ground) の上に、筐体 (ヘッダー・観測・手法) と
+   グラフのシートが同じ海色 (--surface) で一段浮く。白い面は使わない
+   (暗い筐体の隣に白いシートがあると明暗差で目が疲れる)。
+   信号黄 (--signal) は「実行する」操作 (再計算・プリセット実験) と観測点にだけ使う。 */
 :root {
-  /* Surface scale */
-  --surface:                  #0b1326;
-  --surface-dim:              #0b1326;
-  --surface-bright:           #31394d;
-  --surface-container-lowest: #060e20;
-  --surface-container-low:    #131b2e;
-  --surface-container:        #171f33;
-  --surface-container-high:   #222a3d;
-  --surface-container-highest:#2d3449;
+  color-scheme: dark;
 
-  /* On-surface */
-  --on-surface:          #dae2fd;
-  --on-surface-variant:  #bdc8d1;
-  --inverse-surface:     #dae2fd;
-  --inverse-on-surface:  #283044;
+  /* system-ui は入れない: canvas に渡すと Chrome (Windows) が固まる */
+  --font-sans: 'BIZ UDPGothic', sans-serif;
+  --font-num:  'Barlow Semi Condensed', 'BIZ UDPGothic', sans-serif;
 
-  /* Outline */
-  --outline:         #87929a;
-  --outline-variant:  #3e484f;
+  --ground: #0e212b;
+  --signal: #f5c542;
+  --on-signal: #16303f;
 
-  /* Primary */
-  --primary:              #8ed5ff;
-  --on-primary:           #00354a;
-  --primary-container:    #38bdf8;
-  --on-primary-container: #004965;
-  --inverse-primary:      #00668a;
-  --surface-tint:         #7bd0ff;
+  --surface:                  #16303f;
+  --surface-container-lowest: #10242f;
+  --surface-container-low:    #1a3747;
+  --surface-container:        #1f4051;
+  --surface-container-high:   #284d60;
+  --surface-container-highest:#35607a;
 
-  /* Secondary */
-  --secondary:              #45dfa4;
-  --on-secondary:           #003825;
-  --secondary-container:    #00bd85;
-  --on-secondary-container: #00452e;
+  --on-surface:          #e6eef2;
+  --on-surface-variant:  #a8bcc8;
+  --outline:             #7f98a6;
+  --outline-variant:     #2b4b5c;
 
-  /* Tertiary */
-  --tertiary:              #e1bfff;
-  --on-tertiary:           #490080;
-  --tertiary-container:    #ce9bff;
-  --on-tertiary-container: #6400ac;
+  --primary:              var(--signal);
+  --on-primary:           var(--on-signal);
+  --primary-container:    #ffd465;
+  --on-primary-container: var(--on-signal);
 
-  /* Error */
-  --error:              #ffb4ab;
-  --on-error:           #690005;
-  --error-container:    #93000a;
-  --on-error-container: #ffdad6;
+  --secondary:  #6fd3a8;
+  --tertiary:   #c3a6ff;
+
+  --error:           #ff9b8f;
+  --error-container: #4a2a2e;
 
   /* Spacing (4px baseline) */
   --unit: 4px;
@@ -56,24 +48,22 @@
   --stack-md: 16px;
   --stack-lg: 32px;
   --gutter:   16px;
-  --container-padding: 24px;
+  --container-padding: 20px;
 
-  /* Radius */
+  /* Radius: 部品は小さく、シートとカードは一段大きく */
   --rounded-sm:   2px;
   --rounded:      4px;
-  --rounded-md:   6px;
-  --rounded-lg:   8px;
-  --rounded-xl:  12px;
+  --rounded-md:   5px;
+  --rounded-lg:   6px;
+  --rounded-xl:  10px;
   --rounded-full: 9999px;
+}
 
-  /* Chart colors for multi-series */
-  --chart-1: #8ed5ff;  /* primary */
-  --chart-2: #ce9bff;  /* tertiary-container */
-  --chart-3: #45dfa4;  /* secondary */
-  --chart-4: #ffb4ab;  /* error */
-  --chart-5: #7bd0ff;  /* surface-tint */
-  --chart-6: #e1bfff;  /* tertiary */
-  --chart-7: #68fcbf;  /* secondary-fixed */
+.topnav,
+.obs-panel,
+.control-panel {
+  color: var(--on-surface);
+  background: var(--surface);
 }
 
 /* --- Reset & Base --- */
@@ -90,12 +80,12 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
   font-weight: 400;
   color: var(--on-surface);
-  background-color: var(--surface);
+  background-color: var(--ground);
   min-height: 100vh;
   overflow: hidden;
 }
@@ -108,65 +98,41 @@ body {
 }
 
 /* --- Typography --- */
-.typo-headline-xl {
-  font-family: 'Inter', sans-serif;
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 44px;
-  letter-spacing: -0.02em;
-}
-
-.typo-headline-lg {
-  font-family: 'Inter', sans-serif;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 36px;
-  letter-spacing: -0.01em;
-}
-
 .typo-headline-md {
-  font-family: 'Inter', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-}
-
-.typo-body-lg {
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 28px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .typo-body-md {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 24px;
+  line-height: 1.5;
 }
 
 .typo-body-sm {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 1.5;
 }
 
+/* 数値は DIN 系の Barlow で、計器の読み値のように */
 .typo-data {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: var(--font-num);
+  font-size: 16px;
+  font-weight: 600;
   line-height: 20px;
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .typo-label-caps {
-  font-family: 'Inter', sans-serif;
   font-size: 12px;
-  font-weight: 700;
   line-height: 16px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
 }
 
 /* --- Scrollbar --- */
@@ -176,7 +142,7 @@ body {
 /* Custom scrollbar for panels */
 .custom-scroll {
   scrollbar-width: thin;
-  scrollbar-color: var(--outline) var(--surface-container-lowest);
+  scrollbar-color: var(--surface-container-highest) transparent;
   overscroll-behavior-y: contain;
 }
 
@@ -208,6 +174,14 @@ body {
   overflow: hidden;
 }
 
+/* 左: 手法 / 中央: 状態と誤差 / 右: 観測 */
+.app-main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* --- Input Range Styling --- */
 input[type="range"] {
   -webkit-appearance: none;
@@ -231,25 +205,24 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--on-surface);
   cursor: pointer;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 8px rgba(142, 213, 255, 0.5);
-  transition: box-shadow 0.2s ease;
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--outline);
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 12px rgba(142, 213, 255, 0.8);
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px var(--primary);
 }
 
 input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--on-surface);
   cursor: pointer;
-  border: 2px solid var(--surface);
-  box-shadow: 0 0 8px rgba(142, 213, 255, 0.5);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--outline);
 }
 
 /* --- Checkbox Styling --- */
@@ -267,8 +240,8 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--on-surface);
+  border-color: var(--on-surface);
 }
 
 input[type="checkbox"]:checked::after {
@@ -277,7 +250,7 @@ input[type="checkbox"]:checked::after {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--on-primary);
+  color: var(--surface);
   font-size: 11px;
   font-weight: 700;
 }
@@ -290,8 +263,7 @@ input[type="checkbox"]:checked::after {
   gap: 8px;
   border: none;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
@@ -301,64 +273,57 @@ input[type="checkbox"]:checked::after {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: var(--on-primary);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  padding: 12px 16px;
-  border-radius: var(--rounded-xl);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+  background: var(--signal);
+  color: var(--on-signal);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 24px;
+  padding: 10px 16px;
+  border-radius: var(--rounded-lg);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-container);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+  background: #ffd465;
 }
 
 .btn-secondary {
-  background: var(--surface-container);
-  color: var(--secondary);
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-  padding: 8px 16px;
-  border: 1px solid var(--secondary);
+  background: var(--signal);
+  color: var(--on-signal);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  padding: 8px 14px;
   border-radius: var(--rounded-lg);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--secondary-container);
-  color: var(--on-secondary-container);
+  background: #ffd465;
 }
 
 .btn-ghost {
-  background: var(--surface-container);
-  color: var(--on-surface);
+  background: transparent;
+  color: var(--on-surface-variant);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  padding: 6px 12px;
-  border: 1px solid var(--outline-variant);
+  padding: 6px 10px;
+  border: none;
   border-radius: var(--rounded);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: var(--surface-container-high);
+  background: var(--surface-container);
+  color: var(--on-surface);
 }
 
 /* --- Card --- */
 .card {
-  background: var(--surface-container);
-  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
   border-radius: var(--rounded-lg);
-  overflow: hidden;
 }
 
 .card-header {
   padding: 12px;
-  border-bottom: 1px solid var(--outline-variant);
-  background: var(--surface-container-high);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -366,12 +331,6 @@ input[type="checkbox"]:checked::after {
 
 .card-body {
   padding: 16px;
-}
-
-/* --- Dot Grid Pattern for Charts --- */
-.chart-dot-grid {
-  background-image: radial-gradient(circle at 1px 1px, var(--outline-variant) 1px, transparent 0);
-  background-size: 24px 24px;
 }
 
 /* --- Spinner --- */
@@ -383,7 +342,7 @@ input[type="checkbox"]:checked::after {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid var(--outline-variant);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -418,7 +377,7 @@ input[type="checkbox"]:checked::after {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(6, 16, 22, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,10 +392,10 @@ input[type="checkbox"]:checked::after {
 }
 
 .modal-content {
-  background: var(--surface-container);
+  background: var(--surface);
   border: 1px solid var(--outline-variant);
   border-radius: var(--rounded-xl);
-  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   max-width: 540px;
   width: 100%;
   max-height: 80vh;
@@ -485,7 +444,7 @@ input[type="checkbox"]:checked::after {
   border: 1px solid var(--outline-variant);
   border-radius: var(--rounded);
   color: var(--on-surface);
-  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   padding: 8px 12px;
   outline: none;
@@ -556,7 +515,7 @@ input[type="checkbox"]:checked::after {
   border: 1px solid var(--outline-variant);
   border-radius: var(--rounded);
   color: var(--on-surface);
-  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 13.5px;
   font-weight: 500;
   padding: 6px 8px;
@@ -613,24 +572,36 @@ input[type="checkbox"]:checked::after {
     --container-padding: 16px;
   }
 
+  /* 狭い画面では 縦に積んでページ全体をスクロールさせる */
+  body,
+  #root,
+  .app-layout,
   .app-main {
-    flex-direction: column !important;
+    height: auto;
+    overflow: visible;
   }
 
-  .control-panel {
+  .app-main {
+    flex-direction: column;
+  }
+
+  .control-panel,
+  .obs-panel {
     width: 100% !important;
-    max-height: 45vh;
-    border-right: none !important;
-    border-bottom: 1px solid var(--outline-variant);
+    border: none;
+  }
+
+  .cp-cards {
+    max-height: 50vh;
   }
 
   .viz-area {
-    flex: 1;
-    min-height: 40vh;
+    height: 80vh;
   }
+}
 
-  .btn-primary {
-    font-size: 16px;
-    padding: 10px 16px;
-  }
+/* キーボード操作の可視化 */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
