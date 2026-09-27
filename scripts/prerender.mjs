@@ -15,7 +15,6 @@ import { dirname } from 'node:path';
 
 import { CONTENT, EQUATION } from '../src/data/about.js';
 import { DA_METHODS } from '../src/constants.js';
-import { PRESETS } from '../src/data/presets.js';
 import { TOOLTIP_DATA } from '../src/data/tooltips.js';
 import { TRANSLATIONS } from '../src/i18n/translations.js';
 
@@ -59,7 +58,6 @@ const UI = {
     params: 'パラメータ',
     range: '範囲',
     guideline: '目安',
-    relatedPresets: '関連するプリセット実験',
     otherMethods: '他の手法',
     methodsIndex: "データ同化の 7 手法",
     glossary: 'データ同化 用語集',
@@ -75,7 +73,6 @@ const UI = {
     params: 'Parameters',
     range: 'Range',
     guideline: 'Guideline',
-    relatedPresets: 'Related preset labs',
     otherMethods: 'Other methods',
     methodsIndex: 'The 7 data assimilation methods',
     glossary: 'Data assimilation glossary',
@@ -87,18 +84,19 @@ const UI = {
 };
 
 const STYLE = `
-:root{color-scheme:dark;--bg:#0f172a;--fg:#e2e8f0;--muted:#94a3b8;--card:#1e293b;--line:#334155;--link:#8ed5ff}
+:root{color-scheme:light;--bg:#ffffff;--fg:#10222e;--muted:#445763;--card:#eaeef1;--line:#d5dde3;--link:#1c4a63}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"BIZ UDPGothic","Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.8}
 main,header,footer{max-width:820px;margin:0 auto;padding:0 20px}
 header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding-top:20px;font-size:14px;flex-wrap:wrap}
 a{color:var(--link)}
+h1,h2,h3{font-weight:700}
 h1{font-size:1.7rem;line-height:1.4;margin:28px 0 8px}
 h2{font-size:1.25rem;margin:36px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
 h3{font-size:1.05rem;margin:20px 0 6px}
 .lead{color:var(--muted);font-size:1.05rem}
-pre{background:#0b1220;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font-size:.9rem;white-space:pre-wrap;word-break:break-word}
-.cta{display:inline-block;margin:24px 0;padding:12px 20px;background:var(--link);color:#06283d;border-radius:8px;font-weight:700;text-decoration:none}
+pre{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:12px 14px;overflow-x:auto;font-size:.9rem;white-space:pre-wrap;word-break:break-word}
+.cta{display:inline-block;margin:24px 0;padding:12px 20px;background:#f5c542;color:#16303f;border-radius:6px;font-weight:700;text-decoration:none}
 .meta{color:var(--muted);font-size:.9rem}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:4px 18px;margin:14px 0}
 .card h2{border:0;margin-top:14px}
@@ -121,7 +119,7 @@ function shell({ lang, path, title, description, body, jsonLd }) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}" />
-<meta name="theme-color" content="#1e293b" />
+<meta name="theme-color" content="#16303f" />
 <link rel="canonical" href="${abs(lang, path)}" />
 ${alt}
 <meta property="og:type" content="article" />
@@ -209,19 +207,6 @@ function methodPage(lang, method) {
       ? `${method.id} (${name}) — data assimilation on Lorenz '96 | EduDA`
       : `${method.id}（${name}）とは — Lorenz '96 で動かすデータ同化 | EduDA`;
 
-  const presets = PRESETS.filter((p) => p.methods.some((m) => m.type === method.id));
-  const presetList = presets.length
-    ? `<h2>${u.relatedPresets}</h2>
-<ul>
-${presets
-        .map(
-          (p) =>
-            `<li><a href="${href(lang, `/?preset=${p.id}`)}">${esc(pick(p, lang, 'title'))}</a> — ${esc(pick(p, lang, 'description'))}</li>`
-        )
-        .join('\n')}
-</ul>`
-    : '';
-
   const context =
     lang === 'en'
       ? `EduDA runs ${method.id} on the 40-variable chaotic Lorenz '96 model entirely in your browser and compares it side by side with six other assimilation methods under identical truth and observation conditions.`
@@ -237,8 +222,6 @@ ${presets
 
 <h2>${u.params}</h2>
 ${method.params.map((p) => paramSection(lang, p)).join('\n')}
-
-${presetList}
 
 <h2>${u.otherMethods}</h2>
 <ul>
@@ -474,11 +457,6 @@ ${c.algos
     )
     .join('\n')}
 </ul>
-
-<h2>${esc(c.labHeading)}</h2>
-<ol>
-${c.labs.map(([n, d]) => `<li><strong>${esc(n)}</strong> - ${esc(d)}</li>`).join('\n')}
-</ol>
 
 <h2>${esc(c.featHeading)}</h2>
 <ul>

@@ -1,113 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import EduTooltip from './EduTooltip';
-import PresetBanner from './visualization/PresetBanner';
 import VisualizationChart from './visualization/VisualizationChart';
 import HovmollerDiagram from './visualization/HovmollerDiagram';
 import PlaybackControls from './visualization/PlaybackControls';
 import { useLanguage } from '../context/LanguageContext';
 import './VisualizationArea.css';
 
+/**
+ * 上段: ある時刻の状態 (真値と推定) か、時空間の誤差。
+ * 下段: 誤差の時間変化。クリック・ドラッグで上段に出す時刻を選ぶタイムラインを兼ねる。
+ */
 export default function VisualizationArea({
   methods,
   colors,
   simulationResults,
-  showRmse,
   showSpread,
-  onToggleRmse,
   onToggleSpread,
-  activePreset,
-  isRunning,
+  obsErrorStd,
 }) {
   const { t } = useLanguage();
-  const [viewMode, setViewMode] = useState('timeseries');
+  const [viewMode, setViewMode] = useState('state1d');
   const [selectedStepIdx, setSelectedStepIdx] = useState(0);
   const [selectedMethodId, setSelectedMethodId] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1); // 1x, 2x, 5x
 
-  // Reset selected step, selected method, and stop playing when new simulation results are loaded
+  const results = simulationResults?.results;
+  const timeSteps = results?.[0]?.timeSteps;
+  const totalSteps = timeSteps?.length || 0;
+
+  // 新しい結果が来たら、最後の時刻を表示して止める
   useEffect(() => {
-    if (simulationResults && simulationResults.results && simulationResults.results.length > 0) {
-      const results = simulationResults.results;
-      const stepsCount = results[0].timeSteps?.length || 0;
-      setSelectedStepIdx(stepsCount > 0 ? stepsCount - 1 : 0);
-      setIsPlaying(false);
-      setSelectedMethodId(prev => {
-        if (!prev || !results.some(r => r.methodId === prev)) {
-          return results[0].methodId;
-        }
-        return prev;
-      });
-    }
-  }, [simulationResults]);
+    if (!results || results.length === 0) return;
+    setSelectedStepIdx(Math.max(0, (results[0].timeSteps?.length || 1) - 1));
+    setIsPlaying(false);
+    setSelectedMethodId(prev => (
+      prev && results.some(r => r.methodId === prev) ? prev : results[0].methodId
+    ));
+  }, [results]);
 
-  // Pause playback when switching away from state1d view
   useEffect(() => {
-    if (viewMode !== 'state1d') {
-      setIsPlaying(false);
-    }
-  }, [viewMode]);
-
-  // Handle auto playback interval
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const results = simulationResults?.results;
-    const totalSteps = results?.[0]?.timeSteps?.length || 0;
-    if (totalSteps <= 1) {
-      setIsPlaying(false);
-      return;
-    }
-
-    const intervalTime = Math.round(300 / playbackSpeed);
+    if (!isPlaying || totalSteps <= 1) return;
     const interval = setInterval(() => {
       setSelectedStepIdx(prev => (prev >= totalSteps - 1 ? 0 : prev + 1));
-    }, intervalTime);
-
+    }, Math.round(300 / playbackSpeed));
     return () => clearInterval(interval);
-  }, [isPlaying, playbackSpeed, simulationResults]);
+  }, [isPlaying, playbackSpeed, totalSteps]);
 
-  const handleStepBack = () => {
+  const handleSeek = useCallback((idx) => {
     setIsPlaying(false);
-    const results = simulationResults?.results;
-    const totalSteps = results?.[0]?.timeSteps?.length || 0;
+    setSelectedStepIdx(idx);
+  }, []);
+
+  const stepBy = (delta) => {
+    setIsPlaying(false);
     if (totalSteps <= 1) return;
-    setSelectedStepIdx(prev => (prev - 1 + totalSteps) % totalSteps);
+    setSelectedStepIdx(prev => (prev + delta + totalSteps) % totalSteps);
   };
 
-  const handleStepForward = () => {
-    setIsPlaying(false);
-    const results = simulationResults?.results;
-    const totalSteps = results?.[0]?.timeSteps?.length || 0;
-    if (totalSteps <= 1) return;
-    setSelectedStepIdx(prev => (prev + 1) % totalSteps);
-  };
-
-  const handleSliderChange = (e) => {
-    setIsPlaying(false);
-    setSelectedStepIdx(parseInt(e.target.value, 10));
-  };
-
-  const results = simulationResults?.results;
+  const hasResults = results && results.length > 0;
 
   return (
     <section className="viz-area" id="viz-area">
-      {/* Active Preset Banner */}
-      <PresetBanner activePreset={activePreset} />
-
-      {/* Chart Area */}
-      <div className="viz-chart-wrapper">
+      {/* 上段: 状態 */}
+      <div className="viz-sheet viz-sheet--state">
         <div className="viz-chart-header">
-          <div className="viz-tab-row">
+          <div className="viz-tab-row" role="tablist">
             <button
               type="button"
-              className={`viz-tab-btn ${viewMode === 'timeseries' ? 'viz-tab-btn--active' : ''}`}
-              onClick={() => setViewMode('timeseries')}
-            >
-              {t('visualization.tabTimeseries')}
-            </button>
-            <button
-              type="button"
+              role="tab"
+              aria-selected={viewMode === 'state1d'}
               className={`viz-tab-btn ${viewMode === 'state1d' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('state1d')}
             >
@@ -115,6 +77,8 @@ export default function VisualizationArea({
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={viewMode === 'hovmoller'}
               className={`viz-tab-btn ${viewMode === 'hovmoller' ? 'viz-tab-btn--active' : ''}`}
               onClick={() => setViewMode('hovmoller')}
             >
@@ -122,128 +86,102 @@ export default function VisualizationArea({
             </button>
           </div>
 
-          {/* Hovmöller Method Selector */}
-          {viewMode === 'hovmoller' && results && results.length > 0 && (
-            <div className="hov-method-selector-container">
-              <span className="hov-method-label typo-body-sm">
-                {t('visualization.methodLabel')}
-              </span>
-              <select
-                className="hov-method-select"
-                value={selectedMethodId}
-                onChange={(e) => setSelectedMethodId(e.target.value)}
-                aria-label={t('visualization.methodLabel')}
-              >
-                {results.map(r => {
-                  const method = methods.find(m => m.instanceId === r.methodId);
-                  const label = method?.label || r.methodId;
-                  return (
-                    <option key={r.methodId} value={r.methodId}>
-                      {label}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+          {viewMode === 'hovmoller' && hasResults && (
+            <select
+              className="hov-method-select"
+              value={selectedMethodId}
+              onChange={(e) => setSelectedMethodId(e.target.value)}
+              aria-label={t('visualization.methodLabel')}
+            >
+              {results.map(r => {
+                const method = methods.find(m => m.instanceId === r.methodId);
+                return (
+                  <option key={r.methodId} value={r.methodId}>
+                    {method?.label || r.methodId}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+
+          {viewMode === 'state1d' && hasResults && (
+            <span className="viz-step-readout">
+              <span className="viz-step-label">{t('visualization.step')}</span>
+              <span className="typo-data">{timeSteps[selectedStepIdx]}</span>
+            </span>
           )}
         </div>
 
-        <div className="viz-chart-canvas-wrapper chart-dot-grid">
-          {isRunning && (!results || results.length === 0) ? (
+        <div className="viz-chart-canvas-wrapper">
+          {!hasResults && (
             <div className="viz-chart-placeholder">
-              <div className="spinner" style={{ width: 44, height: 44, borderWidth: 3 }} />
-              <p style={{ color: 'var(--primary)', marginTop: 14, fontWeight: 600, fontSize: 14 }}>
-                {t('controlPanel.calculating')}
-              </p>
+              {methods.length === 0 ? (
+                <p className="viz-placeholder-text">{t('controlPanel.emptyHint')}</p>
+              ) : (
+                <div className="spinner" style={{ width: 32, height: 32, borderWidth: 3 }} />
+              )}
             </div>
-          ) : (!results || results.length === 0) ? (
-            <div className="viz-chart-placeholder">
-              <span className="material-symbols-outlined" style={{ fontSize: 64, color: 'var(--outline-variant)' }} aria-hidden="true">
-                science
-              </span>
-              <p style={{ color: 'var(--outline)', marginTop: 12 }}>
-                {t('visualization.placeholder')}
-              </p>
-            </div>
-          ) : null}
+          )}
 
-          {/* Chart.js Line Chart (Timeseries & 1D State) */}
-          <VisualizationChart
-            viewMode={viewMode}
-            simulationResults={simulationResults}
-            methods={methods}
-            colors={colors}
-            showRmse={showRmse}
-            showSpread={showSpread}
-            selectedStepIdx={selectedStepIdx}
-          />
+          {viewMode === 'state1d' && (
+            <VisualizationChart
+              viewMode="state1d"
+              simulationResults={simulationResults}
+              methods={methods}
+              colors={colors}
+              selectedStepIdx={selectedStepIdx}
+            />
+          )}
 
-          {/* Hovmöller View */}
-          {viewMode === 'hovmoller' && results && results.length > 0 && (
+          {viewMode === 'hovmoller' && hasResults && (
             <HovmollerDiagram
               simulationResults={simulationResults}
               selectedMethodId={selectedMethodId}
             />
           )}
         </div>
-
-        {/* 1D State Plot Step Slider & Playback Controls */}
-        {viewMode === 'state1d' && results && results.length > 0 && results[0].timeSteps && results[0].timeSteps.length > 0 && (
-          <div className="viz-slider-container">
-            <div className="viz-slider-header">
-              <span className="viz-slider-title">{t('visualization.stepSelect')}</span>
-              <span className="viz-slider-value">
-                {t('visualization.step')} {results[0].timeSteps[selectedStepIdx]}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={results[0].timeSteps.length - 1}
-              value={selectedStepIdx}
-              onChange={handleSliderChange}
-              className="viz-slider"
-              aria-label={t('visualization.stepSelect')}
-            />
-
-            <PlaybackControls
-              isPlaying={isPlaying}
-              playbackSpeed={playbackSpeed}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              onStepBack={handleStepBack}
-              onStepForward={handleStepForward}
-              onSpeedChange={setPlaybackSpeed}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Legend Toggle */}
-      {viewMode === 'timeseries' && (
-        <div className="viz-legend">
-          <label className="viz-legend-item">
-            <input
-              type="checkbox"
-              checked={showRmse}
-              onChange={onToggleRmse}
-            />
-            <div className="viz-legend-line viz-legend-solid" />
-            <span>{t('visualization.rmseSolid')}</span>
-          </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <label className="viz-legend-item" style={{ marginRight: 0 }}>
-              <input
-                type="checkbox"
-                checked={showSpread}
-                onChange={onToggleSpread}
-              />
-              <div className="viz-legend-line viz-legend-dashed" />
+      {/* 下段: 誤差の時間変化 = タイムライン */}
+      <div className="viz-sheet viz-sheet--error">
+        <div className="viz-chart-header">
+          <PlaybackControls
+            isPlaying={isPlaying}
+            playbackSpeed={playbackSpeed}
+            onTogglePlay={() => setIsPlaying(p => !p)}
+            onStepBack={() => stepBy(-1)}
+            onStepForward={() => stepBy(1)}
+            onSpeedChange={setPlaybackSpeed}
+          />
+
+          <div className="viz-legend">
+            <span className="viz-legend-item">
+              <span className="viz-legend-line viz-legend-solid" />
+              <span>{t('visualization.rmseSolid')}</span>
+              <EduTooltip paramId="rmse" />
+            </span>
+            <label className="viz-legend-item">
+              <input type="checkbox" checked={showSpread} onChange={onToggleSpread} />
+              <span className="viz-legend-line viz-legend-dashed" />
               <span>{t('visualization.spreadDashed')}</span>
             </label>
             <EduTooltip paramId="spread" />
           </div>
         </div>
-      )}
+
+        <div className="viz-chart-canvas-wrapper">
+          <VisualizationChart
+            viewMode="timeseries"
+            simulationResults={simulationResults}
+            methods={methods}
+            colors={colors}
+            showSpread={showSpread}
+            selectedStepIdx={selectedStepIdx}
+            obsErrorStd={obsErrorStd}
+            onSeek={handleSeek}
+          />
+        </div>
+      </div>
     </section>
   );
 }

@@ -2,18 +2,24 @@ import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 
 /**
- * Maps error value to RGB color in the colormap:
- * 0.0 (Indigo) -> 0.25 (Cyan) -> 0.5 (Mint) -> 0.75 (Coral) -> 1.0 (White)
+ * 誤差の順序尺度カラーマップ (inferno 系)。誤差 0 はシートの海色に溶け、
+ * 大きいほど明るくなる。凡例のグラデーションもこの配列から作る。
  */
+const ERROR_STOPS = [
+  { pos: 0.0, r: 22, g: 48, b: 63 },     // sheet (#16303f)
+  { pos: 0.25, r: 91, g: 42, b: 110 },   // #5b2a6e
+  { pos: 0.5, r: 184, g: 64, b: 94 },    // #b8405e
+  { pos: 0.75, r: 240, g: 138, b: 60 },  // #f08a3c
+  { pos: 1.0, r: 251, g: 226, b: 138 },  // #fbe28a
+];
+
+const ERROR_GRADIENT = `linear-gradient(to right, ${ERROR_STOPS
+  .map(({ pos, r, g, b }) => `rgb(${r}, ${g}, ${b}) ${pos * 100}%`)
+  .join(', ')})`;
+
 function getErrorColorRGB(error, maxErr) {
   const t = Math.min(1.0, Math.max(0.0, error / maxErr));
-  const stops = [
-    { pos: 0.0, r: 11, g: 19, b: 38 },       // Deep Indigo (#0b1326)
-    { pos: 0.25, r: 0, g: 102, b: 138 },     // Deep Cyan (#00668a)
-    { pos: 0.5, r: 69, g: 223, b: 164 },     // Mint Green (#45dfa4)
-    { pos: 0.75, r: 255, g: 180, b: 171 },   // Coral Orange (#ffb4ab)
-    { pos: 1.0, r: 255, g: 255, b: 255 }     // White
-  ];
+  const stops = ERROR_STOPS;
 
   let lower = stops[0];
   let upper = stops[stops.length - 1];
@@ -133,8 +139,14 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       const graphWidth = width - paddingLeft - paddingRight;
       const graphHeight = height - paddingTop - paddingBottom;
 
+      const css = getComputedStyle(document.documentElement);
+      const paper = css.getPropertyValue('--surface').trim();
+      const ink = css.getPropertyValue('--on-surface').trim();
+      const muted = css.getPropertyValue('--outline').trim();
+      const font = css.getPropertyValue('--font-sans').trim();
+
       // Clear Canvas Background
-      ctx.fillStyle = '#0b1326';
+      ctx.fillStyle = paper;
       ctx.fillRect(0, 0, width, height);
 
       // Draw Heatmap (Scale Offscreen Canvas into Graph Box)
@@ -146,13 +158,13 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       );
 
       // Draw Coordinate Frame & Ticks
-      ctx.strokeStyle = '#3e484f';
+      ctx.strokeStyle = ink;
       ctx.lineWidth = 1;
       ctx.strokeRect(paddingLeft, paddingTop, graphWidth, graphHeight);
 
       // X-axis (Grid Points) Ticks & Labels
-      ctx.fillStyle = '#87929a';
-      ctx.font = '10px Inter, sans-serif';
+      ctx.fillStyle = muted;
+      ctx.font = `11px ${font}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
 
@@ -173,11 +185,11 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       }
 
       // X-axis Title
-      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.font = `12px ${font}`;
       ctx.fillText(t('visualization.hovmoller.gridAxis'), paddingLeft + graphWidth / 2, paddingTop + graphHeight + 22);
 
       // Y-axis (Time Steps) Ticks & Labels
-      ctx.font = '10px Inter, sans-serif';
+      ctx.font = `11px ${font}`;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
 
@@ -198,10 +210,10 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       ctx.save();
       ctx.translate(15, paddingTop + graphHeight / 2);
       ctx.rotate(-Math.PI / 2);
-      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.font = `12px ${font}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.fillStyle = '#87929a';
+      ctx.fillStyle = muted;
       ctx.fillText(t('visualization.hovmoller.timeAxis'), 0, 0);
       ctx.restore();
 
@@ -230,7 +242,7 @@ export default function HovmollerDiagram({ simulationResults, selectedMethodId }
       </div>
       <div className="hovmoller-legend-container">
         <span className="hovmoller-legend-text">{t('visualization.hovmoller.lowError')}</span>
-        <div className="hovmoller-gradient-bar" />
+        <div className="hovmoller-gradient-bar" style={{ background: ERROR_GRADIENT }} />
         <span className="hovmoller-legend-text">
           {t('visualization.hovmoller.highError')} ({displayMaxError.toFixed(1)})
         </span>

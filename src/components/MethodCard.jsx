@@ -3,10 +3,8 @@ import { DIVERGENCE_THRESHOLD } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
 import './MethodCard.css';
 
-export default function MethodCard({ method, color, onUpdate, onRemove }) {
+export default function MethodCard({ method, color, onUpdate, onRemove, onDuplicate }) {
   const { lang, t } = useLanguage();
-
-  const glowColor = color + '99'; // ~60% opacity
 
   const handleParamChange = (key, val) => {
     const newParams = { ...method.params, [key]: val };
@@ -14,13 +12,13 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
   };
 
   return (
-    <div className={`method-card card ${method.visible === false ? 'is-hidden' : ''}`} id={`card-${method.instanceId}`}>
+    <div className={`method-card card ${method.visible === false ? 'is-hidden' : ''}`} id={`card-${method.instanceId}`} style={{ '--series': color }}>
       {/* Card Header */}
       <div className="card-header method-card-header">
         <div className="method-card-title">
           <div
             className="color-dot"
-            style={{ backgroundColor: color, boxShadow: `0 0 8px ${glowColor}` }}
+            style={{ backgroundColor: color }}
           />
           <span className="method-card-name typo-body-md" style={{ fontWeight: 600 }}>
             {method.label}
@@ -46,6 +44,14 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
             <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">
               {method.visible !== false ? 'visibility' : 'visibility_off'}
             </span>
+          </button>
+          <button
+            className="method-card-icon-btn"
+            onClick={onDuplicate}
+            title={t('methodCard.duplicate')}
+            aria-label={t('methodCard.duplicate')}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">content_copy</span>
           </button>
           <button
             className="method-card-delete-btn"
@@ -88,7 +94,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                     width: '100%',
                     padding: '6px 10px',
                     borderRadius: 'var(--rounded)',
-                    background: 'var(--surface-container-high)',
+                    background: 'var(--surface-container)',
                     color: 'var(--on-surface)',
                     border: '1px solid var(--outline-variant)',
                     fontSize: '13px',
@@ -112,7 +118,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                   <span className="slider-label">{paramLabel}</span>
                   <EduTooltip paramId={p.key} />
                 </div>
-                <span className="slider-value typo-data" style={{ color }}>
+                <span className="slider-value typo-data">
                   {typeof val === 'number' && !Number.isInteger(val) ? val.toFixed(2) : val}
                 </span>
               </div>
@@ -136,7 +142,7 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
           <div className="method-card-stats-wrapper">
             <div className="method-card-stats">
               <div className="stat-item">
-                <span className="stat-label typo-label-caps">{t('methodCard.rmse')}:</span>
+                <span className="stat-label typo-label-caps">{t('methodCard.rmse')}</span>
                 {!Number.isFinite(method.avgRmse) || method.avgRmse > DIVERGENCE_THRESHOLD ? (
                   <span className="stat-value typo-data" style={{ color: 'var(--error)', fontWeight: 600 }}>
                     —
@@ -149,7 +155,6 @@ export default function MethodCard({ method, color, onUpdate, onRemove }) {
                 <div className="stat-label-wrapper">
                   <span className="stat-label typo-label-caps">{t('methodCard.spread')}</span>
                   <EduTooltip paramId="spread" />
-                  <span className="stat-label typo-label-caps">:</span>
                 </div>
                 <span className="stat-value typo-data">
                   {method.avgSpread != null ? method.avgSpread.toFixed(3) : '—'}

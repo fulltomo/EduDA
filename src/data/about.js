@@ -1,4 +1,4 @@
-// EduDA の本文（概要・7手法・プリセット実験・主な機能）の単一の出典。
+// EduDA の本文（概要・7手法・主な機能）の単一の出典。
 //
 // ここを AboutSection.jsx（レンダリング後の実 DOM）と scripts/prerender.mjs
 // （静的 HTML / <noscript>）の両方が読む。以前は index.html の <noscript> に
@@ -23,13 +23,6 @@ export const CONTENT = {
       ['3DVar (3次元変分法)', 'Gaspari-Cohn 相関関数に基づく静的な背景誤差共分散行列 (B) による変分同化。'],
       ['4DVar (4次元変分法)', '同化ウィンドウ内の時系列観測を、随伴モデル (Adjoint) の勾配を用いて同時に最適化する。'],
       ['PF (粒子フィルタ / SIR)', '有効粒子数に基づく再サンプリングを備えた、非ガウス分布に対応するフィルタ。'],
-    ],
-    labHeading: '事前設計プリセット実験ラボ (4種)',
-    labs: [
-      ['実験1: インフレーションの効果', '限られたアンサンブルサイズの下でのスプレッド過小評価とフィルタ発散を抑制する。'],
-      ['実験2: 局所化 (Localization) の効果', '少アンサンブル時に生じる遠距離の疑似相関を切り落とす。'],
-      ['実験3: 固定共分散 (3DVar) vs 流れ依存共分散 (LETKF)', '疎な観測下で、未観測領域へ誤差共分散がどう伝播するかを比較する。'],
-      ['実験4: 高次元空間での粒子フィルタの限界', '次元の呪いと重みの崩壊 (weight collapse) を体験する。'],
     ],
     featHeading: '主な機能',
     feats: [
@@ -58,13 +51,6 @@ export const CONTENT = {
       ['3DVar (3D Variational)', 'Static Gaspari-Cohn background error covariance matrix (B).'],
       ['4DVar (4D Variational)', 'Adjoint model gradient optimization over a time assimilation window.'],
       ['PF (Particle Filter / SIR)', 'Sequential Importance Resampling for non-Gaussian distributions.'],
-    ],
-    labHeading: 'Pre-Designed Educational Preset Labs (4 labs)',
-    labs: [
-      ['Lab 1: Effects of Inflation', 'Preventing ensemble shrinkage and filter divergence under limited ensemble size.'],
-      ['Lab 2: Effects of Localization', 'Cutting spurious distant correlations under small ensemble sizes.'],
-      ['Lab 3: Static (3DVar) vs Flow-Dependent (LETKF) Covariance', 'Error propagation into unobserved domains under sparse observation.'],
-      ['Lab 4: High-Dimensional Particle Filtering Limits', 'Experiencing weight collapse and the curse of dimensionality.'],
     ],
     featHeading: 'Key Features',
     feats: [

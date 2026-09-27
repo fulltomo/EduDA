@@ -59,6 +59,16 @@ export const TOOLTIP_DATA = {
     guideline: '通常 0.5 〜 0.8。高すぎるとサンプリングが頻繁に走り粒子の多様性が低下（枯渇）します。低すぎると一部の粒子のみに依存して近似が崩壊します。',
     guidelineEn: 'Typically 0.5 – 0.8. Setting too high causes frequent resampling and particle impoverishment; setting too low risks weight collapse.'
   },
+  rmse: {
+    title: 'RMSE (二乗平均平方根誤差)',
+    titleEn: 'RMSE (Root Mean Square Error)',
+    description: '推定値が真値からどれだけずれているかを、全格子点で平均した大きさです。小さいほど推定が正確です。観測誤差 σo の線より上にあるときは、観測をそのまま使うよりも推定が悪い状態です。',
+    descriptionEn: 'How far the estimate is from the truth, averaged over all grid points. Smaller is better. Above the obs. error line σo, the estimate is worse than simply using the observations.',
+    formula: 'RMSE = √[ (1/N) Σ_j (x̂_j - x_j)² ]\n(N: 格子点数, x̂: 推定値, x: 真値)',
+    formulaEn: 'RMSE = √[ (1/N) Σ_j (x̂_j - x_j)² ]\n(N: Grid dimension, x̂: Estimate, x: Truth)',
+    guideline: '観測誤差 σo より十分小さく保たれていれば、同化がうまく働いています。',
+    guidelineEn: 'Assimilation is working when RMSE stays well below σo.'
+  },
   spread: {
     title: 'Spread (アンサンブル分散・スプレッド)',
     titleEn: 'Spread (Ensemble Spread)',

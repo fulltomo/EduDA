@@ -1,38 +1,68 @@
 .viz-area {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  padding: 12px;
   overflow: hidden;
-  background: var(--surface);
+  background: var(--ground);
 }
 
-/* Chart Wrapper */
-.viz-chart-wrapper {
-  flex: 1;
-  padding: var(--gutter);
+/* 上下 2 段のシート: 上 = ある時刻の状態、下 = 誤差の時間変化 (タイムライン) */
+.viz-sheet {
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  position: relative;
+  padding: 12px 16px 8px;
+  background: var(--surface);
+  border-radius: var(--rounded-xl);
+}
+
+.viz-sheet--state {
+  flex: 3;
+}
+
+.viz-sheet--error {
+  flex: 2;
+}
+
+/* 時刻を選べることが分かるよう、誤差グラフ上ではカーソルを変える */
+.viz-chart-canvas-container.is-seekable canvas {
+  cursor: ew-resize;
+}
+
+.viz-step-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.viz-step-label {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.viz-placeholder-text {
+  color: var(--on-surface-variant);
+  font-size: 13px;
 }
 
 .viz-chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .viz-chart-canvas-wrapper {
   flex: 1;
-  background: var(--surface-container-low);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--rounded-xl);
   position: relative;
   overflow: hidden;
   min-height: 0;
-  padding: 8px;
 }
 
 .viz-chart-canvas-wrapper canvas {
@@ -53,99 +83,74 @@
 /* Legend */
 .viz-legend {
   flex-shrink: 0;
-  padding: var(--gutter);
-  border-top: 1px solid var(--outline-variant);
-  background: var(--surface);
   display: flex;
-  gap: 24px;
-  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
 }
 
 .viz-legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--on-surface-variant);
   transition: color 0.2s ease;
 }
 
-.viz-legend-item:hover {
+/* クリックで切り替えられる凡例 (label) だけに操作の手がかりを付ける */
+label.viz-legend-item {
+  cursor: pointer;
+}
+
+label.viz-legend-item:hover {
   color: var(--on-surface);
 }
 
 .viz-legend-line {
-  width: 12px;
+  width: 20px;
   height: 0;
   flex-shrink: 0;
 }
 
 .viz-legend-solid {
-  border-top: 3px solid var(--primary);
-  border-radius: var(--rounded-full);
+  border-top: 2px solid var(--on-surface);
 }
 
 .viz-legend-dashed {
-  border-top: 2px dashed var(--outline);
-  border-radius: var(--rounded-full);
+  border-top: 1.5px dashed var(--on-surface);
 }
 
 /* Tab Row & Buttons */
 .viz-tab-row {
   display: flex;
-  gap: 8px;
-  background: var(--surface-container-low);
-  padding: 4px;
+  gap: 2px;
+  padding: 3px;
   border-radius: var(--rounded-lg);
-  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
 }
 
 .viz-tab-btn {
   background: transparent;
   border: none;
+  border-radius: var(--rounded);
   color: var(--on-surface-variant);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 6px 16px;
-  border-radius: var(--rounded-md);
+  font-size: 13px;
+  padding: 5px 14px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .viz-tab-btn:hover {
   color: var(--on-surface);
-  background: var(--surface-container-high);
 }
 
-.viz-tab-btn--active {
-  background: var(--primary);
-  color: var(--on-primary);
-}
-
+.viz-tab-btn--active,
 .viz-tab-btn--active:hover {
-  background: var(--primary-container);
-  color: var(--on-primary-container);
-}
-
-/* Hovmöller Method Selector */
-.hov-method-selector-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  min-width: 0;
-  max-width: 55%;
-}
-
-.hov-method-label {
-  white-space: nowrap;
-  flex-shrink: 0;
-  color: var(--on-surface-variant);
-  font-size: 13.5px;
-  font-weight: 500;
+  color: var(--on-surface);
+  background: var(--surface-container-highest);
+  font-weight: 700;
 }
 
 .hov-method-select {
@@ -153,7 +158,6 @@
   border: 1px solid var(--outline-variant);
   border-radius: var(--rounded-md);
   color: var(--on-surface);
-  font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 500;
   padding: 6px 12px;
@@ -170,91 +174,10 @@
   border-color: var(--primary);
 }
 
-/* 1D State Plot Step Slider */
-.viz-slider-container {
-  margin-top: 16px;
-  background: var(--surface-container-low);
-  border: 1px solid var(--outline-variant);
-  border-radius: var(--rounded-xl);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.viz-slider-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.viz-slider-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--on-surface-variant);
-}
-
-.viz-slider-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.viz-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--surface-container-highest);
-  border-radius: var(--rounded-full);
-  cursor: pointer;
-}
-
-.viz-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: var(--rounded-full);
-  background: var(--primary);
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.viz-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-.viz-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border: none;
-  border-radius: var(--rounded-full);
-  background: var(--primary);
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.viz-slider::-moz-range-thumb:hover {
-  transform: scale(1.15);
-}
-
-.viz-slider:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
 /* Playback Controls */
 .viz-playback-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--outline-variant);
-  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -265,12 +188,12 @@
 }
 
 .viz-playback-btn {
-  background: var(--surface-container-high);
+  background: var(--surface-container-lowest);
   border: 1px solid var(--outline-variant);
   color: var(--on-surface);
   border-radius: var(--rounded-md);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -279,7 +202,6 @@
 }
 
 .viz-playback-btn:hover {
-  background: var(--surface-container-highest);
   border-color: var(--primary);
   color: var(--primary);
 }
@@ -293,23 +215,22 @@
 }
 
 .viz-play-pause-btn {
-  background: var(--primary-container);
-  color: var(--on-primary-container);
+  background: var(--primary);
+  color: var(--on-primary);
   border-color: var(--primary);
-  width: 44px;
-  height: 36px;
+  width: 40px;
+  height: 32px;
 }
 
 .viz-play-pause-btn:hover {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--primary-container);
+  color: var(--on-primary-container);
   border-color: var(--primary);
 }
 
 /* Speed Selector Group */
 .viz-speed-group {
   display: flex;
-  background: var(--surface-container-highest);
   padding: 2px;
   border-radius: var(--rounded-md);
   border: 1px solid var(--outline-variant);
@@ -319,7 +240,7 @@
   background: transparent;
   border: none;
   color: var(--on-surface-variant);
-  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 600;
   padding: 4px 10px;
@@ -340,7 +261,7 @@
 /* Hovmöller View & Legend */
 .hovmoller-view-container {
   position: absolute;
-  inset: 8px;
+  inset: 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -364,29 +285,19 @@
   justify-content: center;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--outline-variant);
   flex-shrink: 0;
 }
 
 .hovmoller-legend-text {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--outline);
+  color: var(--on-surface-variant);
+  font-variant-numeric: tabular-nums;
 }
 
 .hovmoller-gradient-bar {
   width: 200px;
-  height: 12px;
-  border-radius: var(--rounded-sm);
+  height: 10px;
   border: 1px solid var(--outline-variant);
-  background: linear-gradient(
-    to right,
-    #0b1326 0%,   /* Deep Indigo */
-    #00668a 25%,  /* Deep Cyan */
-    #45dfa4 50%,  /* Mint Green */
-    #ffb4ab 75%,  /* Coral Orange */
-    #ffffff 100%  /* White */
-  );
 }
 
 /* Responsive adjustment for Mobile view */

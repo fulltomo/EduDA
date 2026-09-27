@@ -1,18 +1,16 @@
+/* 左端の色帯 = グラフの系列色 (インラインの --series で渡す) */
 .method-card {
   flex-shrink: 0;
-  transition: border-color 0.2s ease, opacity 0.2s ease;
+  box-shadow: inset 3px 0 0 var(--series);
+  transition: opacity 0.2s ease;
 }
 
 .method-card.is-hidden {
   opacity: 0.5;
 }
 
-.method-card:hover {
-  border-color: var(--outline);
-}
-
 .method-card-header {
-  padding: 12px;
+  padding: 12px 14px 6px 17px;
 }
 
 .method-card-title {
@@ -31,22 +29,37 @@
   gap: 4px;
 }
 
-.method-card-delete-btn {
+.method-card-icon-btn {
   background: none;
   border: none;
-  color: var(--error);
+  color: var(--on-surface-variant);
   cursor: pointer;
   padding: 4px;
   border-radius: var(--rounded);
   display: flex;
   align-items: center;
-  opacity: 0.85;
+}
+
+.method-card-icon-btn:hover {
+  color: var(--on-surface);
+  background: var(--surface-container-high);
+}
+
+.method-card-delete-btn {
+  background: none;
+  border: none;
+  color: var(--outline);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--rounded);
+  display: flex;
+  align-items: center;
   transition: opacity 0.15s ease, background-color 0.15s ease, transform 0.1s ease;
 }
 
 .method-card-delete-btn:hover {
-  opacity: 1;
-  background: rgba(239, 68, 68, 0.12);
+  color: var(--error);
+  background: var(--error-container);
 }
 
 .method-card-delete-btn:active {
@@ -54,6 +67,7 @@
 }
 
 .method-card-body {
+  padding: 0 14px 14px 17px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -81,7 +95,7 @@
 }
 
 .slider-label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--on-surface-variant);
 }
 
@@ -100,14 +114,14 @@
   display: flex;
   justify-content: space-between;
   padding-top: 8px;
-  border-top: 1px solid rgba(62, 72, 79, 0.5);
+  border-top: 1px solid var(--outline-variant);
   align-items: center;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .stat-label-wrapper {

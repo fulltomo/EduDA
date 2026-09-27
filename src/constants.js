@@ -2,7 +2,6 @@
  * EduDA Constants & Configuration
  */
 
-export { PRESETS, getLocalizedPreset } from './data/presets.js'; // 拡張子は scripts/prerender.mjs が Node から直接 import するために必要
 
 /** Filter divergence threshold (RMSE above this or NaN is considered diverged) */
 export const DIVERGENCE_THRESHOLD = 10.0;
@@ -268,15 +267,17 @@ export const OBS_MODES = [
   { id: 'thinned', label: '間引き観測', desc: '全格子点を空間的に等間隔でサンプリング観測' },
 ];
 
-/** Chart color palette for up to 7 methods */
+/** Chart color palette for up to 7 methods.
+ * Okabe–Ito (色覚多様性に配慮した定番パレット) を暗い海色の地で読める明度に上げたもの。
+ * 黄は信号色 (実行ボタン・観測点) と紛れるので使わず、白は真値専用に取っておく。 */
 export const CHART_COLORS = [
-  '#8ed5ff', // sky / primary
-  '#ce9bff', // purple / tertiary-container
-  '#45dfa4', // emerald / secondary
-  '#ffb4ab', // coral / error
-  '#7bd0ff', // light sky
-  '#e1bfff', // lavender / tertiary
-  '#68fcbf', // mint / secondary-fixed
+  '#56b4e9', // sky blue
+  '#f28e2b', // orange
+  '#3cc48f', // bluish green
+  '#e58fc0', // reddish purple
+  '#ff6b5b', // vermillion
+  '#a99bf5', // violet
+  '#b7c4cc', // gray
 ];
 
 /** Default advanced options */
@@ -321,10 +322,6 @@ export function createMethodInstance(methodType, customLabel = null, customParam
     avgSpread: null,
     timeSteps: null,
   };
-}
-
-export function createPresetMethodInstance(methodType, customLabel, customParams) {
-  return createMethodInstance(methodType, customLabel, customParams);
 }
 
 /** Reset the counter (for tests) */

@@ -39,13 +39,6 @@ export default function AboutSection() {
             ))}
           </ul>
 
-          <h3>{c.labHeading}</h3>
-          <ol>
-            {c.labs.map(([name, desc]) => (
-              <li key={name}><strong>{name}</strong> - {desc}</li>
-            ))}
-          </ol>
-
           <h3>{c.featHeading}</h3>
           <ul>
             {c.feats.map((f) => <li key={f}>{f}</li>)}

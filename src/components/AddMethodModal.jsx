@@ -11,7 +11,7 @@ export default function AddMethodModal({ onSelect, onClose }) {
         <div className="modal-header">
           <h2 className="typo-headline-md">{t('addMethodModal.title')}</h2>
           <button
-            className="method-card-menu-btn"
+            className="btn-ghost"
             onClick={onClose}
             aria-label={t('addMethodModal.close')}
           >
