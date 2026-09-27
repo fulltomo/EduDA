@@ -4,6 +4,8 @@
 
 ### ▶ [eduda.pages.dev](https://eduda.pages.dev/) — インストール不要、ブラウザだけで動きます
 
+**解説:** [7 手法](docs/ja/methods.md) · [用語・パラメータ集](docs/ja/glossary.md) · [Lorenz '96](docs/ja/lorenz96.md) ／ English: [methods](docs/en/methods.md) · [glossary](docs/en/glossary.md) · [Lorenz '96](docs/en/lorenz96.md)
+
 [![React](https://img.shields.io/badge/React-19.2-61dafb.svg?style=flat-square&logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646cff.svg?style=flat-square&logo=vite)](https://vite.dev/)
 [![Rust](https://img.shields.io/badge/Rust-WASM-dea584.svg?style=flat-square&logo=rust)](https://www.rust-lang.org/)
@@ -66,7 +68,7 @@ EKF / POEnKF / EnSRF / LETKF / 3DVar / 4DVar / 粒子フィルタを、同じ真
 - **誤差の時間変化** — RMSE とスプレッドの推移。クリック・ドラッグで上の図に出す時刻を選ぶタイムラインを兼ね、観測誤差 σo の線と発散の開始点を自動で描きます
 
 **教育用ツールチップ**
-各パラメータに数式・物理的意味・推奨値のガイドを表示します。
+ⓘ で各パラメータの意味を一言で示し、数式と推奨値はリンク先の解説（docs/）で確認できます。
 
 **CSV エクスポート**
 全ステップの真値・観測値・各手法の解析値・RMSE を一括ダウンロード。Python / MATLAB / R での追加解析やレポート作成に使えます。

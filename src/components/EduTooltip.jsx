@@ -5,28 +5,14 @@ import { useClickOutside } from '../hooks/useClickOutside';
 import { useLanguage } from '../context/LanguageContext';
 import './EduTooltip.css';
 
-/**
- * Reusable Tooltip Content Sections
- */
+// 一言だけ。式や目安は GitHub の解説へ。
 function TooltipBody({ data, t }) {
-  const secTitle1 = t('tooltipDrawer.explanation');
-  const secTitle2 = t('tooltipDrawer.formula');
-  const secTitle3 = t('tooltipDrawer.guideline');
-
   return (
     <div className="edu-tooltip-body">
-      <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{secTitle1}</h4>
-        <p className="edu-tooltip-sec-text">{data.description}</p>
-      </div>
-      <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{secTitle2}</h4>
-        <pre className="edu-tooltip-sec-formula">{data.formula}</pre>
-      </div>
-      <div className="edu-tooltip-section">
-        <h4 className="edu-tooltip-sec-title">{secTitle3}</h4>
-        <p className="edu-tooltip-sec-text">{data.guideline}</p>
-      </div>
+      <p className="edu-tooltip-text">{data.text}</p>
+      <a className="edu-tooltip-more" href={data.href} target="_blank" rel="noopener noreferrer">
+        {t('tooltipDrawer.more')}
+      </a>
     </div>
   );
 }
@@ -42,7 +28,7 @@ function TooltipBox({ data, triggerRect, onClose, t }) {
     if (!triggerRect) return;
 
     const tooltipWidth = 300;
-    const tooltipMaxHeight = 360;
+    const tooltipMaxHeight = 200;
     const margin = 8;
 
     let left = triggerRect.right + margin;

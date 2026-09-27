@@ -53,30 +53,57 @@
   text-align: left;
 }
 
-.edu-tooltip-box.edu-tooltip-align-center {
-  left: 50%;
-  transform: translateX(-50%);
+.edu-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 8px 0 12px;
 }
 
-.edu-tooltip-box.edu-tooltip-align-left {
-  left: 0;
-  transform: none;
+.edu-tooltip-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-surface);
 }
 
-.edu-tooltip-box.edu-tooltip-align-right {
-  right: 0;
-  left: auto;
-  transform: none;
+.edu-tooltip-close {
+  background: none;
+  border: none;
+  color: var(--outline);
+  cursor: pointer;
+  min-width: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--rounded);
 }
 
-.edu-tooltip-box.edu-tooltip-pos-bottom {
-  top: calc(100% + 6px);
-  bottom: auto;
+.edu-tooltip-close:hover {
+  color: var(--on-surface);
 }
 
-.edu-tooltip-box.edu-tooltip-pos-top {
-  bottom: calc(100% + 6px);
-  top: auto;
+.edu-tooltip-close .material-symbols-outlined {
+  font-size: 16px !important;
+}
+
+.edu-tooltip-body {
+  padding: 4px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edu-tooltip-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--on-surface-variant);
+}
+
+.edu-tooltip-more {
+  font-size: 12px;
+  color: var(--primary);
 }
 
 @media (max-width: 480px) {

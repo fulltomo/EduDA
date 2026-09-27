@@ -129,9 +129,7 @@ export const TRANSLATIONS = {
 
     // Tooltip Drawer Sections
     tooltipDrawer: {
-      explanation: '📖 直感的な解説',
-      formula: '🧮 関連する数式表現',
-      guideline: '💡 設定の目安・推奨値',
+      more: 'もっと詳しく（GitHub）',
       close: '閉じる',
     },
   },
@@ -262,9 +260,7 @@ export const TRANSLATIONS = {
 
     // Tooltip Drawer Sections
     tooltipDrawer: {
-      explanation: '📖 Intuitive Explanation',
-      formula: '🧮 Mathematical Formulation',
-      guideline: '💡 Guidelines & Recommendations',
+      more: 'Learn more (GitHub)',
       close: 'Close',
     },
   },
