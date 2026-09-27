@@ -29,8 +29,10 @@ dist-ssr
 # Playwright MCP temp files
 .playwright-mcp/
 
-# Documentation and design specs
-docs/
+# Design specs (docs/ja, docs/en are the public explainers)
+docs/*
+!docs/ja/
+!docs/en/
 
 # Rust target
 target/

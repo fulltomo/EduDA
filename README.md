@@ -4,6 +4,8 @@
 
 ### ▶ [eduda.pages.dev](https://eduda.pages.dev/) — インストール不要、ブラウザだけで動きます
 
+**解説:** [7 手法](docs/ja/methods.md) · [用語・パラメータ集](docs/ja/glossary.md) · [Lorenz '96](docs/ja/lorenz96.md) ／ English: [methods](docs/en/methods.md) · [glossary](docs/en/glossary.md) · [Lorenz '96](docs/en/lorenz96.md)
+
 [![React](https://img.shields.io/badge/React-19.2-61dafb.svg?style=flat-square&logo=react)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646cff.svg?style=flat-square&logo=vite)](https://vite.dev/)
 [![Rust](https://img.shields.io/badge/Rust-WASM-dea584.svg?style=flat-square&logo=rust)](https://www.rust-lang.org/)

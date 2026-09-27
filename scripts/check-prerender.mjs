@@ -1,24 +1,12 @@
 // prerender の出力を検査する。npm run build に組み込んである。
 // エスケープ漏れ（本文に λ > 1 や N_eff < Threshold が入る）と、
 // canonical / hreflang / noscript の取り違えが一番壊れやすいのでそこを見る。
-//
-// ページ一覧は prerender と同じデータモジュールから導出する。dist を glob すると
-// 「生成されたものを数える」だけになり、手法が増えたのにページが出ていない、
-// という一番ありそうな失敗を素通りする。
 import { readFileSync, existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
-import { DA_METHODS } from '../src/constants.js';
-
 const SITE = 'https://eduda.pages.dev';
 const LANGS = ['ja', 'en'];
-const PATHS = [
-  '/',
-  '/methods/',
-  ...DA_METHODS.map((m) => `/methods/${m.id.toLowerCase()}/`),
-  '/glossary/',
-  '/lorenz96/',
-];
+const PATHS = ['/'];
 
 const pages = LANGS.flatMap((lang) =>
   PATHS.map((path) => ({
@@ -61,7 +49,7 @@ for (const [file, marker] of [
   const noscript = html.match(/<noscript>([\s\S]*?)<\/noscript>/);
   assert.ok(noscript, `${file}: <noscript> が無い`);
   assert.ok(noscript[1].includes(marker), `${file}: <noscript> の言語が違う`);
-  assert.ok(noscript[1].includes('/methods/'), `${file}: <noscript> から解説ページへのリンクが無い`);
+  assert.ok(noscript[1].includes('/docs/'), `${file}: <noscript> から解説（GitHub docs）へのリンクが無い`);
 }
 
 // sitemap に全 URL が載っていること
