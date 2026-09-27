@@ -55,7 +55,8 @@ impl LetkfPrecomputed {
     }
 }
 
-/// Jacobi eigenvalue decomposition for a symmetric matrix A (p x p)
+/// Cyclic Jacobi eigenvalue decomposition for a symmetric matrix A (p x p).
+/// Computes eigenvalues into `d` and eigenvectors into columns of `v`.
 fn jacobi_eigenvalues(a: &[f64], p: usize, d: &mut [f64], v: &mut [f64], mat_buf: &mut [f64]) {
     v.fill(0.0);
     for i in 0..p {
@@ -63,54 +64,83 @@ fn jacobi_eigenvalues(a: &[f64], p: usize, d: &mut [f64], v: &mut [f64], mat_buf
     }
     mat_buf[..p * p].copy_from_slice(&a[..p * p]);
 
-    for _ in 0..50 {
-        let mut max_val = 0.0;
-        let mut pi = 0;
-        let mut qi = 1;
+    if p <= 1 {
+        if p == 1 {
+            d[0] = mat_buf[0];
+        }
+        return;
+    }
+
+    // Cyclic Jacobi sweeps (typically converges in 5-10 sweeps, max 30)
+    for _sweep in 0..30 {
+        // Sum of absolute off-diagonal elements
+        let mut off_diag_sum = 0.0;
         for i in 0..p {
+            let row = i * p;
             for j in (i + 1)..p {
-                let val = mat_buf[i * p + j].abs();
-                if val > max_val {
-                    max_val = val;
-                    pi = i;
-                    qi = j;
-                }
+                off_diag_sum += mat_buf[row + j].abs();
             }
         }
-        if max_val < 1e-12 {
+
+        // Relative threshold against diagonal magnitude
+        let mut diag_sum = 0.0;
+        for i in 0..p {
+            diag_sum += mat_buf[i * p + i].abs();
+        }
+
+        if off_diag_sum <= 1e-12 * diag_sum || off_diag_sum < 1e-14 {
             break;
         }
 
-        let app = mat_buf[pi * p + pi];
-        let aqq = mat_buf[qi * p + qi];
-        let apq = mat_buf[pi * p + qi];
-        let phi = 0.5 * (2.0 * apq).atan2(aqq - app);
-        let c = phi.cos();
-        let s = phi.sin();
+        // Sweep over all pairs (i, j)
+        for i in 0..(p - 1) {
+            let i_row = i * p;
+            for j in (i + 1)..p {
+                let j_row = j * p;
+                let apq = mat_buf[i_row + j];
+                let thresh = 1e-14 * (mat_buf[i_row + i].abs() + mat_buf[j_row + j].abs());
+                if apq.abs() <= thresh {
+                    continue;
+                }
 
-        for k in 0..p {
-            let v_kp = v[k * p + pi];
-            let v_kq = v[k * p + qi];
-            v[k * p + pi] = c * v_kp - s * v_kq;
-            v[k * p + qi] = s * v_kp + c * v_kq;
-        }
+                let app = mat_buf[i_row + i];
+                let aqq = mat_buf[j_row + j];
 
-        for k in 0..p {
-            if k != pi && k != qi {
-                let a_kp = mat_buf[k * p + pi];
-                let a_kq = mat_buf[k * p + qi];
-                mat_buf[k * p + pi] = c * a_kp - s * a_kq;
-                mat_buf[pi * p + k] = mat_buf[k * p + pi];
-                mat_buf[k * p + qi] = s * a_kp + c * a_kq;
-                mat_buf[qi * p + k] = mat_buf[k * p + qi];
+                let phi = 0.5 * (2.0 * apq).atan2(aqq - app);
+                let c = phi.cos();
+                let s = phi.sin();
+
+                // Update eigenvector matrix V
+                for k in 0..p {
+                    let k_row = k * p;
+                    let v_ki = v[k_row + i];
+                    let v_kj = v[k_row + j];
+                    v[k_row + i] = c * v_ki - s * v_kj;
+                    v[k_row + j] = s * v_ki + c * v_kj;
+                }
+
+                // Update matrix A
+                for k in 0..p {
+                    if k != i && k != j {
+                        let k_row = k * p;
+                        let a_ki = mat_buf[k_row + i];
+                        let a_kj = mat_buf[k_row + j];
+                        let new_ki = c * a_ki - s * a_kj;
+                        let new_kj = s * a_ki + c * a_kj;
+                        mat_buf[k_row + i] = new_ki;
+                        mat_buf[i_row + k] = new_ki;
+                        mat_buf[k_row + j] = new_kj;
+                        mat_buf[j_row + k] = new_kj;
+                    }
+                }
+                let new_app = c * c * app - 2.0 * s * c * apq + s * s * aqq;
+                let new_aqq = s * s * app + 2.0 * s * c * apq + c * c * aqq;
+                mat_buf[i_row + i] = new_app;
+                mat_buf[j_row + j] = new_aqq;
+                mat_buf[i_row + j] = 0.0;
+                mat_buf[j_row + i] = 0.0;
             }
         }
-        let new_app = c * c * app - 2.0 * s * c * apq + s * s * aqq;
-        let new_aqq = s * s * app + 2.0 * s * c * apq + c * c * aqq;
-        mat_buf[pi * p + pi] = new_app;
-        mat_buf[qi * p + qi] = new_aqq;
-        mat_buf[pi * p + qi] = 0.0;
-        mat_buf[qi * p + pi] = 0.0;
     }
 
     for i in 0..p {
@@ -340,4 +370,64 @@ pub fn update_letkf_optimized(
     }
 
     ensemble.copy_from_slice(&ens_new);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_jacobi_eigenvalues_reconstruction() {
+        // Test for p = 19 (L=5) and p = 39 (L=20)
+        for &p in &[4, 19, 39] {
+            // Create a symmetric positive semi-definite matrix A = Z * Z^T
+            let m = 30;
+            let mut z = vec![0.0; p * m];
+            for r in 0..p {
+                for c in 0..m {
+                    z[r * m + c] = ((r * 13 + c * 7 + 3) % 100) as f64 / 100.0 - 0.5;
+                }
+            }
+            let mut a = vec![0.0; p * p];
+            for r in 0..p {
+                for c in 0..p {
+                    let mut dot = 0.0;
+                    for k in 0..m {
+                        dot += z[r * m + k] * z[c * m + k];
+                    }
+                    a[r * p + c] = dot;
+                }
+            }
+
+            let mut d = vec![0.0; p];
+            let mut v = vec![0.0; p * p];
+            let mut buf = vec![0.0; p * p];
+            jacobi_eigenvalues(&a, p, &mut d, &mut v, &mut buf);
+
+            // 1. Check orthogonality: V * V^T = I
+            for r in 0..p {
+                for c in 0..p {
+                    let mut dot = 0.0;
+                    for k in 0..p {
+                        dot += v[r * p + k] * v[c * p + k];
+                    }
+                    let expected = if r == c { 1.0 } else { 0.0 };
+                    assert!((dot - expected).abs() < 1e-11, "V orthogonality failed at ({}, {}) for p={}", r, c, p);
+                }
+            }
+
+            // 2. Check reconstruction: V * diag(d) * V^T = A
+            for r in 0..p {
+                for c in 0..p {
+                    let mut recon = 0.0;
+                    for k in 0..p {
+                        recon += v[r * p + k] * d[k] * v[c * p + k];
+                    }
+                    let diff = (recon - a[r * p + c]).abs();
+                    let scale = a[r * p + r].abs() + a[c * p + c].abs() + 1e-12;
+                    assert!(diff / scale < 1e-11, "A reconstruction failed at ({}, {}) for p={}: recon={}, orig={}", r, c, p, recon, a[r * p + c]);
+                }
+            }
+        }
+    }
 }

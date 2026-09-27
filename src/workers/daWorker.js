@@ -1,7 +1,6 @@
 // データ同化の数値計算は Rust/WebAssembly (crates/eduda_wasm) が一手に担う。
 // このワーカーは JSON ペイロードの受け渡しに徹する。
-// ブラウザキャッシュによる古い WASM バイナリの残存を防ぐためキャッシュバスターを付与
-const WASM_URL = `/wasm/eduda_wasm.wasm?v=${Date.now()}`;
+const WASM_URL = '/wasm/eduda_wasm.wasm';
 
 let wasmExportsPromise = null;
 
