@@ -52,7 +52,7 @@ Variance parameter in variational methods (3DVar, 4DVar) representing the uncert
 **Formula**
 
 ```
-B = σb² ∘ C
+B = σb² C
 (B: Background error covariance, C: Spatial correlation matrix, σb²: Background variance)
 ```
 
