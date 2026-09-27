@@ -91,7 +91,6 @@ pub fn update_letkf_optimized(
     let mut l_inv_t = vec![0.0; m * m];
     let mut v_vec = vec![0.0; m];
     let mut u_vec = vec![0.0; m];
-    let mut y_sol = vec![0.0; m];
     let mut z_vec = vec![0.0; m];
 
     let max_loc = precomputed.max_local_nobs;
@@ -183,18 +182,19 @@ pub fn update_letkf_optimized(
             wa_mean[r] = (y_temp[r] - sum) / l_mat[r * m + r];
         }
 
-        // 5. L_inv_T: solve L * y = e_k for each k
-        for k in 0..m {
-            for r in 0..m {
+        // 5. L_inv_T: directly invert lower triangular L, transpose and scale by sqrt(M-1)
+        l_inv_t.fill(0.0);
+        for c in 0..m {
+            l_inv_t[c * m + c] = sqrt_m1 / l_mat[c * m + c];
+        }
+        for c in 0..m {
+            for r in (c + 1)..m {
                 let mut sum = 0.0;
-                for c in 0..r {
-                    sum += l_mat[r * m + c] * y_sol[c];
+                let r_row = r * m;
+                for k in c..r {
+                    sum += l_mat[r_row + k] * l_inv_t[c * m + k];
                 }
-                let rhs = if r == k { 1.0 } else { 0.0 };
-                y_sol[r] = (rhs - sum) / l_mat[r * m + r];
-            }
-            for j in 0..m {
-                l_inv_t[k * m + j] = y_sol[j] * sqrt_m1;
+                l_inv_t[c * m + r] = -sum / l_mat[r_row + r];
             }
         }
 
