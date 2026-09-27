@@ -430,8 +430,8 @@ pub fn run_simulation(payload: SimPayload) -> Result<SimOutput, String> {
                         );
                         for (k, state_k) in traj.into_iter().enumerate() {
                             let cur_step = state.window_start_step + k;
-                            if cur_step > 0 && cur_step <= num_steps {
-                                let idx = cur_step - 1;
+                            if cur_step > 0 && cur_step <= num_steps && cur_step % obs_interval == 0 {
+                                let idx = (cur_step / obs_interval) - 1;
                                 if idx < state.rmse_series.len() {
                                     state.analysis_history[idx] = state_k.clone();
                                     state.rmse_series[idx] = rmse(&state_k, &truth_history[cur_step]);

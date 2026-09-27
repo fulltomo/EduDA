@@ -94,7 +94,8 @@ pub fn update_pf(
                 let diff = obs_val - hx;
                 nll += (diff * diff) / r_diag;
             }
-            log_lik[i] = -0.5 * nll;
+            let prev_log_w = if weights[i] > 1e-300 { weights[i].ln() } else { -700.0 };
+            log_lik[i] = prev_log_w - 0.5 * nll;
             if log_lik[i] > max_log_lik {
                 max_log_lik = log_lik[i];
             }
