@@ -92,6 +92,7 @@ pub fn update_letkf_optimized(
     let mut v_vec = vec![0.0; m];
     let mut u_vec = vec![0.0; m];
     let mut y_sol = vec![0.0; m];
+    let mut z_vec = vec![0.0; m];
 
     let max_loc = precomputed.max_local_nobs;
 
@@ -230,26 +231,46 @@ pub fn update_letkf_optimized(
                 u_vec[idx] *= inv_norm_u;
             }
 
-            for j in 0..m {
-                let mut sum = 0.0;
-                let u_j_2 = 2.0 * u_vec[j];
-                for k in 0..m {
-                    let mut dot_k = 0.0;
-                    for l in 0..m {
-                        dot_k += l_inv_t[k * m + l] * u_vec[l];
-                    }
-                    let wa_kj = l_inv_t[k * m + j] - u_j_2 * dot_k;
-                    sum += xb_i[k] * (wa_mean[k] + wa_kj);
+            // Precompute z_vec = L^{-T} * u (O(M^2))
+            for k in 0..m {
+                let mut dot = 0.0;
+                let row = k * m;
+                for l in 0..m {
+                    dot += l_inv_t[row + l] * u_vec[l];
                 }
-                ens_new[j * n + i] = x_m + sum;
+                z_vec[k] = dot;
+            }
+
+            let mut mean_pert = 0.0;
+            let mut dot_xb_z = 0.0;
+            for k in 0..m {
+                mean_pert += xb_i[k] * wa_mean[k];
+                dot_xb_z += xb_i[k] * z_vec[k];
+            }
+
+            let base_val = x_m + mean_pert;
+            let factor_z = 2.0 * dot_xb_z;
+
+            for j in 0..m {
+                let mut sum_xb_l = 0.0;
+                for k in 0..m {
+                    sum_xb_l += xb_i[k] * l_inv_t[k * m + j];
+                }
+                ens_new[j * n + i] = base_val + sum_xb_l - u_vec[j] * factor_z;
             }
         } else {
+            let mut mean_pert = 0.0;
+            for k in 0..m {
+                mean_pert += xb_i[k] * wa_mean[k];
+            }
+            let base_val = x_m + mean_pert;
+
             for j in 0..m {
-                let mut sum = 0.0;
+                let mut sum_xb_l = 0.0;
                 for k in 0..m {
-                    sum += xb_i[k] * (wa_mean[k] + l_inv_t[k * m + j]);
+                    sum_xb_l += xb_i[k] * l_inv_t[k * m + j];
                 }
-                ens_new[j * n + i] = x_m + sum;
+                ens_new[j * n + i] = base_val + sum_xb_l;
             }
         }
     }
